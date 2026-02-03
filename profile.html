@@ -11,11 +11,14 @@
     <div class="background-shapes"><div class="shape shape-2"></div></div>
 
     <header class="glass-header">
-        <div class="logo"><img src="nigoh.jpg" class="logo-image"><span>NIGOH</span></div>
+        <div class="logo">
+            <img src="nigoh.jpg" alt="Logo" class="logo-image">
+            <span>NIGOH</span>
+        </div>
         <nav>
             <ul>
                 <li><a href="index.html" class="nav-link">Bosh sahifa</a></li>
-                <li><button id="logoutBtn" class="nav-link btn-logout" style="background:transparent; border:1px solid #ff4757; color:#ff4757;">Chiqish</button></li>
+                <li><button id="logoutBtn" class="nav-link btn-logout" style="background:transparent; border:1px solid #ff4757; color:#ff4757; cursor:pointer;">Chiqish</button></li>
             </ul>
         </nav>
     </header>
@@ -23,18 +26,28 @@
     <main class="dashboard-container">
         <aside class="profile-sidebar glass-card-flat">
             <div class="profile-img-container">
-                <img id="userAvatar" src="https://via.placeholder.com/150" class="profile-img">
+                <img id="userAvatar" src="https://via.placeholder.com/150" class="profile-img" alt="Avatar">
             </div>
-            <input type="file" id="photoInput" hidden accept="image/*">
-            <button onclick="document.getElementById('photoInput').click()" class="btn-view" style="margin-bottom:15px; font-size:0.8rem;">Rasm yuklash</button>
             
-            <h3 id="displayName">Foydalanuvchi</h3>
+            <input type="file" id="photoInput" hidden accept="image/*">
+            <button onclick="document.getElementById('photoInput').click()" class="btn-view" style="margin-bottom:15px; font-size:0.8rem;">Rasm o'zgartirish 📷</button>
+            
+            <h3 id="displayName">Yuklanmoqda...</h3>
             <p id="displayEmail" style="color:#aaa; margin-bottom:20px; font-size:0.9rem;">...</p>
             
             <form id="profileForm" style="text-align:left;">
-                <div class="input-group"><label>Ism</label><input type="text" id="firstName"></div>
-                <div class="input-group"><label>Familiya</label><input type="text" id="lastName"></div>
-                <div class="input-group"><label>Yosh</label><input type="number" id="age"></div>
+                <div class="input-group">
+                    <label>Ism</label>
+                    <input type="text" id="firstName" placeholder="Ismingiz">
+                </div>
+                <div class="input-group">
+                    <label>Familiya</label>
+                    <input type="text" id="lastName" placeholder="Familiyangiz">
+                </div>
+                <div class="input-group">
+                    <label>Yosh</label>
+                    <input type="number" id="age" placeholder="Yoshingiz">
+                </div>
                 <button type="submit" class="btn-primary full-width">Saqlash</button>
             </form>
         </aside>
@@ -42,32 +55,52 @@
         <section class="dashboard-content">
             <div class="dashboard-stats">
                 <div class="stat-card glass-card-flat">
-                    <h3>0</h3><p>Yuborilgan</p><div class="icon-bg">📨</div>
+                    <h3 id="totalReports">0</h3>
+                    <p>Yuborilgan</p>
+                    <div class="icon-bg">📨</div>
                 </div>
                 <div class="stat-card glass-card-flat">
-                    <h3>0</h3><p>Hal etilgan</p><div class="icon-bg">✅</div>
+                    <h3 id="solvedReports">0</h3>
+                    <p>Hal etilgan</p>
+                    <div class="icon-bg">✅</div>
                 </div>
             </div>
 
             <div class="glass-card-flat">
-                <h2 style="border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px;">Mening Xabarlarim</h2>
-                <p style="color:#aaa;">Siz yuborgan xabarlar ro'yxati tez orada bu yerda chiqadi.</p>
+                <h2 style="border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px; margin-bottom: 20px;">Mening Xabarlarim</h2>
+                
+                <div id="reportsList">
+                    <p style="color:#aaa; text-align:center;">Ma'lumotlar yuklanmoqda...</p>
+                </div>
             </div>
         </section>
     </main>
 
     <script type="module">
-        import { auth, db, doc, getDoc, setDoc, signOut, onAuthStateChanged, updateProfile } from './firebase-config.js';
+        // Muhim importlar (Query va Where kerak)
+        import { auth, db, doc, getDoc, setDoc, signOut, onAuthStateChanged, updateProfile, collection, query, where, getDocs } from './firebase-config.js';
 
         let currentUser = null;
 
-        onAuthStateChanged(auth, async (user) => {
+        // 1. Tizimga kirgan foydalanuvchini aniqlash
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('displayEmail').innerText = user.email;
-                document.getElementById('displayName').innerText = user.displayName || "Ism yo'q";
-                if(user.photoURL) document.getElementById('userAvatar').src = user.photoURL;
+                loadUserProfile(user); // Profilni yuklash
+                loadUserReports(user); // XABARLARNI YUKLASH
+            } else {
+                window.location.href = "login.html"; // Kirmagan bo'lsa haydash
+            }
+        });
 
+        // 2. Profil ma'lumotlarini bazadan olish
+        async function loadUserProfile(user) {
+            document.getElementById('displayEmail').innerText = user.email;
+            document.getElementById('displayName').innerText = user.displayName || "Foydalanuvchi";
+            if(user.photoURL) document.getElementById('userAvatar').src = user.photoURL;
+
+            // Qo'shimcha ma'lumotlar (Yosh, Familiya)
+            try {
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
@@ -76,24 +109,79 @@
                     document.getElementById('lastName').value = data.lastName || "";
                     document.getElementById('age').value = data.age || "";
                 }
-            } else {
-                window.location.href = "login.html";
+            } catch (e) {
+                console.log("Profil ma'lumotlari yo'q");
             }
-        });
+        }
 
-        // Rasmni o'zgartirish (faqat brauzerda ko'rinadi hozircha)
-        document.getElementById('photoInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    document.getElementById('userAvatar').src = e.target.result;
-                    await updateProfile(currentUser, { photoURL: e.target.result });
-                };
-                reader.readAsDataURL(file);
+        // 3. Xabarlarni va Statistikani yuklash (ENG MUHIM QISM)
+        async function loadUserReports(user) {
+            const listContainer = document.getElementById('reportsList');
+            const totalCountEl = document.getElementById('totalReports');
+            const solvedCountEl = document.getElementById('solvedReports');
+
+            try {
+                // Faqat shu userga tegishli xabarlarni qidiramiz
+                const q = query(
+                    collection(db, "reports"), 
+                    where("uid", "==", user.uid)
+                );
+                
+                const querySnapshot = await getDocs(q);
+                
+                let total = 0;
+                let solved = 0;
+                let html = "";
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    total++; // Jami sanash
+                    
+                    if (data.status === "Hal etildi") {
+                        solved++; // Hal etilganlarni sanash
+                    }
+
+                    // Statusga qarab rang tanlash
+                    let badgeColor = "#ffc107"; // Sariq (Yangi)
+                    let statusText = data.status || "Yangi";
+
+                    if (statusText === "Hal etildi") badgeColor = "#2ecc71"; // Yashil
+                    if (statusText === "Rad etildi") badgeColor = "#ff4757"; // Qizil
+
+                    // Ro'yxat elementi (HTML)
+                    html += `
+                        <div class="report-item" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:15px; margin-bottom:10px; border-radius:10px; border-left: 4px solid ${badgeColor};">
+                            <div>
+                                <h4 style="margin:0; color:white; font-size:1.1rem;">${data.type ? data.type.toUpperCase() : "XABAR"}</h4>
+                                <p style="margin:5px 0; color:#aaa; font-size:0.9rem;">📍 ${data.address || "Manzil yo'q"}</p>
+                                <span style="font-size:0.8rem; color:#666;">📅 ${data.date || ""}</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <span style="background:${badgeColor}20; color:${badgeColor}; border:1px solid ${badgeColor}; padding:5px 12px; border-radius:15px; font-size:0.8rem; font-weight:bold;">
+                                    ${statusText}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Ekranga chiqarish
+                totalCountEl.innerText = total;
+                solvedCountEl.innerText = solved;
+
+                if (total === 0) {
+                    listContainer.innerHTML = `<p style="color:#aaa; text-align:center; padding: 20px;">Siz hali xabar yubormagansiz.</p>`;
+                } else {
+                    listContainer.innerHTML = html;
+                }
+
+            } catch (error) {
+                console.error("Xato:", error);
+                listContainer.innerHTML = `<p style="color:red; text-align:center;">Xatolik: ${error.message}. <br> (Firebase qoidalarini tekshiring)</p>`;
             }
-        });
+        }
 
+        // 4. Profilni saqlash funksiyasi
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const firstName = document.getElementById('firstName').value;
@@ -101,17 +189,37 @@
             const age = document.getElementById('age').value;
 
             try {
-                await updateProfile(currentUser, { displayName: `${firstName} ${lastName}` });
-                await setDoc(doc(db, "users", currentUser.uid), {
-                    firstName, lastName, age, email: currentUser.email
-                }, { merge: true });
-                alert("Ma'lumotlar saqlandi!");
-                document.getElementById('displayName').innerText = `${firstName} ${lastName}`;
+                // Ismni yangilash
+                if (currentUser) {
+                    await updateProfile(currentUser, { displayName: `${firstName} ${lastName}` });
+                    // Bazaga yozish
+                    await setDoc(doc(db, "users", currentUser.uid), {
+                        firstName, lastName, age, email: currentUser.email
+                    }, { merge: true });
+                    
+                    alert("Ma'lumotlar saqlandi! ✅");
+                    document.getElementById('displayName').innerText = `${firstName} ${lastName}`;
+                }
             } catch (error) {
                 alert("Xato: " + error.message);
             }
         });
 
+        // 5. Rasmni o'zgartirish
+        document.getElementById('photoInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    document.getElementById('userAvatar').src = ev.target.result;
+                    // Rasm URLini profilga saqlash (haqiqiy loyihada Storage ishlatiladi, bu yerda vaqtincha base64)
+                    await updateProfile(currentUser, { photoURL: ev.target.result });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 6. Chiqish tugmasi
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth).then(() => window.location.href = "login.html");
         });

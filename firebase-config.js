@@ -1,9 +1,32 @@
-// Firebase kutubxonalarini internetdan (CDN) chaqirib olamiz
+// Firebase SDK larini import qilamiz
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { 
+    getAuth, 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged, 
+    updateProfile, 
+    sendPasswordResetEmail 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Siz yuborgan maxsus kalitlar (Configs)
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    doc, 
+    setDoc, 
+    getDoc, 
+    updateDoc, 
+    query, 
+    where, 
+    getDocs, 
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Sizning loyihangiz sozlamalari (Studio...)
 const firebaseConfig = {
   apiKey: "AIzaSyCrn_NMDxZRjU0tToRnZCdqx9CEef_mwuk",
   authDomain: "studio-1879510232-1b0ed.firebaseapp.com",
@@ -13,15 +36,13 @@ const firebaseConfig = {
   appId: "1:921358775126:web:4f2d183feb17b50f1edcf7"
 };
 
-// Firebaseni ishga tushirish (Start)
+// Firebaseni ishga tushirish
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
-// Xizmatlarni ishga tushirish
-const auth = getAuth(app);       // Login tizimi
-const db = getFirestore(app);    // Ma'lumotlar bazasi
-const provider = new GoogleAuthProvider(); // Google orqali kirish
-
-// Boshqa fayllarda (login.html, profile.html) ishlatish uchun eksport qilamiz
+// Barcha kerakli funksiyalarni eksport qilamiz (Profile.html shu yerdan oladi)
 export { 
     auth, 
     db, 
@@ -31,12 +52,16 @@ export {
     createUserWithEmailAndPassword, 
     signOut, 
     onAuthStateChanged, 
+    updateProfile, 
+    sendPasswordResetEmail,
     collection, 
     addDoc, 
     doc, 
     setDoc, 
     getDoc, 
-    updateDoc, 
-    updateProfile, 
-    sendPasswordResetEmail 
+    updateDoc,
+    query,    // <-- Bu juda muhim (Qidiruv uchun)
+    where,    // <-- Bu juda muhim (Filtrlash uchun)
+    getDocs,  // <-- Bu juda muhim (O'qish uchun)
+    orderBy 
 };
