@@ -215,46 +215,51 @@
         let currentUser = null;
         onAuthStateChanged(auth, (user) => { if (user) currentUser = user; });
 
-        // --- TELEGRAMGA FAYL (DOCUMENT) YUBORISH ---
-        async function sendToTelegram(type, address, desc, email, name, file) {
+        // --- TELEGRAMGA FAYL VA TUGMALAR BILAN YUBORISH ---
+        async function sendToTelegram(type, address, desc, email, name, file, docId) {
             const caption = `🚨 <b>YANGI XABAR!</b>\n\n` +
+                            `🆔 <b>ID:</b> ${docId}\n` + // Bot bazada topishi uchun ID
                             `📌 <b>Tur:</b> ${type}\n` +
                             `📍 <b>Manzil:</b> ${address}\n` +
                             `📝 <b>Tavsif:</b> ${desc}\n` +
                             `👤 <b>Yuboruvchi:</b> ${name || "Noma'lum"} (${email})\n` +
                             `📅 <b>Vaqt:</b> ${new Date().toLocaleString()}`;
 
-            // Agar fayl bo'lsa -> sendDocument ishlatamiz
-            if (file) {
-                const formData = new FormData();
-                formData.append('chat_id', TELEGRAM_CHAT_ID);
-                formData.append('caption', caption);
-                formData.append('parse_mode', 'HTML');
-                formData.append('document', file); 
+            // Tugmalarni yasaymiz (ID ni yashirib yuboramiz)
+            const replyMarkup = {
+                inline_keyboard: [
+                    [
+                        { text: "✅ Qabul qilish", callback_data: `accept_${docId}` },
+                        { text: "❌ Rad etish", callback_data: `reject_${docId}` }
+                    ]
+                ]
+            };
 
-                try {
-                    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                } catch (error) {
-                    console.error("Fayl yuborishda xato:", error);
-                }
+            const formData = new FormData();
+            formData.append('chat_id', TELEGRAM_CHAT_ID);
+            formData.append('reply_markup', JSON.stringify(replyMarkup)); // Tugmani qo'shish
+            formData.append('parse_mode', 'HTML');
+
+            let method = 'sendMessage';
+
+            if (file) {
+                // Agar fayl bo'lsa
+                method = 'sendDocument';
+                formData.append('document', file);
+                formData.append('caption', caption);
             } else {
-                // Agar fayl bo'lmasa -> faqat tekst
-                try {
-                    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: TELEGRAM_CHAT_ID,
-                            text: caption,
-                            parse_mode: 'HTML'
-                        })
-                    });
-                } catch (error) {
-                    console.error("Xabar yuborishda xato:", error);
-                }
+                // Agar fayl bo'lmasa, faqat matn
+                formData.append('text', caption);
+            }
+
+            try {
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                console.log("Telegramga yuborildi");
+            } catch (error) {
+                console.error("Telegram xatosi:", error);
             }
         }
 
@@ -280,8 +285,8 @@
             }
 
             try {
-                // 1. Firebase bazasiga yozish
-                await addDoc(collection(db, "reports"), {
+                // 1. Firebase bazasiga yozish (Status: "Yangi")
+                const docRef = await addDoc(collection(db, "reports"), {
                     uid: currentUser.uid,
                     email: currentUser.email,
                     type: type,
@@ -293,10 +298,11 @@
                     date: new Date().toLocaleString()
                 });
 
-                // 2. Telegramga yuborish
-                await sendToTelegram(type, address, desc, currentUser.email, currentUser.displayName, file);
+                // 2. Telegramga yuborish (ID bilan birga)
+                // docRef.id bu yerda yangi hosil bo'lgan xabar IDsi
+                await sendToTelegram(type, address, desc, currentUser.email, currentUser.displayName, file, docRef.id);
 
-                alert("Xabar va fayl muvaffaqiyatli yuborildi!");
+                alert("Xabar muvaffaqiyatli yuborildi! Admin javobini kuting.");
                 
                 // Modalni yopish va tozalash
                 modal.classList.remove('show');
