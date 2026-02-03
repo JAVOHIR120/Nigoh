@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil - Nigoh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-shapes"><div class="shape shape-2"></div></div>
+
+    <header class="glass-header">
+        <div class="logo"><img src="nigoh.jpg" class="logo-image"><span>NIGOH</span></div>
+        <nav>
+            <ul>
+                <li><a href="index.html" class="nav-link">Bosh sahifa</a></li>
+                <li><button id="logoutBtn" class="nav-link btn-logout" style="background:transparent; border:1px solid #ff4757; color:#ff4757;">Chiqish</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="dashboard-container">
+        <aside class="profile-sidebar glass-card-flat">
+            <div class="profile-img-container">
+                <img id="userAvatar" src="https://via.placeholder.com/150" class="profile-img">
+            </div>
+            <input type="file" id="photoInput" hidden accept="image/*">
+            <button onclick="document.getElementById('photoInput').click()" class="btn-view" style="margin-bottom:15px; font-size:0.8rem;">Rasm yuklash</button>
+            
+            <h3 id="displayName">Foydalanuvchi</h3>
+            <p id="displayEmail" style="color:#aaa; margin-bottom:20px; font-size:0.9rem;">...</p>
+            
+            <form id="profileForm" style="text-align:left;">
+                <div class="input-group"><label>Ism</label><input type="text" id="firstName"></div>
+                <div class="input-group"><label>Familiya</label><input type="text" id="lastName"></div>
+                <div class="input-group"><label>Yosh</label><input type="number" id="age"></div>
+                <button type="submit" class="btn-primary full-width">Saqlash</button>
+            </form>
+        </aside>
+
+        <section class="dashboard-content">
+            <div class="dashboard-stats">
+                <div class="stat-card glass-card-flat">
+                    <h3>0</h3><p>Yuborilgan</p><div class="icon-bg">📨</div>
+                </div>
+                <div class="stat-card glass-card-flat">
+                    <h3>0</h3><p>Hal etilgan</p><div class="icon-bg">✅</div>
+                </div>
+            </div>
+
+            <div class="glass-card-flat">
+                <h2 style="border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px;">Mening Xabarlarim</h2>
+                <p style="color:#aaa;">Siz yuborgan xabarlar ro'yxati tez orada bu yerda chiqadi.</p>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { auth, db, doc, getDoc, setDoc, signOut, onAuthStateChanged, updateProfile } from './firebase-config.js';
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('displayEmail').innerText = user.email;
+                document.getElementById('displayName').innerText = user.displayName || "Ism yo'q";
+                if(user.photoURL) document.getElementById('userAvatar').src = user.photoURL;
+
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('firstName').value = data.firstName || "";
+                    document.getElementById('lastName').value = data.lastName || "";
+                    document.getElementById('age').value = data.age || "";
+                }
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // Rasmni o'zgartirish (faqat brauzerda ko'rinadi hozircha)
+        document.getElementById('photoInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    document.getElementById('userAvatar').src = e.target.result;
+                    await updateProfile(currentUser, { photoURL: e.target.result });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const age = document.getElementById('age').value;
+
+            try {
+                await updateProfile(currentUser, { displayName: `${firstName} ${lastName}` });
+                await setDoc(doc(db, "users", currentUser.uid), {
+                    firstName, lastName, age, email: currentUser.email
+                }, { merge: true });
+                alert("Ma'lumotlar saqlandi!");
+                document.getElementById('displayName').innerText = `${firstName} ${lastName}`;
+            } catch (error) {
+                alert("Xato: " + error.message);
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => window.location.href = "login.html");
+        });
+    </script>
+</body>
+</html>

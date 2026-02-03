@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nigoh - Kelajak Nazorati</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <header class="glass-header">
+        <div class="logo">
+            <img src="nigoh.jpg" alt="Logo" class="logo-image">
+            <span>NIGOH</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html" class="nav-link active">Asosiy</a></li>
+                <li><a href="profile.html" class="nav-link">Profil</a></li>
+                <li><a href="login.html" class="nav-link btn-login">Kirish</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content fade-in-up">
+                <h1>Haqiqatga <span class="highlight">Tik Boq</span></h1>
+                <p>Korrupsiya va infratuzilma muammolarini real vaqt rejimida kuzatuvchi intellektual tizim.</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary" id="openModalBtn">Xabar Berish 🚀</button>
+                    <button class="btn-secondary">Batafsil</button>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <div class="glass-card-3d">
+                    <div class="card-icon">🛡️</div>
+                    <h3>Xavfsizlik</h3>
+                    <p>Anonimlik kafolatlanadi</p>
+                </div>
+                <div class="glass-card-3d floating-card">
+                    <div class="card-icon">📊</div>
+                    <h3>Shaffoflik</h3>
+                    <p>Real vaqt statistikasi</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-container">
+            <div class="stat-box"><h3>3,482</h3><p>Jami xabarlar</p></div>
+            <div class="stat-box"><h3>62%</h3><p>Hal etildi</p></div>
+            <div class="stat-box"><h3>24/7</h3><p>Monitoring</p></div>
+        </section>
+
+        <section class="categories-section">
+            <h2 class="section-title">Muammo turini tanlang</h2>
+            <div class="categories-grid">
+                <div class="category-card"><div class="cat-icon">💸</div><h3>Pora Berish</h3></div>
+                <div class="category-card"><div class="cat-icon">🏗️</div><h3>Infratuzilma</h3></div>
+                <div class="category-card"><div class="cat-icon">⚖️</div><h3>Vakolat</h3></div>
+                <div class="category-card"><div class="cat-icon">🔓</div><h3>O'g'rilik</h3></div>
+            </div>
+        </section>
+
+        <section class="map-section">
+            <h2 class="section-title">Muammolar Xaritasi</h2>
+            <div class="map-container-glass">
+                <div id="map"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="glass-footer">
+        <div class="footer-content">
+            <div class="footer-col brand-col">
+                <div class="footer-logo">
+                    <img src="nigoh.jpg" alt="Logo" class="logo-image">
+                    <span>NIGOH</span>
+                </div>
+                <p class="footer-desc">
+                    Korrupsiyaga qarshi kurashish va shaffoflikni ta'minlash uchun xalqchil platforma. Kelajakni birgalikda quramiz.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="social-btn">Telegram</a>
+                    <a href="#" class="social-btn">Instagram</a>
+                    <a href="#" class="social-btn">Facebook</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>Platforma</h4>
+                <ul>
+                    <li><a href="index.html">Bosh sahifa</a></li>
+                    <li><a href="#">Loyiha haqida</a></li>
+                    <li><a href="#">Statistika</a></li>
+                    <li><a href="#">Xarita</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Yordam</h4>
+                <ul>
+                    <li><a href="#">Qo'llanma</a></li>
+                    <li><a href="#">Savol-javob (FAQ)</a></li>
+                    <li><a href="#">Maxfiylik siyosati</a></li>
+                    <li><a href="#">Foydalanish shartlari</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col contact-col">
+                <h4>Bog'lanish</h4>
+                <ul class="contact-info">
+                    <li><span>📍</span> Toshkent sh., Chilonzor</li>
+                    <li><span>📞</span> +998 93 107 88 16</li>
+                    <li><span>📧</span> info@nigoh.uz</li>
+                </ul>
+                <div class="newsletter">
+                    <p>Yangiliklardan xabardor bo'ling:</p>
+                    <div class="input-wrap">
+                        <input type="email" placeholder="Emailingiz...">
+                        <button>→</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Nigoh Loyihasi. Barcha huquqlar himoyalangan.</p>
+            <p>Dizayn: <span>Nigoh Team</span></p>
+        </div>
+    </footer>
+
+    <div id="reportModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Muammo haqida xabar</h2>
+            <form id="reportForm">
+                <div class="input-group">
+                    <label>Muammo turi</label>
+                    <select id="problemType">
+                        <option value="pora">Pora olish/berish</option>
+                        <option value="infratuzilma">Infratuzilma</option>
+                        <option value="vakolat">Vakolat suiiste'moli</option>
+                        <option value="ogrilik">O'g'rilik</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>Manzil</label>
+                    <input type="text" id="address" placeholder="Manzil..." required>
+                </div>
+                
+                <div class="input-group">
+                    <label>Tavsif</label>
+                    <textarea id="desc" rows="3" required></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label>Isbot (Fayl)</label>
+                    <div class="custom-file-upload" onclick="document.getElementById('fileInput').click()">
+                        <span class="upload-icon">📁</span>
+                        <span id="fileName">Faylni tanlash uchun bosing</span>
+                        <input type="file" id="fileInput" hidden>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary full-width">Yuborish</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module">
+        import { auth, db, addDoc, collection, onAuthStateChanged } from './firebase-config.js';
+
+        // --- TELEGRAM SOZLAMALARI ---
+        const TELEGRAM_BOT_TOKEN = "8589526911:AAEPYGVtWU8oq5DgOQlAw2LXhmYdcOe7D3Q"; 
+        const TELEGRAM_CHAT_ID = "5883103021"; 
+
+        // Xarita
+        var map = L.map('map').setView([41.2995, 69.2401], 12);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© CARTO' }).addTo(map);
+
+        // Modal Logic
+        const modal = document.getElementById("reportModal");
+        const btn = document.getElementById("openModalBtn");
+        const span = document.querySelector(".close-btn");
+        
+        btn.onclick = () => { modal.style.display = "flex"; setTimeout(() => modal.classList.add('show'), 10); };
+        span.onclick = () => { modal.classList.remove('show'); setTimeout(() => modal.style.display = "none", 300); };
+
+        // Fayl nomini chiqarish logikasi
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileName');
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileNameDisplay.innerText = "Tanlandi: " + this.files[0].name;
+                fileNameDisplay.style.color = "#00d2ff";
+            } else {
+                fileNameDisplay.innerText = "Faylni tanlash uchun bosing";
+                fileNameDisplay.style.color = "#fff";
+            }
+        });
+
+        let currentUser = null;
+        onAuthStateChanged(auth, (user) => { if (user) currentUser = user; });
+
+        // --- TELEGRAMGA FAYL (DOCUMENT) YUBORISH ---
+        async function sendToTelegram(type, address, desc, email, name, file) {
+            const caption = `🚨 <b>YANGI XABAR!</b>\n\n` +
+                            `📌 <b>Tur:</b> ${type}\n` +
+                            `📍 <b>Manzil:</b> ${address}\n` +
+                            `📝 <b>Tavsif:</b> ${desc}\n` +
+                            `👤 <b>Yuboruvchi:</b> ${name || "Noma'lum"} (${email})\n` +
+                            `📅 <b>Vaqt:</b> ${new Date().toLocaleString()}`;
+
+            // Agar fayl bo'lsa -> sendDocument ishlatamiz
+            if (file) {
+                const formData = new FormData();
+                formData.append('chat_id', TELEGRAM_CHAT_ID);
+                formData.append('caption', caption);
+                formData.append('parse_mode', 'HTML');
+                formData.append('document', file); 
+
+                try {
+                    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                } catch (error) {
+                    console.error("Fayl yuborishda xato:", error);
+                }
+            } else {
+                // Agar fayl bo'lmasa -> faqat tekst
+                try {
+                    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: TELEGRAM_CHAT_ID,
+                            text: caption,
+                            parse_mode: 'HTML'
+                        })
+                    });
+                } catch (error) {
+                    console.error("Xabar yuborishda xato:", error);
+                }
+            }
+        }
+
+        document.getElementById('reportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Login tekshiruvi
+            if (!currentUser) {
+                alert("Iltimos, avval tizimga kiring!");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const type = document.getElementById('problemType').value;
+            const address = document.getElementById('address').value;
+            const desc = document.getElementById('desc').value;
+            const file = document.getElementById('fileInput').files[0];
+
+            // Fayl hajmini tekshirish (Telegram limiti: 50MB)
+            if (file && file.size > 50 * 1024 * 1024) {
+                alert("Fayl hajmi juda katta! Maksimal: 50MB");
+                return;
+            }
+
+            try {
+                // 1. Firebase bazasiga yozish
+                await addDoc(collection(db, "reports"), {
+                    uid: currentUser.uid,
+                    email: currentUser.email,
+                    type: type,
+                    address: address,
+                    description: desc,
+                    status: "Yangi",
+                    hasFile: file ? true : false,
+                    fileName: file ? file.name : "",
+                    date: new Date().toLocaleString()
+                });
+
+                // 2. Telegramga yuborish
+                await sendToTelegram(type, address, desc, currentUser.email, currentUser.displayName, file);
+
+                alert("Xabar va fayl muvaffaqiyatli yuborildi!");
+                
+                // Modalni yopish va tozalash
+                modal.classList.remove('show');
+                setTimeout(() => modal.style.display = "none", 300);
+                document.getElementById('reportForm').reset();
+                fileNameDisplay.innerText = "Faylni tanlash uchun bosing";
+                fileNameDisplay.style.color = "#fff";
+                
+            } catch (error) {
+                alert("Xato: " + error.message);
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
