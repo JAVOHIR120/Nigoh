@@ -419,3 +419,189 @@ nav ul { display: flex; gap: 20px; align-items: center; }
     .contact-info li { justify-content: center; }
     .footer-bottom { flex-direction: column; gap: 10px; }
 }
+/* =========================================
+   YANGI: PROFESSIONAL XABARNOMA (TOAST)
+   ========================================= */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border-left: 5px solid #00d2ff; /* Default ko'k */
+    color: white;
+    padding: 15px 25px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 300px;
+    transform: translateX(100%);
+    animation: slideIn 0.5s forwards, fadeOut 0.5s 4s forwards;
+}
+
+.toast.success { border-color: #2ecc71; } /* Yashil */
+.toast.error { border-color: #ff4757; }   /* Qizil */
+
+.toast-icon { font-size: 1.5rem; }
+.toast-content h4 { margin: 0; font-size: 1rem; font-weight: 600; }
+.toast-content p { margin: 5px 0 0; font-size: 0.85rem; color: #ddd; }
+
+@keyframes slideIn { to { transform: translateX(0); } }
+@keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+
+/* =========================================
+   STATISTIKA ANIMATSIYASI
+   ========================================= */
+.stat-number {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #00d2ff, #3a7bd5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+/* =========================================
+   PROFESSIONAL AUTH (LOGIN/REGISTER) DIZAYNI
+   ========================================= */
+.auth-body {
+    background: #0f172a; /* To'q ko'k fon */
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-container {
+    display: flex;
+    width: 1000px;
+    max-width: 100%;
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    min-height: 600px;
+}
+
+/* Chap tomon (Brending) */
+.auth-left {
+    flex: 1;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    position: relative;
+}
+
+.auth-left::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); /* Pattern */
+    opacity: 0.1;
+}
+
+.auth-logo-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #00d2ff;
+    margin-bottom: 20px;
+    object-fit: cover;
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
+}
+
+.auth-left h2 { font-size: 2rem; margin-bottom: 10px; font-weight: 700; }
+.auth-left p { opacity: 0.8; font-size: 0.95rem; line-height: 1.6; max-width: 300px; }
+
+/* O'ng tomon (Forma) */
+.auth-right {
+    flex: 1;
+    padding: 50px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.auth-header { margin-bottom: 30px; text-align: center; }
+.auth-header h3 { font-size: 1.8rem; color: #1e293b; margin-bottom: 5px; font-weight: 700; }
+.auth-header p { color: #64748b; font-size: 0.9rem; }
+
+/* Professional Inputlar */
+.form-group { margin-bottom: 20px; position: relative; }
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    background: #f8fafc;
+    color: #333;
+}
+
+.form-input:focus {
+    border-color: #00d2ff;
+    background: #fff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.1);
+}
+
+/* Tugmalar */
+.btn-auth {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(to right, #0f172a, #334155);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+    margin-top: 10px;
+}
+
+.btn-auth:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+.btn-google {
+    background: #fff;
+    color: #333;
+    border: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+.btn-google:hover { background: #f8fafc; }
+
+.auth-links { margin-top: 20px; text-align: center; font-size: 0.9rem; }
+.auth-links a { color: #00d2ff; text-decoration: none; font-weight: 600; }
+.auth-links a:hover { text-decoration: underline; }
+
+/* Mobil uchun moslashuv */
+@media (max-width: 800px) {
+    .auth-container { flex-direction: column; height: auto; }
+    .auth-left { padding: 30px; }
+    .auth-right { padding: 30px; }
+}

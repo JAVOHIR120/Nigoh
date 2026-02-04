@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Nigoh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* ADMIN PANEL MAXSUS STILLARI */
+        body { background: #f8fafc; color: #1e293b; overflow-x: hidden; }
+        
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #0f172a;
+            color: white;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            width: 260px;
+            height: 100vh;
+            top: 0; left: 0;
+            z-index: 100;
+        }
+        .sidebar-logo {
+            font-size: 1.8rem; font-weight: bold; color: #00d2ff;
+            margin-bottom: 50px; display: flex; align-items: center; gap: 10px;
+        }
+        .nav-item {
+            padding: 15px; color: #cbd5e1; text-decoration: none;
+            border-radius: 10px; margin-bottom: 8px; transition: 0.3s;
+            display: flex; align-items: center; gap: 12px; font-weight: 500;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: #fff; }
+        .nav-item i { width: 20px; }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 40px;
+        }
+        
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 40px;
+        }
+        .admin-profile { text-align: right; }
+        .admin-name { font-weight: 700; font-size: 1.1rem; }
+        .admin-role { font-size: 0.85rem; color: #64748b; }
+
+        /* Statistika Kartalari */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px; margin-bottom: 40px;
+        }
+        .stat-card {
+            background: white; padding: 25px; border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-info h3 { font-size: 2.2rem; margin: 0; font-weight: 700; color: #0f172a; }
+        .stat-info p { margin: 0; color: #64748b; font-size: 0.9rem; }
+        .stat-icon { font-size: 2.5rem; opacity: 0.8; }
+
+        /* Jadval va Boshqaruv */
+        .table-section {
+            background: white; padding: 30px; border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+        }
+        .table-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px;
+        }
+        .btn-excel {
+            background: #10b981; color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-excel:hover { background: #059669; transform: translateY(-2px); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px; color: #64748b; font-size: 0.8rem; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; vertical-align: middle; }
+        tr:hover { background: #f8fafc; }
+
+        /* Status Select */
+        .status-select {
+            padding: 6px 10px; border-radius: 20px; border: 1px solid #cbd5e1;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer; outline: none;
+        }
+        .status-select.Yangi { background: #fffbeb; color: #d97706; border-color: #fcd34d; }
+        .status-select.Hal { background: #dcfce7; color: #166534; border-color: #86efac; } /* Hal etildi */
+        .status-select.Rad { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+        /* Delete Button */
+        .btn-delete {
+            background: #fee2e2; color: #ef4444; border: none; width: 35px; height: 35px;
+            border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .btn-delete:hover { background: #ef4444; color: white; }
+
+        /* Toast */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .admin-layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastBox"></div>
+
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">🛡️ NIGOH ADMIN</div>
+            <nav>
+                <a href="#" class="nav-item active">📊 Dashboard</a>
+                <a href="index.html" class="nav-item">🏠 Saytga qaytish</a>
+            </nav>
+            <div style="margin-top: auto;">
+                <button id="logoutBtn" class="nav-item" style="background:none; border:none; width:100%; cursor:pointer;">🚪 Chiqish</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 style="margin:0; font-size:1.8rem;">Boshqaruv Paneli</h1>
+                    <p style="color:#64748b; margin:5px 0 0;">Platforma statistikasi va murojaatlar nazorati</p>
+                </div>
+                <div class="admin-profile">
+                    <div class="admin-name" id="adminName">Admin</div>
+                    <div class="admin-role" id="adminEmail">Yuklanmoqda...</div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info"><h3 id="totalCount">0</h3><p>Jami Murojaatlar</p></div>
+                    <div class="stat-icon">📨</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info"><h3 id="solvedCount" style="color:#10b981;">0</h3><p>Hal Etilgan</p></div>
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info"><h3 id="pendingCount" style="color:#f59e0b;">0</h3><p>Jarayonda</p></div>
+                    <div class="stat-icon">⏳</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info"><h3 id="rejectedCount" style="color:#ef4444;">0</h3><p>Rad Etilgan</p></div>
+                    <div class="stat-icon">🚫</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-bottom: 40px;">
+                <div class="stat-card" style="display: block;">
+                    <h4 style="margin-bottom: 15px;">Murojaat Turlari</h4>
+                    <canvas id="barChart" style="max-height: 300px;"></canvas>
+                </div>
+                <div class="stat-card" style="display: block;">
+                    <h4 style="margin-bottom: 15px;">Statuslar</h4>
+                    <canvas id="doughnutChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <div class="table-section">
+                <div class="table-header">
+                    <h3>Oxirgi Murojaatlar</h3>
+                    <button class="btn-excel" onclick="exportToExcel()">📥 Excelga Yuklash</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="reportsTableElement">
+                        <thead>
+                            <tr>
+                                <th>Sana</th>
+                                <th>Foydalanuvchi</th>
+                                <th>Tur & Manzil</th>
+                                <th>Lokatsiya</th>
+                                <th>Status (O'zgartirish)</th>
+                                <th>Amal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody">
+                            <tr><td colspan="6" style="text-align:center;">Ma'lumotlar yuklanmoqda...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { auth, db, collection, getDocs, doc, updateDoc, deleteDoc, onAuthStateChanged, signOut } from './firebase-config.js';
+
+        // --- DIQQAT: ADMIN EMAILINI SHU YERGA YOZING ---
+        const ALLOWED_ADMIN_EMAIL = "islomovjavohir939@gmail.com"; 
+
+        // Global o'zgaruvchilar (Excel uchun)
+        let allReportsData = [];
+
+        // TOAST FUNKSIYASI
+        function showToast(title, message, type = 'success') {
+            const box = document.getElementById('toastBox');
+            const toast = document.createElement('div');
+            let icon = type === 'success' ? '✅' : '⚠️';
+            let borderColor = type === 'success' ? '#10b981' : '#ef4444';
+            toast.className = 'toast';
+            toast.style.cssText = `background: white; border-left: 5px solid ${borderColor}; padding: 15px 20px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; min-width: 300px; animation: slideIn 0.3s forwards;`;
+            toast.innerHTML = `<div style="font-size:1.5rem;">${icon}</div><div><h4 style="margin:0;">${title}</h4><p style="margin:5px 0 0; color:#666;">${message}</p></div>`;
+            box.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // --- 1. ADMINNI TEKSHIRISH VA YUKLASH ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                if (user.email !== ALLOWED_ADMIN_EMAIL) {
+                    alert("Siz Admin emassiz! 🚫");
+                    window.location.href = "index.html";
+                } else {
+                    document.getElementById('adminName').innerText = user.displayName || "Admin";
+                    document.getElementById('adminEmail').innerText = user.email;
+                    loadData(); 
+                }
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // --- 2. MA'LUMOTLARNI YUKLASH ---
+        async function loadData() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "reports"));
+                
+                let total = 0, solved = 0, pending = 0, rejected = 0;
+                let categories = { "pora": 0, "infratuzilma": 0, "vakolat": 0, "ogrilik": 0 };
+                let html = "";
+                allReportsData = []; // Tozalash
+
+                // Ma'lumotlarni olish va tartiblash
+                let reports = [];
+                querySnapshot.forEach(doc => {
+                    let data = doc.data();
+                    data.id = doc.id; // ID ni saqlab qolamiz (o'chirish/update uchun)
+                    reports.push(data);
+                });
+                reports.reverse(); // Yangilar tepada
+
+                reports.forEach(data => {
+                    total++;
+                    allReportsData.push(data); // Excel uchun yig'ish
+
+                    // Statistika
+                    if (data.status === "Hal etildi") solved++;
+                    else if (data.status === "Rad etildi") rejected++;
+                    else pending++;
+
+                    if (categories[data.type] !== undefined) categories[data.type]++;
+
+                    // Xarita linki
+                    let mapBtn = `<span style="color:#ccc;">-</span>`;
+                    if (data.latitude && data.longitude) {
+                        mapBtn = `<a href="http://maps.google.com/?q=${data.latitude},${data.longitude}" target="_blank" style="color:#00d2ff; text-decoration:none; font-weight:bold;">📍 Xarita</a>`;
+                    }
+
+                    // Status Rangi (CSS klass uchun)
+                    let statusClass = "Yangi";
+                    if(data.status.includes("Hal")) statusClass = "Hal";
+                    if(data.status.includes("Rad")) statusClass = "Rad";
+
+                    html += `
+                        <tr>
+                            <td>${data.date.split(',')[0]}<br><small style="color:#aaa">${data.date.split(',')[1] || ''}</small></td>
+                            <td><b>${data.email.split('@')[0]}</b><br><small style="color:#aaa">${data.email}</small></td>
+                            <td>
+                                <span style="text-transform:uppercase; font-size:0.8rem; font-weight:bold; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${data.type}</span>
+                                <br>${data.address}
+                            </td>
+                            <td>${mapBtn}</td>
+                            <td>
+                                <select onchange="window.updateStatus('${data.id}', this.value)" class="status-select ${statusClass}">
+                                    <option value="Yangi" ${data.status === 'Yangi' ? 'selected' : ''}>⏳ Yangi</option>
+                                    <option value="Hal etildi" ${data.status === 'Hal etildi' ? 'selected' : ''}>✅ Hal etildi</option>
+                                    <option value="Rad etildi" ${data.status === 'Rad etildi' ? 'selected' : ''}>🚫 Rad etildi</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button onclick="window.deleteReport('${data.id}')" class="btn-delete" title="O'chirish">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // Ekranga chiqarish
+                document.getElementById('totalCount').innerText = total;
+                document.getElementById('solvedCount').innerText = solved;
+                document.getElementById('pendingCount').innerText = pending;
+                document.getElementById('rejectedCount').innerText = rejected;
+                document.getElementById('reportsTableBody').innerHTML = html;
+
+                // Grafik chizish
+                drawCharts(categories, [solved, pending, rejected]);
+
+            } catch (error) {
+                console.error("Xato:", error);
+                showToast("Xatolik", "Ma'lumotlarni yuklab bo'lmadi", "error");
+            }
+        }
+
+        // --- 3. STATUSNI O'ZGARTIRISH (GLOBAL FUNKSIYA) ---
+        window.updateStatus = async (docId, newStatus) => {
+            try {
+                const reportRef = doc(db, "reports", docId);
+                await updateDoc(reportRef, { status: newStatus });
+                showToast("Bajarildi", `Status o'zgardi: ${newStatus}`);
+                loadData(); // Jadvalni yangilash (Ranglar o'zgarishi uchun)
+            } catch (error) {
+                showToast("Xato", error.message, "error");
+            }
+        };
+
+        // --- 4. O'CHIRISH (GLOBAL FUNKSIYA) ---
+        window.deleteReport = async (docId) => {
+            if (confirm("Rostdan ham bu xabarni o'chirib tashlamoqchimisiz?")) {
+                try {
+                    await deleteDoc(doc(db, "reports", docId));
+                    showToast("O'chirildi", "Xabar bazadan yo'qotildi.", "success");
+                    loadData(); // Jadvalni yangilash
+                } catch (error) {
+                    showToast("Xato", error.message, "error");
+                }
+            }
+        };
+
+        // --- 5. EXCELGA YUKLASH (GLOBAL FUNKSIYA) ---
+        window.exportToExcel = () => {
+            if(allReportsData.length === 0) {
+                alert("Yuklash uchun ma'lumot yo'q!");
+                return;
+            }
+
+            // Kerakli ustunlarni tanlab olish
+            const cleanData = allReportsData.map(item => ({
+                "Sana": item.date,
+                "Turi": item.type,
+                "Manzil": item.address,
+                "Tavsif": item.description,
+                "Foydalanuvchi": item.email,
+                "Status": item.status,
+                "Lokatsiya Link": item.latitude ? `http://maps.google.com/?q=${item.latitude},${item.longitude}` : "Yo'q"
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(cleanData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Hisobotlar");
+            
+            // Fayl nomiga sana qo'shish
+            const dateStr = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(workbook, `Nigoh_Hisobot_${dateStr}.xlsx`);
+            showToast("Yuklandi", "Excel fayl tayyorlandi!");
+        };
+
+        // --- 6. GRAFIKLARNI CHIZISH ---
+        let chartInstance1 = null;
+        let chartInstance2 = null;
+
+        function drawCharts(catData, statusData) {
+            const ctx1 = document.getElementById('barChart');
+            const ctx2 = document.getElementById('doughnutChart');
+
+            // Eski grafiklarni o'chirish (Ustma-ust tushmasligi uchun)
+            if (chartInstance1) chartInstance1.destroy();
+            if (chartInstance2) chartInstance2.destroy();
+
+            chartInstance1 = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Pora', 'Infratuzilma', 'Vakolat', 'O\'g\'rilik'],
+                    datasets: [{
+                        label: 'Soni',
+                        data: [catData.pora, catData.infratuzilma, catData.vakolat, catData.ogrilik],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444'],
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            chartInstance2 = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hal etildi', 'Jarayonda', 'Rad etildi'],
+                    datasets: [{
+                        data: statusData,
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+
+        // Chiqish
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => window.location.href = "login.html");
+        });
+    </script>
+</body>
+</html>

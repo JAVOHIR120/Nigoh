@@ -3,59 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kirish</title>
+    <title>Tizimga Kirish - Nigoh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="background-shapes"><div class="shape shape-1"></div><div class="shape shape-3"></div></div>
+<body class="auth-body">
 
-    <div class="login-wrapper">
-        <a href="index.html" class="nav-link" style="margin-bottom: 20px;">← Bosh sahifa</a>
-        <div class="login-card">
-            <div class="login-header">
-                <img src="nigoh.jpg" alt="Logo" class="logo-image-large">
-                <h2>Xush Kelibsiz!</h2>
+    <div class="toast-container" id="toastBox"></div>
+
+    <div class="auth-container">
+        <div class="auth-left">
+            <img src="nigoh.jpg" alt="Logo" class="auth-logo-large">
+            <h2>NIGOH</h2>
+            <p>Korrupsiya va infratuzilma muammolariga befarq bo'lmang. Kelajakni birgalikda quramiz.</p>
+        </div>
+
+        <div class="auth-right">
+            <div class="auth-header">
+                <h3>Xush kelibsiz! 👋</h3>
+                <p>Tizimdan foydalanish uchun hisobingizga kiring.</p>
             </div>
+
             <form id="loginForm">
-                <div class="input-group">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" required>
+                <div class="form-group">
+                    <label>Email pochta</label>
+                    <input type="email" id="email" class="form-input" placeholder="name@example.com" required>
                 </div>
-                <div class="input-group">
+                
+                <div class="form-group">
                     <label>Parol</label>
-                    <input type="password" id="loginPassword" required>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn-primary full-width">KIRISH</button>
-                <button type="button" id="googleBtn" class="full-width" style="background:transparent; border:1px solid white; color:white; padding:10px; margin-top:10px; cursor:pointer;">Google orqali kirish</button>
+
+                <div style="text-align: right; margin-bottom: 20px;">
+                    <a href="#" onclick="alert('Tez orada ishga tushadi')" style="font-size: 0.85rem; color: #64748b; text-decoration: none;">Parolni unutdingizmi?</a>
+                </div>
+
+                <button type="submit" class="btn-auth">Kirish</button>
+                
+                <button type="button" id="googleBtn" class="btn-auth btn-google">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="20" alt="G">
+                    Google orqali kirish
+                </button>
             </form>
-            <p style="margin-top: 20px; text-align: center;">Akkaunt yo'qmi? <a href="register.html" style="color:#00d2ff">Ro'yxatdan o'tish</a></p>
+
+            <div class="auth-links">
+                Hisobingiz yo'qmi? <a href="register.html">Ro'yxatdan o'tish</a>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { auth, provider, signInWithPopup, signInWithEmailAndPassword } from './firebase-config.js';
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+        // TOAST FUNKSIYASI
+        function showToast(title, message, type = 'success') {
+            const box = document.getElementById('toastBox');
+            const toast = document.createElement('div');
+            let icon = type === 'success' ? '✅' : '⚠️';
+            let borderColor = type === 'success' ? '#2ecc71' : '#ff4757';
+            
+            toast.className = `toast ${type}`;
+            toast.style.cssText = `
+                background: rgba(20, 20, 30, 0.95);
+                backdrop-filter: blur(10px);
+                border-left: 5px solid ${borderColor};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                display: flex; align-items: center; gap: 15px;
+                min-width: 300px; animation: slideIn 0.5s forwards;
+            `;
+            toast.innerHTML = `<div style="font-size:1.5rem;">${icon}</div><div><h4 style="margin:0;font-size:1rem;">${title}</h4><p style="margin:5px 0 0;font-size:0.85rem;color:#ccc;">${message}</p></div>`;
+            box.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
 
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = "profile.html";
-            } catch (error) {
-                alert("Login yoki parol xato!");
-            }
+        // Email orqali kirish
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then(() => {
+                    showToast("Muvaffaqiyatli", "Tizimga kirdingiz!");
+                    setTimeout(() => window.location.href = "index.html", 1500);
+                })
+                .catch((error) => {
+                    showToast("Xatolik", "Login yoki parol noto'g'ri!", "error");
+                });
         });
 
-        document.getElementById('googleBtn').addEventListener('click', async () => {
-            try {
-                await signInWithPopup(auth, provider);
-                window.location.href = "profile.html";
-            } catch (error) {
-                alert("Xatolik: " + error.message);
-            }
+        // Google orqali kirish
+        document.getElementById('googleBtn').addEventListener('click', () => {
+            signInWithPopup(auth, provider)
+                .then(() => {
+                    showToast("Muvaffaqiyatli", "Google orqali kirdingiz!");
+                    setTimeout(() => window.location.href = "index.html", 1500);
+                })
+                .catch((error) => {
+                    showToast("Xatolik", error.message, "error");
+                });
         });
     </script>
 </body>
-</html>
+</html> 
