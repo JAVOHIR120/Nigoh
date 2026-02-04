@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nigoh | Ro'yxatdan o'tish</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* SIGNUP GA XOS QO'SHIMCHA STILLAR */
+        .password-strength {
+            margin-top: 8px; display: none;
+        }
+        .strength-bars {
+            display: flex; gap: 4px; height: 4px; margin-bottom: 5px;
+        }
+        .bar {
+            flex: 1; background: rgba(255,255,255,0.1); border-radius: 2px; transition: 0.3s;
+        }
+        .strength-text { font-size: 0.75rem; text-align: right; color: var(--text-muted); }
+
+        /* Ranglar */
+        .weak .bar:nth-child(1) { background: var(--danger); }
+        .medium .bar:nth-child(1), .medium .bar:nth-child(2) { background: var(--warning); }
+        .strong .bar:nth-child(1), .strong .bar:nth-child(2), .strong .bar:nth-child(3) { background: var(--success); }
+        .strong .bar:nth-child(4) { background: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+
+    <div class="toast-box" id="toastBox"></div>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="brand-logo"><i class="fa-solid fa-user-plus"></i></div>
+                <h1 class="auth-title">Yangi Hisob</h1>
+                <p class="auth-subtitle">Nigoh tizimida o'z o'rningizga ega bo'ling.</p>
+            </div>
+
+            <form id="signupForm">
+                <div class="input-group">
+                    <label>To'liq Ismingiz</label>
+                    <div style="position:relative;">
+                        <i class="fa-solid fa-user input-icon" style="position:absolute; left:15px; top:14px; color:var(--text-muted);"></i>
+                        <input type="text" id="fullName" placeholder="Ism Familiya" style="padding-left:40px;" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Email Manzil</label>
+                    <div style="position:relative;">
+                        <i class="fa-solid fa-envelope input-icon" style="position:absolute; left:15px; top:14px; color:var(--text-muted);"></i>
+                        <input type="email" id="email" placeholder="name@example.com" style="padding-left:40px;" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Parol</label>
+                    <div style="position:relative;">
+                        <i class="fa-solid fa-lock input-icon" style="position:absolute; left:15px; top:14px; color:var(--text-muted);"></i>
+                        <input type="password" id="password" placeholder="••••••••" style="padding-left:40px; padding-right:40px;" required>
+                        <i class="fa-solid fa-eye" id="togglePass" onclick="togglePassword()" style="position:absolute; right:15px; top:14px; cursor:pointer; color:var(--text-muted);"></i>
+                    </div>
+                    
+                    <div class="password-strength" id="strengthMeter">
+                        <div class="strength-bars">
+                            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText">Kuchsiz</div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Parolni Takrorlang</label>
+                    <div style="position:relative;">
+                        <i class="fa-solid fa-check-double input-icon" style="position:absolute; left:15px; top:14px; color:var(--text-muted);"></i>
+                        <input type="password" id="confirmPassword" placeholder="••••••••" style="padding-left:40px;" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary full-width" id="submitBtn" style="margin-top:10px;">
+                    Ro'yxatdan O'tish <i class="fa-solid fa-arrow-right" style="margin-left:5px;"></i>
+                </button>
+            </form>
+
+            <div class="auth-footer" style="text-align:center; margin-top:20px; font-size:0.9rem; color:var(--text-muted);">
+                Allaqachon hisobingiz bormi? <a href="login.html" style="color:var(--primary); font-weight:600;">Kirish</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db, createUserWithEmailAndPassword, updateProfile, setDoc, doc } from './firebase-config.js';
+
+        // 1. PASSWORD TOGGLE (Ko'zchani bosganda)
+        window.togglePassword = () => {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('togglePass');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        };
+
+        // 2. PASSWORD STRENGTH METER (Parol kuchini o'lchash)
+        const passInput = document.getElementById('password');
+        const meter = document.getElementById('strengthMeter');
+        const text = document.getElementById('strengthText');
+
+        passInput.addEventListener('input', () => {
+            const val = passInput.value;
+            meter.style.display = val.length > 0 ? 'block' : 'none';
+            
+            let score = 0;
+            if (val.length >= 6) score++;
+            if (val.length >= 8 && /[0-9]/.test(val)) score++;
+            if (val.length >= 10 && /[A-Z]/.test(val)) score++;
+            
+            meter.className = 'password-strength';
+            if (score <= 1) { meter.classList.add('weak'); text.innerText = "Kuchsiz"; text.style.color = "var(--danger)"; }
+            else if (score === 2) { meter.classList.add('medium'); text.innerText = "O'rtacha"; text.style.color = "var(--warning)"; }
+            else { meter.classList.add('strong'); text.innerText = "Kuchli"; text.style.color = "var(--success)"; }
+        });
+
+        // 3. FORM SUBMIT (Ro'yxatdan o'tish)
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            const btn = document.getElementById('submitBtn');
+
+            // Validatsiya
+            if (password !== confirmPass) return showToast('Xatolik', 'Parollar mos kelmadi!', 'error');
+            if (password.length < 6) return showToast('Xatolik', 'Parol kamida 6 ta belgi bo\'lishi kerak', 'warning');
+
+            // Loading state
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yaratilmoqda...';
+            btn.disabled = true;
+
+            try {
+                // A) Firebase Auth da user yaratish
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // B) User profiliga Ismni qo'shish
+                await updateProfile(user, { displayName: name });
+
+                // C) Firestore bazasiga 'users' kolleksiyasiga yozish (Admin uchun)
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    displayName: name,
+                    email: email,
+                    role: "user",
+                    createdAt: new Date().toISOString()
+                });
+
+                showToast('Muvaffaqiyatli', 'Hisob yaratildi! Tizimga kirilmoqda...', 'success');
+                
+                // D) Asosiy sahifaga yo'naltirish
+                setTimeout(() => window.location.href = "index.html", 1500);
+
+            } catch (error) {
+                console.error(error);
+                let msg = error.message;
+                if(error.code === 'auth/email-already-in-use') msg = "Bu email allaqachon ro'yxatdan o'tgan";
+                showToast('Xatolik', msg, 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // 4. TOAST NOTIFICATION FUNKSIYASI
+        function showToast(title, message, type) {
+            const box = document.getElementById('toastBox');
+            const toast = document.createElement('div');
+            let color = type === 'success' ? 'var(--success)' : (type === 'error' ? 'var(--danger)' : 'var(--warning)');
+            let icon = type === 'success' ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>';
+            
+            toast.className = 'toast';
+            toast.style.borderColor = color;
+            toast.innerHTML = `
+                <div style="font-size:1.5rem; color:${color}">${icon}</div>
+                <div>
+                    <h4 style="margin:0; font-size:0.95rem;">${title}</h4>
+                    <p style="margin:2px 0 0; font-size:0.85rem; opacity:0.8">${message}</p>
+                </div>
+            `;
+            box.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.4s reverse forwards';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
