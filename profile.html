@@ -2,384 +2,376 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shaxsiy Kabinet - Nigoh</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nigoh | Shaxsiy Kabinet</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
     <style>
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 25px;
-            padding: 100px 5% 50px;
-            max-width: 1400px;
-            margin: 0 auto;
+        /* --- PROFILE SPECIFIC STYLES --- */
+        .profile-container {
+            max-width: 1200px; margin: 0 auto; padding: 20px;
+            display: grid; grid-template-columns: 350px 1fr; gap: 30px;
+            align-items: start;
         }
 
-        @media (max-width: 900px) {
-            .dashboard-grid { grid-template-columns: 1fr; padding-top: 80px; }
-        }
-
+        /* LEFT SIDEBAR (PROFILE CARD) */
         .profile-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
+            background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 24px;
+            padding: 30px; text-align: center; position: sticky; top: 100px;
         }
 
-        .avatar-box {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 20px;
-        }
-        
-        .avatar-img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #00d2ff;
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+        .profile-avatar {
+            width: 120px; height: 120px; margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; color: white; font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.3);
+            border: 4px solid rgba(255, 255, 255, 0.1);
         }
 
-        .edit-badge {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background: #00d2ff;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 2px solid #1a1a2e;
+        .profile-name { font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 5px; }
+        .profile-email { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; }
+
+        .profile-stats {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+            padding-top: 20px; border-top: 1px solid var(--glass-border);
+        }
+        .stat-item h3 { font-size: 1.5rem; color: white; margin: 0; }
+        .stat-item p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+
+        /* RIGHT CONTENT (TABS) */
+        .content-card {
+            background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 24px;
+            padding: 30px; min-height: 500px;
         }
 
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .tabs { display: flex; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
+        .tab-btn {
+            background: none; border: none; color: var(--text-muted);
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            padding: 10px 0; position: relative; transition: 0.3s;
+        }
+        .tab-btn.active { color: var(--primary); }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: -16px; left: 0; width: 100%;
+            height: 3px; background: var(--primary); border-radius: 3px 3px 0 0;
         }
 
-        .mini-stat-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .mini-stat-info h3 { font-size: 2rem; margin: 0; color: #fff; }
-        .mini-stat-info p { margin: 0; color: #aaa; font-size: 0.9rem; }
-        .mini-stat-icon { font-size: 2rem; opacity: 0.8; }
-
-        .reports-container {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
+        /* REPORTS LIST */
         .report-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255,255,255,0.05);
-            padding: 15px 20px;
-            margin-bottom: 15px;
-            border-radius: 12px;
-            transition: transform 0.3s;
-            border-left: 4px solid transparent;
+            background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border);
+            border-radius: 16px; padding: 20px; margin-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: 0.3s;
         }
-
-        .report-item:hover { transform: translateX(5px); background: rgba(255,255,255,0.08); }
+        .report-item:hover { transform: translateY(-3px); border-color: var(--primary); }
+        
+        .report-info h4 { color: white; margin-bottom: 5px; font-size: 1.1rem; }
+        .report-info p { color: var(--text-muted); font-size: 0.9rem; }
+        .report-meta { display: flex; gap: 15px; margin-top: 8px; font-size: 0.8rem; color: #64748b; }
 
         .status-badge {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
+            padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
         }
-        .status-yangi { background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.3); }
-        .status-hal { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
-        .status-rad { background: rgba(255, 71, 87, 0.15); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); }
+        .status-Yangi { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .status-Hal { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-Rad { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        /* SETTINGS FORM */
+        .settings-form { max-width: 500px; }
+        .section-title { font-size: 1.2rem; color: white; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--glass-border); }
+
+        /* EMPTY STATE */
+        .empty-state { text-align: center; padding: 50px 0; opacity: 0.7; }
+        .empty-icon { font-size: 4rem; color: var(--text-muted); margin-bottom: 15px; }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .profile-container { grid-template-columns: 1fr; }
+            .profile-card { position: static; margin-bottom: 20px; }
+        }
     </style>
 </head>
 <body>
-    
-    <div class="toast-container" id="toastBox"></div>
 
     <div class="background-shapes">
+        <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
     </div>
 
+    <div class="toast-container" id="toastBox"></div>
+
     <header class="glass-header">
-        <div class="logo">
-            <img src="nigoh.jpg" alt="Logo" class="logo-image">
-            <span>NIGOH</span>
-        </div>
+        <div class="logo">🛡️ <span>NIGOH</span></div>
         <nav>
             <ul>
-                <li><a href="index.html" class="nav-link">Bosh sahifa</a></li>
-                <li><button id="logoutBtn" class="nav-link btn-logout" style="border: 1px solid #ff4757; color: #ff4757;">Chiqish</button></li>
+                <li><a href="index.html" class="nav-link">Asosiy</a></li>
+                <li><a href="#" class="nav-link active">Profil</a></li>
+                <li><button id="logoutBtn" class="btn-secondary" style="border-color:var(--danger); color:var(--danger);">Chiqish</button></li>
             </ul>
         </nav>
     </header>
 
-    <main class="dashboard-grid">
-        <aside class="profile-card">
-            <div class="avatar-box">
-                <img id="userAvatar" src="https://via.placeholder.com/150" class="avatar-img" alt="Avatar">
-                <label for="photoInput" class="edit-badge">📷</label>
-                <input type="file" id="photoInput" hidden accept="image/*">
-            </div>
-            
-            <h2 id="displayName" style="margin-bottom: 5px;">Yuklanmoqda...</h2>
-            <p id="displayEmail" style="color:#aaa; margin-bottom:25px; font-size:0.9rem;">...</p>
-            
-            <form id="profileForm" style="text-align:left;">
-                <div class="input-group">
-                    <label>Ism</label>
-                    <input type="text" id="firstName" placeholder="Ismingiz">
-                </div>
-                <div class="input-group">
-                    <label>Familiya</label>
-                    <input type="text" id="lastName" placeholder="Familiyangiz">
-                </div>
-                <div class="input-group">
-                    <label>Yosh</label>
-                    <input type="number" id="age" placeholder="Yoshingiz">
-                </div>
-                <button type="submit" class="btn-primary full-width">Saqlash</button>
-            </form>
-        </aside>
-
-        <section>
-            <div class="stats-row">
-                <div class="mini-stat-card">
-                    <div class="mini-stat-info">
+    <main>
+        <div class="profile-container">
+            <div class="profile-card">
+                <div class="profile-avatar" id="avatarDisplay">U</div>
+                <h2 class="profile-name" id="nameDisplay">Foydalanuvchi</h2>
+                <p class="profile-email" id="emailDisplay">email@example.com</p>
+                
+                <div class="profile-stats">
+                    <div class="stat-item">
                         <h3 id="totalReports">0</h3>
-                        <p>Jami Xabarlar</p>
+                        <p>Murojaatlar</p>
                     </div>
-                    <div class="mini-stat-icon">📨</div>
+                    <div class="stat-item">
+                        <h3 id="solvedReports" style="color:var(--success)">0</h3>
+                        <p>Hal etildi</p>
+                    </div>
                 </div>
-                <div class="mini-stat-card">
-                    <div class="mini-stat-info">
-                        <h3 id="solvedReports" style="color: #2ecc71;">0</h3>
-                        <p>Hal Etilgan</p>
-                    </div>
-                    <div class="mini-stat-icon">✅</div>
-                </div>
-                <div class="mini-stat-card">
-                    <div class="mini-stat-info">
-                        <h3 id="pendingReports" style="color: #ffc107;">0</h3>
-                        <p>Ko'rib Chiqilmoqda</p>
-                    </div>
-                    <div class="mini-stat-icon">⏳</div>
+                
+                <div style="margin-top: 30px;">
+                    <p style="color:var(--text-muted); font-size:0.8rem;">A'zo bo'lgan sana:</p>
+                    <p style="color:white; font-weight:500;" id="joinDate">...</p>
                 </div>
             </div>
 
-            <div class="reports-container">
-                <h2 style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">Mening Murojaatlarim</h2>
-                <div id="reportsList">
-                    <p style="color:#aaa; text-align:center; padding: 20px;">Ma'lumotlar yuklanmoqda...</p>
+            <div class="content-card">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('reports')">Mening Murojaatlarim</button>
+                    <button class="tab-btn" onclick="switchTab('settings')">Sozlamalar</button>
+                </div>
+
+                <div id="reportsTab">
+                    <div id="reportsList">
+                        <div style="text-align:center; padding:40px;">
+                            <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; color:var(--primary)"></i>
+                            <p style="margin-top:10px; color:var(--text-muted)">Yuklanmoqda...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settingsTab" style="display:none;">
+                    <form id="updateProfileForm" class="settings-form">
+                        <h3 class="section-title">Profil ma'lumotlari</h3>
+                        
+                        <div class="input-group">
+                            <label>Ismingiz</label>
+                            <input type="text" id="newName" placeholder="Ismingizni kiriting">
+                        </div>
+                        
+                        <button type="submit" class="btn-primary" id="saveProfileBtn">Saqlash</button>
+
+                        <h3 class="section-title" style="margin-top:40px;">Xavfsizlik</h3>
+                        
+                        <div class="input-group">
+                            <label>Yangi Parol (Agar o'zgartirsangiz)</label>
+                            <input type="password" id="newPassword" placeholder="Yangi parol">
+                        </div>
+                         <div class="input-group">
+                            <label>Parolni takrorlang</label>
+                            <input type="password" id="confirmNewPassword" placeholder="Parolni takrorlang">
+                        </div>
+
+                        <button type="button" onclick="updatePass()" class="btn-secondary" style="width:100%;">Parolni Yangilash</button>
+
+                        <div style="margin-top:50px; padding-top:20px; border-top:1px solid rgba(239,68,68,0.2);">
+                            <h4 style="color:var(--danger); margin-bottom:10px;">Xavfli hudud</h4>
+                            <button type="button" onclick="deleteAccount()" class="btn-secondary" style="width:100%; border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.05);">Hisobni o'chirish</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
 
     <script type="module">
-        import { auth, db, doc, getDoc, setDoc, signOut, onAuthStateChanged, updateProfile, collection, query, where, getDocs } from './firebase-config.js';
-
-        // --- TOAST XABARNOMA FUNKSIYASI ---
-        function showToast(title, message, type = 'success') {
-            const box = document.getElementById('toastBox');
-            const toast = document.createElement('div');
-            
-            let icon = type === 'success' ? '✅' : '⚠️';
-            let borderColor = type === 'success' ? '#2ecc71' : '#ff4757';
-            
-            toast.className = `toast ${type}`;
-            // Inline stillar style.css yetib kelmasa ham ishlashi uchun
-            toast.style.cssText = `
-                background: rgba(20, 20, 30, 0.95);
-                backdrop-filter: blur(10px);
-                border-left: 5px solid ${borderColor};
-                color: white;
-                padding: 15px 20px;
-                margin-bottom: 15px;
-                border-radius: 8px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-                display: flex; align-items: center; gap: 15px;
-                min-width: 300px;
-                animation: slideIn 0.5s forwards;
-            `;
-
-            toast.innerHTML = `
-                <div style="font-size:1.5rem;">${icon}</div>
-                <div>
-                    <h4 style="margin:0; font-size:1rem;">${title}</h4>
-                    <p style="margin:5px 0 0; font-size:0.85rem; color:#ccc;">${message}</p>
-                </div>
-            `;
-            
-            box.appendChild(toast);
-            setTimeout(() => { 
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 500);
-            }, 4000);
-        }
+        import { 
+            auth, db, collection, query, where, getDocs, 
+            onAuthStateChanged, signOut, updateProfile, 
+            updatePassword, deleteUser 
+        } from './firebase-config.js'; // Firebase config import
 
         let currentUser = null;
 
-        // Tizimga kirganlikni tekshirish
+        // AUTH CHECK
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                loadUserProfile(user);
-                loadUserReports(user);
+                initProfile(user);
+                loadUserReports(user.uid);
             } else {
                 window.location.href = "login.html";
             }
         });
 
-        // Profil ma'lumotlarini yuklash
-        async function loadUserProfile(user) {
-            document.getElementById('displayEmail').innerText = user.email;
-            document.getElementById('displayName').innerText = user.displayName || "Foydalanuvchi";
-            if(user.photoURL) document.getElementById('userAvatar').src = user.photoURL;
-
-            try {
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('firstName').value = data.firstName || "";
-                    document.getElementById('lastName').value = data.lastName || "";
-                    document.getElementById('age').value = data.age || "";
-                }
-            } catch (e) { console.log(e); }
+        // INIT PROFILE UI
+        function initProfile(user) {
+            document.getElementById('nameDisplay').innerText = user.displayName || "Foydalanuvchi";
+            document.getElementById('emailDisplay').innerText = user.email;
+            document.getElementById('avatarDisplay').innerText = (user.displayName || "U").charAt(0).toUpperCase();
+            document.getElementById('newName').value = user.displayName || "";
+            document.getElementById('joinDate').innerText = user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('uz-UZ') : "Noma'lum";
         }
 
-        // --- STATISTIKA VA XABARLARNI YUKLASH (Asosiy mantiq) ---
-        async function loadUserReports(user) {
-            const listContainer = document.getElementById('reportsList');
-            
+        // LOAD REPORTS
+        async function loadUserReports(uid) {
+            const list = document.getElementById('reportsList');
             try {
-                const q = query(collection(db, "reports"), where("uid", "==", user.uid));
+                const q = query(collection(db, "reports"), where("uid", "==", uid));
                 const querySnapshot = await getDocs(q);
                 
-                let total = 0;
-                let solved = 0;
-                let pending = 0;
-                let html = "";
-
-                // Teskari tartibda chiqarish uchun massivga olamiz (yangi xabarlar tepada)
                 let reports = [];
-                querySnapshot.forEach((doc) => reports.push(doc.data()));
-                reports.reverse(); // Eng yangisi tepaga
+                querySnapshot.forEach((doc) => {
+                    reports.push({ id: doc.id, ...doc.data() });
+                });
 
-                reports.forEach((data) => {
-                    total++;
-                    let statusClass = "status-yangi";
-                    let borderColor = "#ffc107";
-                    
-                    if (data.status === "Hal etildi") {
-                        solved++;
-                        statusClass = "status-hal";
-                        borderColor = "#2ecc71";
-                    } else if (data.status === "Rad etildi") {
-                        statusClass = "status-rad";
-                        borderColor = "#ff4757";
-                    } else {
-                        pending++;
-                    }
+                // Sort newest first
+                reports.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-                    html += `
-                        <div class="report-item" style="border-left-color: ${borderColor};">
-                            <div>
-                                <h4 style="margin:0; color:white; font-size:1.1rem;">${data.type ? data.type.toUpperCase() : "XABAR"}</h4>
-                                <p style="margin:5px 0; color:#aaa; font-size:0.9rem;">📍 ${data.address || "Manzil yo'q"}</p>
-                                <span style="font-size:0.8rem; color:#666;">📅 ${data.date}</span>
+                // Stats Update
+                document.getElementById('totalReports').innerText = reports.length;
+                document.getElementById('solvedReports').innerText = reports.filter(r => r.status === 'Hal etildi').length;
+
+                if (reports.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+                            <h3>Hali murojaatlar yo'q</h3>
+                            <p>Siz yuborgan murojaatlar shu yerda ko'rinadi.</p>
+                            <button onclick="window.location.href='index.html'" class="btn-primary" style="margin-top:20px;">Murojaat yuborish</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = reports.map(r => {
+                    let statusClass = "status-Yangi";
+                    if(r.status.includes("Hal")) statusClass = "status-Hal";
+                    if(r.status.includes("Rad")) statusClass = "status-Rad";
+
+                    return `
+                        <div class="report-item">
+                            <div class="report-info">
+                                <h4>${r.type}</h4>
+                                <p>${r.description.substring(0, 60)}${r.description.length>60?'...':''}</p>
+                                <div class="report-meta">
+                                    <span><i class="fa-regular fa-calendar"></i> ${r.date.split(',')[0]}</span>
+                                    <span><i class="fa-solid fa-location-dot"></i> ${r.address}</span>
+                                </div>
                             </div>
-                            <div style="text-align:right;">
-                                <span class="status-badge ${statusClass}">
-                                    ${data.status}
-                                </span>
+                            <div>
+                                <span class="status-badge ${statusClass}">${r.status}</span>
                             </div>
                         </div>
                     `;
-                });
-
-                // Statistikani yangilash
-                document.getElementById('totalReports').innerText = total;
-                document.getElementById('solvedReports').innerText = solved;
-                document.getElementById('pendingReports').innerText = pending;
-
-                // Ro'yxatni chiqarish
-                if (total === 0) {
-                    listContainer.innerHTML = `<p style="color:#aaa; text-align:center; padding:30px;">Siz hali xabar yubormagansiz.</p>`;
-                } else {
-                    listContainer.innerHTML = html;
-                }
+                }).join('');
 
             } catch (error) {
-                console.error("Xato:", error);
-                showToast("Xatolik", "Ma'lumotlarni yuklab bo'lmadi. Internetni tekshiring.", "error");
+                console.error(error);
+                list.innerHTML = `<p style="color:var(--danger); text-align:center;">Xatolik yuz berdi</p>`;
             }
         }
 
-        // Profilni saqlash
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        // UPDATE NAME
+        document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const age = document.getElementById('age').value;
+            const newName = document.getElementById('newName').value;
+            const btn = document.getElementById('saveProfileBtn');
+            
+            if(!newName) return showToast("Xato", "Ism bo'sh bo'lishi mumkin emas", "error");
+
+            btn.innerText = "Saqlanmoqda...";
+            btn.disabled = true;
 
             try {
-                if (currentUser) {
-                    await updateProfile(currentUser, { displayName: `${firstName} ${lastName}` });
-                    await setDoc(doc(db, "users", currentUser.uid), {
-                        firstName, lastName, age, email: currentUser.email
-                    }, { merge: true });
-                    
-                    showToast("Muvaffaqiyatli", "Profil ma'lumotlari saqlandi!");
-                    document.getElementById('displayName').innerText = `${firstName} ${lastName}`;
-                }
+                await updateProfile(currentUser, { displayName: newName });
+                showToast("Muvaffaqiyatli", "Profil yangilandi", "success");
+                document.getElementById('nameDisplay').innerText = newName;
+                document.getElementById('avatarDisplay').innerText = newName.charAt(0).toUpperCase();
             } catch (error) {
                 showToast("Xatolik", error.message, "error");
+            } finally {
+                btn.innerText = "Saqlash";
+                btn.disabled = false;
             }
         });
 
-        // Rasm yuklash
-        document.getElementById('photoInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = async (ev) => {
-                    document.getElementById('userAvatar').src = ev.target.result;
-                    await updateProfile(currentUser, { photoURL: ev.target.result });
-                    showToast("Rasm yangilandi", "Profil rasmi o'zgartirildi!");
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        // UPDATE PASSWORD (Global funksiya qilib export qilamiz)
+        window.updatePass = async () => {
+            const p1 = document.getElementById('newPassword').value;
+            const p2 = document.getElementById('confirmNewPassword').value;
 
-        // Chiqish
+            if (!p1 || p1.length < 6) return showToast("Xato", "Parol kamida 6 ta belgi bo'lishi kerak", "error");
+            if (p1 !== p2) return showToast("Xato", "Parollar mos kelmadi", "error");
+
+            try {
+                await updatePassword(currentUser, p1);
+                showToast("Muvaffaqiyatli", "Parol yangilandi! Qaytadan kiring.", "success");
+                setTimeout(() => signOut(auth), 2000);
+            } catch (error) {
+                showToast("Xatolik", "Xavfsizlik uchun avval tizimdan chiqib, qayta kiring.", "error");
+            }
+        };
+
+        // LOGOUT
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth).then(() => window.location.href = "login.html");
         });
+
+        // DELETE ACCOUNT
+        window.deleteAccount = async () => {
+            if(confirm("DIQQAT! Hisobingiz butunlay o'chiriladi. Rozimisiz?")) {
+                try {
+                    await deleteUser(currentUser);
+                    alert("Hisob o'chirildi.");
+                    window.location.href = "signup.html";
+                } catch (error) {
+                    alert("Xavfsizlik uchun avval tizimdan chiqib, qayta kiring va keyin urinib ko'ring.");
+                }
+            }
+        };
+
+        // TABS LOGIC
+        window.switchTab = (tabName) => {
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            document.getElementById('reportsTab').style.display = 'none';
+            document.getElementById('settingsTab').style.display = 'none';
+
+            if(tabName === 'reports') {
+                document.getElementById('reportsTab').style.display = 'block';
+                tabs[0].classList.add('active');
+            } else {
+                document.getElementById('settingsTab').style.display = 'block';
+                tabs[1].classList.add('active');
+            }
+        };
+
+        // TOAST
+        function showToast(title, message, type) {
+            const box = document.getElementById('toastBox');
+            const toast = document.createElement('div');
+            let color = type === 'success' ? '#10b981' : '#ef4444';
+            let icon = type === 'success' ? '✅' : '⚠️';
+            toast.className = 'toast';
+            toast.style.cssText = `background:#1e293b; border-left:4px solid ${color}; color:white; padding:15px; margin-bottom:10px; border-radius:8px; display:flex; gap:10px; animation:slideIn 0.3s forwards; box-shadow:0 5px 15px rgba(0,0,0,0.5);`;
+            toast.innerHTML = `<div style="font-size:1.2rem">${icon}</div><div><h4 style="margin:0;color:${color}">${title}</h4><p style="margin:0;font-size:0.9rem">${message}</p></div>`;
+            box.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // CSS Animation for Toast
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`;
+        document.head.appendChild(style);
+
     </script>
 </body>
 </html>
