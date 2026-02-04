@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nigoh - Kelajak Nazorati</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
     
@@ -22,14 +20,13 @@
 
     <header class="glass-header">
         <div class="logo">
-            <img src="nigoh.jpg" alt="Logo" class="logo-image">
-            <span>NIGOH</span>
+            <span style="font-size: 1.5rem; font-weight: bold; color: white;">🛡️ NIGOH</span>
         </div>
         <nav>
             <ul>
                 <li><a href="index.html" class="nav-link active">Asosiy</a></li>
                 <li><a href="profile.html" class="nav-link">Profil</a></li>
-                <li><a href="login.html" class="nav-link btn-login">Kirish</a></li>
+                <li><a href="login.html" class="nav-link btn-login" id="authLink">Kirish</a></li>
             </ul>
         </nav>
     </header>
@@ -74,16 +71,6 @@
             </div>
         </section>
 
-        <section class="categories-section">
-            <h2 class="section-title">Muammo turini tanlang</h2>
-            <div class="categories-grid">
-                <div class="category-card"><div class="cat-icon">💸</div><h3>Pora Berish</h3></div>
-                <div class="category-card"><div class="cat-icon">🏗️</div><h3>Infratuzilma</h3></div>
-                <div class="category-card"><div class="cat-icon">⚖️</div><h3>Vakolat</h3></div>
-                <div class="category-card"><div class="cat-icon">🔓</div><h3>O'g'rilik</h3></div>
-            </div>
-        </section>
-
         <section class="map-section" id="mapSection">
             <h2 class="section-title">Muammolar Issiqlik Xaritasi</h2>
             <div class="map-container-glass">
@@ -95,36 +82,35 @@
     <footer class="glass-footer">
         <div class="footer-content">
             <div class="footer-col brand-col">
-                <div class="footer-logo">
-                    <img src="nigoh.jpg" alt="Logo" class="logo-image">
-                    <span>NIGOH</span>
-                </div>
-                <p class="footer-desc">Korrupsiyaga qarshi kurashish va shaffoflikni ta'minlash uchun xalqchil platforma.</p>
+                <div class="footer-logo"><span style="font-size: 1.5rem; font-weight: bold; color: white;">🛡️ NIGOH</span></div>
+                <p style="margin-top: 10px; color: #94a3b8;">Korrupsiyaga qarshi kurashish va shaffoflikni ta'minlash uchun xalqchil platforma.</p>
             </div>
+            
             <div class="footer-col">
                 <h4>Platforma</h4>
-                <ul>
-                    <li><a href="index.html">Bosh sahifa</a></li>
+                <ul style="line-height: 2;">
+                    <li><a href="#">Bosh sahifa</a></li>
                     <li><a href="#">Loyiha haqida</a></li>
                     <li><a href="admin.html">Admin Panel</a></li>
                 </ul>
             </div>
+
             <div class="footer-col contact-col">
                 <h4>Bog'lanish</h4>
-                <ul class="contact-info">
-                    <li><span>📞</span> +998 90 123 45 67</li>
-                    <li><span>📧</span> info@nigoh.uz</li>
+                <ul class="contact-info" style="list-style: none; line-height: 2; color: #94a3b8;">
+                    <li><span>📍</span> Samarqand, Urgut</li>
+                    <li><span>📞</span> +998 93 107 88 16</li> 
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 Nigoh Loyihasi. Barcha huquqlar himoyalangan.</p>
+            <p>© 2026 Nigoh Loyihasi. Barcha huquqlar himoyalangan.</p>
         </div>
     </footer>
 
     <div id="reportModal" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-btn">&times;</span>
+            <span class="close-btn">×</span>
             <h2>Muammo haqida xabar</h2>
             <form id="reportForm">
                 <div class="input-group">
@@ -162,7 +148,7 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="btn-primary full-width">Yuborish</button>
+                <button type="submit" class="btn-primary full-width" id="submitBtn">Yuborish</button>
             </form>
         </div>
     </div>
@@ -171,200 +157,133 @@
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
     <script type="module">
-        import { auth, db, addDoc, collection, onAuthStateChanged, getDocs } from './firebase-config.js';
+        import { auth, db, addDoc, collection, onAuthStateChanged, getDocs, signOut } from './firebase-config.js';
 
-        // --- XARITA SOZLAMALARI ---
-        var map = L.map('map').setView([41.2995, 69.2401], 12);
-        
-        // Qorong'u xarita (Heatmap chiroyli ko'rinishi uchun)
+        // --- XARITA (Samarqand, Urgut markazi) ---
+        var map = L.map('map').setView([39.4056, 67.2430], 12); 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { 
-            attribution: '© OpenStreetMap & CARTO',
-            maxZoom: 19
+            attribution: '© OpenStreetMap & CARTO', maxZoom: 19
         }).addTo(map);
 
-        // --- 1. TOAST FUNKSIYASI ---
+        // --- 1. TOAST XABAR FUNKSIYASI ---
         function showToast(title, message, type = 'success') {
             const box = document.getElementById('toastBox');
             const toast = document.createElement('div');
             let icon = type === 'success' ? '✅' : '⚠️';
             let borderColor = type === 'success' ? '#2ecc71' : '#ff4757';
-            
             toast.className = `toast ${type}`;
-            toast.style.cssText = `
-                background: rgba(20, 20, 30, 0.95);
-                backdrop-filter: blur(10px);
-                border-left: 5px solid ${borderColor};
-                color: white;
-                padding: 15px 20px;
-                margin-bottom: 15px;
-                border-radius: 8px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-                display: flex; align-items: center; gap: 15px;
-                min-width: 300px;
-                animation: slideIn 0.5s forwards;
-            `;
-
-            toast.innerHTML = `
-                <div style="font-size:1.5rem;">${icon}</div>
-                <div>
-                    <h4 style="margin:0; font-size:1rem;">${title}</h4>
-                    <p style="margin:5px 0 0; font-size:0.85rem; color:#ccc;">${message}</p>
-                </div>
-            `;
+            toast.style.cssText = `background: rgba(20, 20, 30, 0.95); backdrop-filter: blur(10px); border-left: 5px solid ${borderColor}; color: white; padding: 15px 20px; margin-bottom: 15px; border-radius: 8px; display: flex; align-items: center; gap: 15px; min-width: 300px; animation: slideIn 0.5s forwards;`;
+            toast.innerHTML = `<div style="font-size:1.5rem;">${icon}</div><div><h4 style="margin:0; font-size:1rem;">${title}</h4><p style="margin:5px 0 0; font-size:0.85rem; color:#ccc;">${message}</p></div>`;
             box.appendChild(toast);
             setTimeout(() => { toast.remove(); }, 4000);
         }
 
-        // --- 2. HEATMAP VA STATISTIKANI YUKLASH ---
+        // --- 2. BAZADAN MA'LUMOT OLISH VA HEATMAP ---
         async function loadMapData() {
             try {
                 const querySnapshot = await getDocs(collection(db, "reports"));
-                
-                let heatData = [];
-                let totalReports = 0;
-                let solvedCount = 0;
+                let heatData = [], totalReports = 0, solvedCount = 0;
 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     totalReports++;
                     if(data.status === "Hal etildi") solvedCount++;
 
-                    // Heatmap va Markerlar
                     if (data.latitude && data.longitude) {
-                        // Heatmap uchun ma'lumot: [lat, lng, intensity]
                         heatData.push([data.latitude, data.longitude, 0.6]);
-
-                        // Kichik markerlar (Pop-up uchun)
                         let markerColor = data.status === "Hal etildi" ? "#2ecc71" : "#ff4757";
-                        const marker = L.circleMarker([data.latitude, data.longitude], {
-                            radius: 6,
-                            fillColor: markerColor,
-                            color: "#fff",
-                            weight: 1,
-                            opacity: 1,
-                            fillOpacity: 0.8
-                        }).addTo(map);
-
-                        marker.bindPopup(`
-                            <div style="color:#333; font-family:sans-serif;">
-                                <b style="text-transform:uppercase; color:${markerColor}">${data.type}</b><br>
-                                <p style="margin:5px 0; font-size:0.9rem;">${data.description}</p>
-                                <small style="color:#666;">${data.date}</small>
-                            </div>
-                        `);
+                        L.circleMarker([data.latitude, data.longitude], {
+                            radius: 6, fillColor: markerColor, color: "#fff", weight: 1, opacity: 1, fillOpacity: 0.8
+                        }).addTo(map).bindPopup(`<b>${data.type}</b><br>${data.description}`);
                     }
                 });
 
-                // Heatmap qavatini qo'shish
                 if (heatData.length > 0) {
-                    L.heatLayer(heatData, {
-                        radius: 30,
-                        blur: 20,
-                        maxZoom: 17,
-                        gradient: {0.4: 'blue', 0.65: 'lime', 1: 'red'}
-                    }).addTo(map);
+                    L.heatLayer(heatData, { radius: 30, blur: 20, maxZoom: 17, gradient: {0.4: 'blue', 0.65: 'lime', 1: 'red'} }).addTo(map);
                 }
 
-                // Statistika
-                let solvedPercent = totalReports === 0 ? 0 : Math.round((solvedCount / totalReports) * 100);
                 document.getElementById('statTotal').innerText = totalReports;
-                document.getElementById('statSolved').innerText = solvedPercent + "%";
-
-            } catch (error) {
-                console.error("Xatolik:", error);
-            }
+                document.getElementById('statSolved').innerText = (totalReports === 0 ? 0 : Math.round((solvedCount / totalReports) * 100)) + "%";
+            } catch (error) { console.error("Xatolik:", error); }
         }
-        
         loadMapData();
 
-        // --- 3. GPS TUGMASI ---
+        // --- 3. GPS (LOKATSIYA) ---
         const geoBtn = document.getElementById('geoBtn');
-        const geoStatus = document.getElementById('geoStatus');
-        
         geoBtn.addEventListener('click', () => {
             if (navigator.geolocation) {
                 geoBtn.innerHTML = "⏳";
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        document.getElementById('latitude').value = lat;
-                        document.getElementById('longitude').value = lng;
-                        
-                        const addressInput = document.getElementById('address');
-                        if(!addressInput.value) addressInput.value = `GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-
+                        const { latitude, longitude } = position.coords;
+                        document.getElementById('latitude').value = latitude;
+                        document.getElementById('longitude').value = longitude;
+                        const addr = document.getElementById('address');
+                        if(!addr.value) addr.value = `GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
                         geoBtn.innerHTML = "✅";
-                        geoStatus.style.display = "block";
+                        document.getElementById('geoStatus').style.display = "block";
                         showToast("Topildi", "Joylashuv aniqlandi!");
                     },
-                    (error) => {
-                        geoBtn.innerHTML = "📍";
-                        showToast("Xatolik", "GPS ni yoqing va ruxsat bering.", "error");
-                    }
+                    () => { geoBtn.innerHTML = "📍"; showToast("Xatolik", "GPS ga ruxsat bering.", "error"); }
                 );
-            } else {
-                showToast("Xatolik", "GPS qo'llab-quvvatlanmaydi.", "error");
             }
         });
 
-        // --- 4. TELEGRAM VA FORMA ---
-        const TELEGRAM_BOT_TOKEN = "8589526911:AAEPYGVtWU8oq5DgOQlAw2LXhmYdcOe7D3Q"; 
-        const TELEGRAM_CHAT_ID = "5883103021"; 
-
+        // --- 4. MODAL OYNASINI OCHISH/YOPISH ---
         const modal = document.getElementById("reportModal");
-        const btn = document.getElementById("openModalBtn");
-        const span = document.querySelector(".close-btn");
-        
-        btn.onclick = () => { modal.style.display = "flex"; setTimeout(() => modal.classList.add('show'), 10); };
-        span.onclick = () => { modal.classList.remove('show'); setTimeout(() => modal.style.display = "none", 300); };
+        document.getElementById("openModalBtn").onclick = () => { modal.style.display = "flex"; setTimeout(() => modal.classList.add('show'), 10); };
+        document.querySelector(".close-btn").onclick = () => { modal.classList.remove('show'); setTimeout(() => modal.style.display = "none", 300); };
 
         const fileInput = document.getElementById('fileInput');
-        const fileNameDisplay = document.getElementById('fileName');
         fileInput.addEventListener('change', function() {
-            if (this.files && this.files.length > 0) {
-                fileNameDisplay.innerText = "Tanlandi: " + this.files[0].name;
-                fileNameDisplay.style.color = "#00d2ff";
+            if (this.files.length > 0) {
+                document.getElementById('fileName').innerText = "Tanlandi: " + this.files[0].name;
+                document.getElementById('fileName').style.color = "#00d2ff";
             }
         });
 
+        // --- 5. TIZIMGA KIRISH/CHIQISHNI TEKSHIRISH ---
         let currentUser = null;
-        onAuthStateChanged(auth, (user) => { if (user) currentUser = user; });
-
-        async function sendToTelegram(type, address, desc, email, name, file, docId, lat, lng) {
-            let mapLink = "";
-            if (lat && lng) {
-                mapLink = `\n🌍 <b>Lokatsiya:</b> <a href="https://www.google.com/maps?q=${lat},${lng}">Xaritada ko'rish</a>`;
+        const authLink = document.getElementById('authLink');
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                authLink.innerText = "Chiqish";
+                authLink.href = "#";
+                authLink.onclick = () => signOut(auth).then(() => window.location.reload());
+            } else {
+                authLink.innerText = "Kirish";
+                authLink.href = "login.html";
             }
+        });
 
-            const caption = `🚨 <b>YANGI XABAR!</b>\n\n🆔 <b>ID:</b> ${docId}\n📌 <b>Tur:</b> ${type}\n📍 <b>Manzil:</b> ${address}${mapLink}\n📝 <b>Tavsif:</b> ${desc}\n👤 <b>Yuboruvchi:</b> ${name || "Noma'lum"} (${email})\n📅 <b>Vaqt:</b> ${new Date().toLocaleString()}`;
-
-            const replyMarkup = {
-                inline_keyboard: [[
-                    { text: "✅ Qabul qilish", callback_data: `accept_${docId}` },
-                    { text: "❌ Rad etish", callback_data: `reject_${docId}` }
-                ]]
-            };
+        // --- 6. XAVFSIZ SERVERGA YUBORISH (Render.com) ---
+        async function sendToRenderServer(type, address, desc, email, name, file, docId, lat, lng) {
+            
+            // XAVFSIZ MANZIL
+            const SERVER_URL = "https://nigoh-bot.onrender.com/send-report"; 
 
             const formData = new FormData();
-            formData.append('chat_id', TELEGRAM_CHAT_ID);
-            formData.append('reply_markup', JSON.stringify(replyMarkup));
-            formData.append('parse_mode', 'HTML');
+            formData.append('type', type);
+            formData.append('address', address);
+            formData.append('desc', desc);
+            formData.append('email', email);
+            formData.append('name', name || "Foydalanuvchi");
+            if(lat) formData.append('lat', lat);
+            if(lng) formData.append('lng', lng);
+            if(file) formData.append('document', file);
 
-            let method = 'sendMessage';
-            if (file) {
-                method = 'sendDocument';
-                formData.append('document', file);
-                formData.append('caption', caption);
-            } else {
-                formData.append('text', caption);
-            }
+            // Serverga jo'natish
+            const response = await fetch(SERVER_URL, {
+                method: 'POST',
+                body: formData
+            });
 
-            try {
-                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`, { method: 'POST', body: formData });
-            } catch (error) { console.error(error); }
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || "Server xatosi");
         }
 
+        // --- 7. FORMANI YUBORISH ---
         document.getElementById('reportForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) {
@@ -373,21 +292,23 @@
                 return;
             }
 
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Yuborilmoqda...";
+
             const type = document.getElementById('problemType').value;
             const address = document.getElementById('address').value;
             const desc = document.getElementById('desc').value;
-            const file = document.getElementById('fileInput').files[0];
+            const file = fileInput.files[0];
             const lat = document.getElementById('latitude').value;
             const lng = document.getElementById('longitude').value;
 
             try {
-                // Firebasega yozish
+                // A) Firebasega saqlash (Admin panel uchun)
                 const docRef = await addDoc(collection(db, "reports"), {
                     uid: currentUser.uid,
                     email: currentUser.email,
-                    type: type,
-                    address: address,
-                    description: desc,
+                    type, address, description: desc,
                     status: "Yangi",
                     hasFile: file ? true : false,
                     latitude: lat ? parseFloat(lat) : null,
@@ -395,23 +316,25 @@
                     date: new Date().toLocaleString()
                 });
 
-                // Telegramga yuborish
-                await sendToTelegram(type, address, desc, currentUser.email, currentUser.displayName, file, docRef.id, lat, lng);
+                // B) Render Serverga yuborish (Telegram uchun)
+                await sendToRenderServer(type, address, desc, currentUser.email, currentUser.displayName, file, docRef.id, lat, lng);
 
-                showToast("Muvaffaqiyatli!", "Xabaringiz yuborildi.");
+                showToast("Muvaffaqiyatli!", "Xabaringiz Adminga yuborildi.");
                 
+                // Formani tozalash
                 modal.classList.remove('show');
                 setTimeout(() => modal.style.display = "none", 300);
                 document.getElementById('reportForm').reset();
-                fileNameDisplay.innerText = "Faylni tanlash uchun bosing";
+                document.getElementById('fileName').innerText = "Faylni tanlash uchun bosing";
                 document.getElementById('geoBtn').innerHTML = "📍";
-                document.getElementById('geoStatus').style.display = "none";
-                
-                // Xaritani qayta yuklash
-                loadMapData();
-                
+                loadMapData(); 
+
             } catch (error) {
-                showToast("Xatolik", error.message, "error");
+                console.error(error);
+                showToast("Xatolik", "Xatolik: " + error.message, "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Yuborish";
             }
         });
     </script>
