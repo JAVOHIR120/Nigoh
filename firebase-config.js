@@ -1,28 +1,28 @@
 /**
  * ------------------------------------------------------------------
- * NIGOH PROJECT - FIREBASE CONFIGURATION
+ * NIGOH PROJECT - FIREBASE CONFIGURATION (FIXED EXPORTS)
  * ------------------------------------------------------------------
- * Bu fayl loyihaning "Yuragi" hisoblanadi.
- * Barcha Autentifikatsiya va Baza (Firestore) operatsiyalari shu yerdan boshqariladi.
  */
 
-// 1. KUTUBXONALARNI IMPORT QILISH (CDN ORQALI)
+// 1. KUTUBXONALARNI IMPORT QILISH
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
-// Autentifikatsiya (Kirish, Chiqish, Ro'yxatdan o'tish)
+// Autentifikatsiya (Auth)
 import { 
     getAuth, 
-    GoogleAuthProvider,
+    GoogleAuthProvider, // <-- Bu yerda bor
     signInWithPopup,
     onAuthStateChanged, 
     signOut, 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword, 
     updateProfile,
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    updatePassword, 
+    deleteUser      
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Firestore Database (Ma'lumotlarni saqlash, o'qish, o'chirish)
+// Firestore Database (Baza)
 import { 
     getFirestore, 
     collection, 
@@ -32,14 +32,14 @@ import {
     setDoc,
     getDoc,
     updateDoc, 
-    deleteDoc, // O'chirish funksiyasi
-    query,
-    where,
-    orderBy
+    deleteDoc, 
+    query, 
+    where, 
+    orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ------------------------------------------------------------------
-// 2. FIREBASE SOZLAMALARI (SIZNING KODINGIZDAN OLINDI)
+// 2. FIREBASE SOZLAMALARI
 // ------------------------------------------------------------------
 const firebaseConfig = {
     apiKey: "AIzaSyCrn_NMDxZRjU0tToRnZCdqx9CEef_mwuk",
@@ -54,25 +54,28 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
+const provider = new GoogleAuthProvider(); // Bu kerak bo'lishi mumkin
 
-// 4. FUNKSIYALARNI EXPORT QILISH (Boshqa fayllar ishlata olishi uchun)
+// 4. FUNKSIYALARNI EKSPORT QILISH
 export { 
-    // Asosiy obyektlar
+    // Asosiy
     auth, 
     db, 
     provider,
 
-    // Auth funksiyalari
+    // Auth Class & Funksiyalari
+    GoogleAuthProvider, // <-- MUHIM: BU QATOR QO'SHILDI!
+    signInWithPopup,
     onAuthStateChanged, 
     signOut, 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword, 
     updateProfile,
-    signInWithPopup,
     sendPasswordResetEmail,
+    updatePassword, 
+    deleteUser,     
 
-    // Database funksiyalari
+    // Database Funksiyalari
     collection, 
     addDoc, 
     getDocs, 
