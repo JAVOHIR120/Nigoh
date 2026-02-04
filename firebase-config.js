@@ -20,13 +20,14 @@ import {
     setDoc, 
     getDoc, 
     updateDoc, 
+    deleteDoc, // <-- MANA SHU YETISHMAYOTGAN EDI
     query, 
     where, 
     getDocs, 
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Sizning loyihangiz sozlamalari (Studio...)
+// Sizning loyihangiz sozlamalari
 const firebaseConfig = {
   apiKey: "AIzaSyCrn_NMDxZRjU0tToRnZCdqx9CEef_mwuk",
   authDomain: "studio-1879510232-1b0ed.firebaseapp.com",
@@ -42,7 +43,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// Barcha kerakli funksiyalarni eksport qilamiz (Profile.html shu yerdan oladi)
+// Barcha kerakli funksiyalarni eksport qilamiz
 export { 
     auth, 
     db, 
@@ -60,8 +61,9 @@ export {
     setDoc, 
     getDoc, 
     updateDoc,
-    query,    // <-- Bu juda muhim (Qidiruv uchun)
-    where,    // <-- Bu juda muhim (Filtrlash uchun)
-    getDocs,  // <-- Bu juda muhim (O'qish uchun)
+    deleteDoc, // <-- BU HAM EKSPORT BO'LISHI SHART
+    query,
+    where,
+    getDocs,
     orderBy 
 };
