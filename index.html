@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nigoh - Kelajak Nazorati</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     
+    <div class="toast-container" id="toastBox"></div>
+
     <div class="background-shapes">
         <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
@@ -37,7 +41,7 @@
                 <p>Korrupsiya va infratuzilma muammolarini real vaqt rejimida kuzatuvchi intellektual tizim.</p>
                 <div class="hero-buttons">
                     <button class="btn-primary" id="openModalBtn">Xabar Berish 🚀</button>
-                    <button class="btn-secondary">Batafsil</button>
+                    <button class="btn-secondary" onclick="document.getElementById('mapSection').scrollIntoView({behavior: 'smooth'})">Xaritani Ko'rish</button>
                 </div>
             </div>
             
@@ -48,17 +52,26 @@
                     <p>Anonimlik kafolatlanadi</p>
                 </div>
                 <div class="glass-card-3d floating-card">
-                    <div class="card-icon">📊</div>
-                    <h3>Shaffoflik</h3>
-                    <p>Real vaqt statistikasi</p>
+                    <div class="card-icon">🔥</div>
+                    <h3>Heatmap</h3>
+                    <p>Muammolar o'chog'i</p>
                 </div>
             </div>
         </section>
 
         <section class="stats-container">
-            <div class="stat-box"><h3>3,482</h3><p>Jami xabarlar</p></div>
-            <div class="stat-box"><h3>62%</h3><p>Hal etildi</p></div>
-            <div class="stat-box"><h3>24/7</h3><p>Monitoring</p></div>
+            <div class="stat-box">
+                <h3 id="statTotal" class="stat-number">0</h3>
+                <p>Jami xabarlar</p>
+            </div>
+            <div class="stat-box">
+                <h3 id="statSolved" class="stat-number">0%</h3>
+                <p>Hal etildi</p>
+            </div>
+            <div class="stat-box">
+                <h3 class="stat-number">24/7</h3>
+                <p>Monitoring</p>
+            </div>
         </section>
 
         <section class="categories-section">
@@ -71,10 +84,10 @@
             </div>
         </section>
 
-        <section class="map-section">
-            <h2 class="section-title">Muammolar Xaritasi</h2>
+        <section class="map-section" id="mapSection">
+            <h2 class="section-title">Muammolar Issiqlik Xaritasi</h2>
             <div class="map-container-glass">
-                <div id="map"></div>
+                <div id="map" style="height: 500px; width: 100%; border-radius: 15px; z-index: 1;"></div>
             </div>
         </section>
     </main>
@@ -86,56 +99,26 @@
                     <img src="nigoh.jpg" alt="Logo" class="logo-image">
                     <span>NIGOH</span>
                 </div>
-                <p class="footer-desc">
-                    Korrupsiyaga qarshi kurashish va shaffoflikni ta'minlash uchun xalqchil platforma. Kelajakni birgalikda quramiz.
-                </p>
-                <div class="social-links">
-                    <a href="#" class="social-btn">Telegram</a>
-                    <a href="#" class="social-btn">Instagram</a>
-                    <a href="#" class="social-btn">Facebook</a>
-                </div>
+                <p class="footer-desc">Korrupsiyaga qarshi kurashish va shaffoflikni ta'minlash uchun xalqchil platforma.</p>
             </div>
-
             <div class="footer-col">
                 <h4>Platforma</h4>
                 <ul>
                     <li><a href="index.html">Bosh sahifa</a></li>
                     <li><a href="#">Loyiha haqida</a></li>
-                    <li><a href="#">Statistika</a></li>
-                    <li><a href="#">Xarita</a></li>
+                    <li><a href="admin.html">Admin Panel</a></li>
                 </ul>
             </div>
-
-            <div class="footer-col">
-                <h4>Yordam</h4>
-                <ul>
-                    <li><a href="#">Qo'llanma</a></li>
-                    <li><a href="#">Savol-javob (FAQ)</a></li>
-                    <li><a href="#">Maxfiylik siyosati</a></li>
-                    <li><a href="#">Foydalanish shartlari</a></li>
-                </ul>
-            </div>
-
             <div class="footer-col contact-col">
                 <h4>Bog'lanish</h4>
                 <ul class="contact-info">
-                    <li><span>📍</span> Toshkent sh., Chilonzor</li>
-                    <li><span>📞</span> +998 93 107 88 16</li>
+                    <li><span>📞</span> +998 90 123 45 67</li>
                     <li><span>📧</span> info@nigoh.uz</li>
                 </ul>
-                <div class="newsletter">
-                    <p>Yangiliklardan xabardor bo'ling:</p>
-                    <div class="input-wrap">
-                        <input type="email" placeholder="Emailingiz...">
-                        <button>→</button>
-                    </div>
-                </div>
             </div>
         </div>
-
         <div class="footer-bottom">
             <p>&copy; 2026 Nigoh Loyihasi. Barcha huquqlar himoyalangan.</p>
-            <p>Dizayn: <span>Nigoh Team</span></p>
         </div>
     </footer>
 
@@ -156,7 +139,13 @@
                 
                 <div class="input-group">
                     <label>Manzil</label>
-                    <input type="text" id="address" placeholder="Manzil..." required>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="address" placeholder="Manzilni yozing..." required style="flex: 1;">
+                        <button type="button" id="geoBtn" class="btn-secondary" style="padding: 10px; font-size: 1.2rem; min-width: 50px;" title="Joylashuvimni aniqlash">📍</button>
+                    </div>
+                    <input type="hidden" id="latitude">
+                    <input type="hidden" id="longitude">
+                    <small id="geoStatus" style="color: #00d2ff; font-size: 0.8rem; display: none; margin-top: 5px;">Joylashuv aniqlandi!</small>
                 </div>
                 
                 <div class="input-group">
@@ -179,18 +168,150 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script type="module">
-        import { auth, db, addDoc, collection, onAuthStateChanged } from './firebase-config.js';
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
-        // --- TELEGRAM SOZLAMALARI ---
+    <script type="module">
+        import { auth, db, addDoc, collection, onAuthStateChanged, getDocs } from './firebase-config.js';
+
+        // --- XARITA SOZLAMALARI ---
+        var map = L.map('map').setView([41.2995, 69.2401], 12);
+        
+        // Qorong'u xarita (Heatmap chiroyli ko'rinishi uchun)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { 
+            attribution: '© OpenStreetMap & CARTO',
+            maxZoom: 19
+        }).addTo(map);
+
+        // --- 1. TOAST FUNKSIYASI ---
+        function showToast(title, message, type = 'success') {
+            const box = document.getElementById('toastBox');
+            const toast = document.createElement('div');
+            let icon = type === 'success' ? '✅' : '⚠️';
+            let borderColor = type === 'success' ? '#2ecc71' : '#ff4757';
+            
+            toast.className = `toast ${type}`;
+            toast.style.cssText = `
+                background: rgba(20, 20, 30, 0.95);
+                backdrop-filter: blur(10px);
+                border-left: 5px solid ${borderColor};
+                color: white;
+                padding: 15px 20px;
+                margin-bottom: 15px;
+                border-radius: 8px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                display: flex; align-items: center; gap: 15px;
+                min-width: 300px;
+                animation: slideIn 0.5s forwards;
+            `;
+
+            toast.innerHTML = `
+                <div style="font-size:1.5rem;">${icon}</div>
+                <div>
+                    <h4 style="margin:0; font-size:1rem;">${title}</h4>
+                    <p style="margin:5px 0 0; font-size:0.85rem; color:#ccc;">${message}</p>
+                </div>
+            `;
+            box.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 4000);
+        }
+
+        // --- 2. HEATMAP VA STATISTIKANI YUKLASH ---
+        async function loadMapData() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "reports"));
+                
+                let heatData = [];
+                let totalReports = 0;
+                let solvedCount = 0;
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    totalReports++;
+                    if(data.status === "Hal etildi") solvedCount++;
+
+                    // Heatmap va Markerlar
+                    if (data.latitude && data.longitude) {
+                        // Heatmap uchun ma'lumot: [lat, lng, intensity]
+                        heatData.push([data.latitude, data.longitude, 0.6]);
+
+                        // Kichik markerlar (Pop-up uchun)
+                        let markerColor = data.status === "Hal etildi" ? "#2ecc71" : "#ff4757";
+                        const marker = L.circleMarker([data.latitude, data.longitude], {
+                            radius: 6,
+                            fillColor: markerColor,
+                            color: "#fff",
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        }).addTo(map);
+
+                        marker.bindPopup(`
+                            <div style="color:#333; font-family:sans-serif;">
+                                <b style="text-transform:uppercase; color:${markerColor}">${data.type}</b><br>
+                                <p style="margin:5px 0; font-size:0.9rem;">${data.description}</p>
+                                <small style="color:#666;">${data.date}</small>
+                            </div>
+                        `);
+                    }
+                });
+
+                // Heatmap qavatini qo'shish
+                if (heatData.length > 0) {
+                    L.heatLayer(heatData, {
+                        radius: 30,
+                        blur: 20,
+                        maxZoom: 17,
+                        gradient: {0.4: 'blue', 0.65: 'lime', 1: 'red'}
+                    }).addTo(map);
+                }
+
+                // Statistika
+                let solvedPercent = totalReports === 0 ? 0 : Math.round((solvedCount / totalReports) * 100);
+                document.getElementById('statTotal').innerText = totalReports;
+                document.getElementById('statSolved').innerText = solvedPercent + "%";
+
+            } catch (error) {
+                console.error("Xatolik:", error);
+            }
+        }
+        
+        loadMapData();
+
+        // --- 3. GPS TUGMASI ---
+        const geoBtn = document.getElementById('geoBtn');
+        const geoStatus = document.getElementById('geoStatus');
+        
+        geoBtn.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                geoBtn.innerHTML = "⏳";
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        document.getElementById('latitude').value = lat;
+                        document.getElementById('longitude').value = lng;
+                        
+                        const addressInput = document.getElementById('address');
+                        if(!addressInput.value) addressInput.value = `GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+
+                        geoBtn.innerHTML = "✅";
+                        geoStatus.style.display = "block";
+                        showToast("Topildi", "Joylashuv aniqlandi!");
+                    },
+                    (error) => {
+                        geoBtn.innerHTML = "📍";
+                        showToast("Xatolik", "GPS ni yoqing va ruxsat bering.", "error");
+                    }
+                );
+            } else {
+                showToast("Xatolik", "GPS qo'llab-quvvatlanmaydi.", "error");
+            }
+        });
+
+        // --- 4. TELEGRAM VA FORMA ---
         const TELEGRAM_BOT_TOKEN = "8589526911:AAEPYGVtWU8oq5DgOQlAw2LXhmYdcOe7D3Q"; 
         const TELEGRAM_CHAT_ID = "5883103021"; 
 
-        // Xarita
-        var map = L.map('map').setView([41.2995, 69.2401], 12);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© CARTO' }).addTo(map);
-
-        // Modal Logic
         const modal = document.getElementById("reportModal");
         const btn = document.getElementById("openModalBtn");
         const span = document.querySelector(".close-btn");
@@ -198,78 +319,57 @@
         btn.onclick = () => { modal.style.display = "flex"; setTimeout(() => modal.classList.add('show'), 10); };
         span.onclick = () => { modal.classList.remove('show'); setTimeout(() => modal.style.display = "none", 300); };
 
-        // Fayl nomini chiqarish logikasi
         const fileInput = document.getElementById('fileInput');
         const fileNameDisplay = document.getElementById('fileName');
-
         fileInput.addEventListener('change', function() {
             if (this.files && this.files.length > 0) {
                 fileNameDisplay.innerText = "Tanlandi: " + this.files[0].name;
                 fileNameDisplay.style.color = "#00d2ff";
-            } else {
-                fileNameDisplay.innerText = "Faylni tanlash uchun bosing";
-                fileNameDisplay.style.color = "#fff";
             }
         });
 
         let currentUser = null;
         onAuthStateChanged(auth, (user) => { if (user) currentUser = user; });
 
-        // --- TELEGRAMGA FAYL VA TUGMALAR BILAN YUBORISH ---
-        async function sendToTelegram(type, address, desc, email, name, file, docId) {
-            const caption = `🚨 <b>YANGI XABAR!</b>\n\n` +
-                            `🆔 <b>ID:</b> ${docId}\n` + // Bot bazada topishi uchun ID
-                            `📌 <b>Tur:</b> ${type}\n` +
-                            `📍 <b>Manzil:</b> ${address}\n` +
-                            `📝 <b>Tavsif:</b> ${desc}\n` +
-                            `👤 <b>Yuboruvchi:</b> ${name || "Noma'lum"} (${email})\n` +
-                            `📅 <b>Vaqt:</b> ${new Date().toLocaleString()}`;
+        async function sendToTelegram(type, address, desc, email, name, file, docId, lat, lng) {
+            let mapLink = "";
+            if (lat && lng) {
+                mapLink = `\n🌍 <b>Lokatsiya:</b> <a href="https://www.google.com/maps?q=${lat},${lng}">Xaritada ko'rish</a>`;
+            }
 
-            // Tugmalarni yasaymiz (ID ni yashirib yuboramiz)
+            const caption = `🚨 <b>YANGI XABAR!</b>\n\n🆔 <b>ID:</b> ${docId}\n📌 <b>Tur:</b> ${type}\n📍 <b>Manzil:</b> ${address}${mapLink}\n📝 <b>Tavsif:</b> ${desc}\n👤 <b>Yuboruvchi:</b> ${name || "Noma'lum"} (${email})\n📅 <b>Vaqt:</b> ${new Date().toLocaleString()}`;
+
             const replyMarkup = {
-                inline_keyboard: [
-                    [
-                        { text: "✅ Qabul qilish", callback_data: `accept_${docId}` },
-                        { text: "❌ Rad etish", callback_data: `reject_${docId}` }
-                    ]
-                ]
+                inline_keyboard: [[
+                    { text: "✅ Qabul qilish", callback_data: `accept_${docId}` },
+                    { text: "❌ Rad etish", callback_data: `reject_${docId}` }
+                ]]
             };
 
             const formData = new FormData();
             formData.append('chat_id', TELEGRAM_CHAT_ID);
-            formData.append('reply_markup', JSON.stringify(replyMarkup)); // Tugmani qo'shish
+            formData.append('reply_markup', JSON.stringify(replyMarkup));
             formData.append('parse_mode', 'HTML');
 
             let method = 'sendMessage';
-
             if (file) {
-                // Agar fayl bo'lsa
                 method = 'sendDocument';
                 formData.append('document', file);
                 formData.append('caption', caption);
             } else {
-                // Agar fayl bo'lmasa, faqat matn
                 formData.append('text', caption);
             }
 
             try {
-                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`, {
-                    method: 'POST',
-                    body: formData
-                });
-                console.log("Telegramga yuborildi");
-            } catch (error) {
-                console.error("Telegram xatosi:", error);
-            }
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`, { method: 'POST', body: formData });
+            } catch (error) { console.error(error); }
         }
 
         document.getElementById('reportForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            // Login tekshiruvi
             if (!currentUser) {
-                alert("Iltimos, avval tizimga kiring!");
-                window.location.href = "login.html";
+                showToast("Xatolik", "Iltimos, avval tizimga kiring!", "error");
+                setTimeout(() => window.location.href = "login.html", 2000);
                 return;
             }
 
@@ -277,15 +377,11 @@
             const address = document.getElementById('address').value;
             const desc = document.getElementById('desc').value;
             const file = document.getElementById('fileInput').files[0];
-
-            // Fayl hajmini tekshirish (Telegram limiti: 50MB)
-            if (file && file.size > 50 * 1024 * 1024) {
-                alert("Fayl hajmi juda katta! Maksimal: 50MB");
-                return;
-            }
+            const lat = document.getElementById('latitude').value;
+            const lng = document.getElementById('longitude').value;
 
             try {
-                // 1. Firebase bazasiga yozish (Status: "Yangi")
+                // Firebasega yozish
                 const docRef = await addDoc(collection(db, "reports"), {
                     uid: currentUser.uid,
                     email: currentUser.email,
@@ -294,26 +390,28 @@
                     description: desc,
                     status: "Yangi",
                     hasFile: file ? true : false,
-                    fileName: file ? file.name : "",
+                    latitude: lat ? parseFloat(lat) : null,
+                    longitude: lng ? parseFloat(lng) : null,
                     date: new Date().toLocaleString()
                 });
 
-                // 2. Telegramga yuborish (ID bilan birga)
-                // docRef.id bu yerda yangi hosil bo'lgan xabar IDsi
-                await sendToTelegram(type, address, desc, currentUser.email, currentUser.displayName, file, docRef.id);
+                // Telegramga yuborish
+                await sendToTelegram(type, address, desc, currentUser.email, currentUser.displayName, file, docRef.id, lat, lng);
 
-                alert("Xabar muvaffaqiyatli yuborildi! Admin javobini kuting.");
+                showToast("Muvaffaqiyatli!", "Xabaringiz yuborildi.");
                 
-                // Modalni yopish va tozalash
                 modal.classList.remove('show');
                 setTimeout(() => modal.style.display = "none", 300);
                 document.getElementById('reportForm').reset();
                 fileNameDisplay.innerText = "Faylni tanlash uchun bosing";
-                fileNameDisplay.style.color = "#fff";
+                document.getElementById('geoBtn').innerHTML = "📍";
+                document.getElementById('geoStatus').style.display = "none";
+                
+                // Xaritani qayta yuklash
+                loadMapData();
                 
             } catch (error) {
-                alert("Xato: " + error.message);
-                console.error(error);
+                showToast("Xatolik", error.message, "error");
             }
         });
     </script>
