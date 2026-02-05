@@ -3,274 +3,598 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nigoh | Admin Dashboard</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>Nigoh | Boshqaruv Markazi</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/uz-latn.min.js"></script>
     
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* --- ADMIN SPECIFIC CSS (OVERRIDES) --- */
-        body { overflow: hidden; } /* Scroll faqat content qismida bo'ladi */
-        
-        /* LAYOUT */
-        .admin-wrapper { display: flex; height: 100vh; width: 100%; background: var(--dark-bg); }
-        
-        /* SIDEBAR */
-        .sidebar {
-            width: 280px; background: rgba(30, 41, 59, 0.95);
-            border-right: 1px solid var(--border-color);
+        /* * ==========================================================================
+         * 1. ADMIN THEME & VARIABLES (OVERRIDES)
+         * ==========================================================================
+         */
+        :root {
+            /* Admin Palette */
+            --adm-bg-dark: #0b1120;
+            --adm-sidebar: #111827;
+            --adm-panel: #1f2937;
+            --adm-border: rgba(255, 255, 255, 0.08);
+            
+            /* Accent Colors */
+            --adm-primary: #6366f1;
+            --adm-primary-hover: #4f46e5;
+            --adm-success: #10b981;
+            --adm-warning: #f59e0b;
+            --adm-danger: #ef4444;
+            --adm-info: #3b82f6;
+            
+            /* Text Colors */
+            --text-main: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            
+            /* Layout Dimensions */
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            
+            /* Shadows & Effects */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --glow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* * ==========================================================================
+         * 2. GLOBAL RESET & SCROLLBAR
+         * ==========================================================================
+         */
+        body {
+            background-color: var(--adm-bg-dark);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            overflow: hidden; /* Scroll management inside components */
+            height: 100vh;
+            display: flex;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--adm-bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--adm-primary); }
+
+        /* * ==========================================================================
+         * 3. SIDEBAR NAVIGATION
+         * ==========================================================================
+         */
+        .app-sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--adm-sidebar);
+            border-right: 1px solid var(--adm-border);
             display: flex; flex-direction: column;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
         }
+
         .sidebar-header {
-            padding: 25px; border-bottom: 1px solid var(--border-color);
-            display: flex; align-items: center; gap: 15px;
+            height: var(--header-height);
+            display: flex; align-items: center; padding: 0 24px;
+            border-bottom: 1px solid var(--adm-border);
+            gap: 12px;
         }
-        .sidebar-logo {
-            width: 45px; height: 45px; border-radius: 12px; object-fit: cover;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); border: 2px solid var(--primary);
+
+        .brand-logo {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--adm-primary), #4338ca);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: white; box-shadow: var(--glow);
         }
-        .nav-menu { flex: 1; padding: 20px 10px; overflow-y: auto; }
+        .brand-text h3 { font-size: 1.1rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+        .brand-text span { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        .sidebar-menu { flex: 1; padding: 24px 16px; overflow-y: auto; }
+        
+        .menu-label {
+            font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);
+            font-weight: 700; margin-bottom: 12px; padding-left: 12px; letter-spacing: 0.5px;
+        }
+
         .nav-item {
             display: flex; align-items: center; gap: 12px;
-            padding: 14px 20px; color: var(--text-muted);
-            border-radius: 12px; cursor: pointer; transition: 0.2s;
-            margin-bottom: 5px; font-weight: 500;
+            padding: 12px 16px; border-radius: 10px;
+            color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;
+            cursor: pointer; transition: all 0.2s ease; margin-bottom: 4px;
         }
-        .nav-item:hover, .nav-item.active {
-            background: rgba(59, 130, 246, 0.1); color: var(--primary);
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: white; }
+        .nav-item.active {
+            background: rgba(99, 102, 241, 0.1); color: var(--adm-primary);
+            font-weight: 600;
         }
-        .nav-item i { width: 20px; text-align: center; font-size: 1.1rem; }
+        .nav-item i { width: 20px; text-align: center; font-size: 1rem; }
 
-        /* MAIN CONTENT */
-        .main-content {
-            flex: 1; overflow-y: auto; padding: 30px; position: relative;
-            background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 40%);
+        .sidebar-footer {
+            padding: 20px; border-top: 1px solid var(--adm-border);
+        }
+        .admin-profile {
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(255,255,255,0.02); padding: 12px;
+            border-radius: 12px; border: 1px solid transparent;
+            transition: 0.2s;
+        }
+        .admin-profile:hover { border-color: var(--adm-border); background: rgba(255,255,255,0.04); }
+        
+        .avatar-box {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--adm-panel); border: 2px solid var(--adm-primary);
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
+        }
+        .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .profile-info { flex: 1; overflow: hidden; }
+        .profile-name { font-size: 0.9rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .profile-role { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* * ==========================================================================
+         * 4. MAIN CONTENT AREA
+         * ==========================================================================
+         */
+        .app-main {
+            flex: 1; display: flex; flex-direction: column;
+            overflow: hidden; background: radial-gradient(circle at top right, #1e1b4b 0%, var(--adm-bg-dark) 40%);
         }
 
-        /* HEADER & SEARCH */
-        .top-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px; flex-wrap: wrap; gap: 20px;
+        .top-navbar {
+            height: var(--header-height); border-bottom: 1px solid var(--adm-border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; background: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px); z-index: 40;
         }
-        .page-title h1 { font-size: 1.8rem; margin: 0; color: white; }
-        .page-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 5px; }
 
-        .search-box {
-            position: relative; width: 300px;
-        }
-        .search-box input {
-            width: 100%; padding: 12px 15px 12px 45px;
-            background: var(--input-bg); border: 1px solid var(--border-color);
-            border-radius: 10px; color: white; outline: none;
-        }
-        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .page-title h1 { font-size: 1.5rem; font-weight: 700; margin: 0; color: white; }
+        .page-title p { font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0 0; }
 
-        /* CARDS */
-        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .navbar-actions { display: flex; align-items: center; gap: 16px; }
+        
+        .action-btn {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: var(--adm-panel); border: 1px solid var(--adm-border);
+            color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; position: relative;
+        }
+        .action-btn:hover { background: rgba(255,255,255,0.05); color: white; border-color: var(--adm-primary); }
+        .badge-dot {
+            position: absolute; top: 10px; right: 10px; width: 8px; height: 8px;
+            background: var(--adm-danger); border-radius: 50%; border: 2px solid var(--adm-panel);
+        }
+
+        .btn-logout {
+            padding: 8px 16px; background: rgba(239, 68, 68, 0.1);
+            color: var(--adm-danger); border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-logout:hover { background: var(--adm-danger); color: white; }
+
+        /* * ==========================================================================
+         * 5. CONTENT VIEWS & DASHBOARD
+         * ==========================================================================
+         */
+        .content-scroll { flex: 1; overflow-y: auto; padding: 32px; }
+        
+        .view-section { display: none; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .view-section.active { display: block; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Stats Grid */
+        .stats-container {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px; margin-bottom: 32px;
+        }
+
         .stat-card {
-            background: var(--panel-bg); border: 1px solid var(--border-color);
-            padding: 25px; border-radius: 16px; position: relative; overflow: hidden;
-            display: flex; flex-direction: column; justify-content: space-between;
-            min-height: 140px; transition: 0.3s;
+            background: var(--adm-panel); border: 1px solid var(--adm-border);
+            border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
+            transition: transform 0.3s ease;
         }
-        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--adm-primary); }
+        
+        .stat-bg-icon {
+            position: absolute; right: -10px; top: -10px; font-size: 6rem;
+            opacity: 0.03; transform: rotate(15deg); color: white;
+        }
+
+        .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
         .stat-icon {
-            position: absolute; right: 20px; top: 20px;
-            width: 50px; height: 50px; border-radius: 12px;
-            background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; color: var(--primary);
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
         }
-        .stat-num { font-size: 2.5rem; font-weight: 700; color: white; line-height: 1; margin: 10px 0; }
-        .stat-label { color: var(--text-muted); font-size: 0.9rem; }
+        
+        .stat-value { font-size: 2.2rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 8px; }
+        .stat-label { font-size: 0.9rem; color: var(--text-secondary); }
+        .stat-trend { font-size: 0.8rem; display: flex; align-items: center; gap: 4px; margin-top: 12px; }
+        .trend-up { color: var(--adm-success); } .trend-down { color: var(--adm-danger); }
 
-        /* CHARTS SECTION */
-        .charts-wrapper { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .chart-box {
-            background: var(--panel-bg); border: 1px solid var(--border-color);
-            border-radius: 16px; padding: 20px; height: 400px;
+        /* Charts Layout */
+        .charts-grid {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px;
+        }
+        .chart-card {
+            background: var(--adm-panel); border: 1px solid var(--adm-border);
+            border-radius: 16px; padding: 24px; height: 420px;
+            display: flex; flex-direction: column;
+        }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-title { font-size: 1.1rem; font-weight: 700; color: white; }
+
+        /* * ==========================================================================
+         * 6. DATA TABLES (ADVANCED)
+         * ==========================================================================
+         */
+        .table-wrapper {
+            background: var(--adm-panel); border: 1px solid var(--adm-border);
+            border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
         }
 
-        /* DATA TABLE STYLE */
-        .table-container {
-            background: var(--panel-bg); border: 1px solid var(--border-color);
-            border-radius: 16px; overflow: hidden;
-        }
         .table-toolbar {
-            padding: 20px; border-bottom: 1px solid var(--border-color);
+            padding: 20px 24px; border-bottom: 1px solid var(--adm-border);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+        }
+
+        .search-box { position: relative; width: 320px; }
+        .search-input {
+            width: 100%; padding: 12px 16px 12px 44px;
+            background: var(--adm-bg-dark); border: 1px solid var(--adm-border);
+            border-radius: 10px; color: white; font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        .search-input:focus { border-color: var(--adm-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .filter-group { display: flex; gap: 10px; }
+        .filter-select {
+            padding: 10px 16px; background: var(--adm-bg-dark); border: 1px solid var(--adm-border);
+            border-radius: 10px; color: var(--text-main); font-size: 0.9rem; cursor: pointer;
+        }
+        
+        .btn-export {
+            padding: 10px 20px; background: var(--adm-primary); color: white;
+            border: none; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-export:hover { background: var(--adm-primary-hover); box-shadow: var(--glow); }
+
+        /* Table Structure */
+        .table-responsive { overflow-x: auto; width: 100%; }
+        .data-table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        
+        .data-table th {
+            text-align: left; padding: 16px 24px; background: rgba(0,0,0,0.2);
+            color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+            font-weight: 700; border-bottom: 1px solid var(--adm-border);
+        }
+        .data-table td {
+            padding: 16px 24px; border-bottom: 1px solid var(--adm-border);
+            color: var(--text-main); font-size: 0.9rem; vertical-align: middle;
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* Badges */
+        .status-badge {
+            display: inline-flex; align-items: center; padding: 6px 12px;
+            border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+        }
+        .status-new { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .status-solved { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        /* Actions */
+        .action-cell { display: flex; gap: 8px; }
+        .btn-icon {
+            width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--adm-border);
+            background: transparent; color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-view:hover { background: rgba(99, 102, 241, 0.1); color: var(--adm-primary); border-color: var(--adm-primary); }
+        .btn-trash:hover { background: rgba(239, 68, 68, 0.1); color: var(--adm-danger); border-color: var(--adm-danger); }
+
+        /* Pagination */
+        .table-footer {
+            padding: 16px 24px; border-top: 1px solid var(--adm-border);
             display: flex; justify-content: space-between; align-items: center;
         }
-        .data-table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        .data-table th, .data-table td {
-            padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--border-color);
-            font-size: 0.9rem; color: var(--text-muted);
+        .page-info { font-size: 0.85rem; color: var(--text-muted); }
+        .pagination-controls { display: flex; gap: 8px; }
+        .page-btn {
+            padding: 6px 12px; background: var(--adm-bg-dark); border: 1px solid var(--adm-border);
+            color: var(--text-secondary); border-radius: 6px; cursor: pointer; transition: 0.2s;
         }
-        .data-table th { background: rgba(0,0,0,0.2); color: white; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
-        .data-table tr:hover { background: rgba(255,255,255,0.02); }
-        
-        .user-info-cell { display: flex; align-items: center; gap: 10px; }
-        .avatar-sm { width: 35px; height: 35px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .page-btn:hover:not(:disabled) { background: var(--adm-primary); color: white; border-color: var(--adm-primary); }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* MODAL */
-        .modal-fullscreen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
-            z-index: 2000; display: none; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.3s;
+        /* * ==========================================================================
+         * 7. MODALS & FORMS
+         * ==========================================================================
+         */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px); z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: 0.3s;
         }
-        .modal-fullscreen.active { opacity: 1; }
-        .modal-box {
-            background: var(--dark-bg); border: 1px solid var(--border-color);
-            width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto;
-            border-radius: 20px; padding: 0; display: grid; grid-template-columns: 1fr;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform: scale(0.9); transition: transform 0.3s;
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .modal-window {
+            background: var(--adm-panel); width: 90%; max-width: 900px;
+            border-radius: 20px; border: 1px solid var(--adm-border);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; max-height: 90vh;
+            transform: scale(0.95); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .modal-fullscreen.active .modal-box { transform: scale(1); }
+        .modal-overlay.active .modal-window { transform: scale(1); }
+
+        .modal-header {
+            padding: 24px; border-bottom: 1px solid var(--adm-border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 700; color: white; margin: 0; }
         
-        /* RESPONSIVE */
-        .mobile-toggle { display: none; font-size: 1.5rem; color: white; cursor: pointer; }
+        .modal-body { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; }
         
+        /* Map Area */
+        .map-container { background: #111; min-height: 400px; position: relative; }
+        #detailMap { width: 100%; height: 100%; }
+
+        /* Details Area */
+        .details-panel { padding: 24px; display: flex; flex-direction: column; gap: 20px; border-left: 1px solid var(--adm-border); }
+        
+        .detail-item label { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .detail-item p { font-size: 1rem; color: white; line-height: 1.5; margin: 0; }
+        .detail-desc { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--adm-border); }
+
+        .modal-actions {
+            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--adm-border);
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        .btn-action-lg {
+            padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-approve { background: var(--adm-success); color: #064e3b; }
+        .btn-approve:hover { background: #34d399; }
+        .btn-reject { background: var(--adm-danger); color: #450a0a; }
+        .btn-reject:hover { background: #f87171; }
+
+        /* * ==========================================================================
+         * 8. SETTINGS FORM
+         * ==========================================================================
+         */
+        .settings-card {
+            max-width: 600px; background: var(--adm-panel); border: 1px solid var(--adm-border);
+            border-radius: 16px; padding: 32px;
+        }
+        .form-group { margin-bottom: 24px; }
+        .form-label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 0.9rem; }
+        .form-input {
+            width: 100%; padding: 12px 16px; background: var(--adm-bg-dark);
+            border: 1px solid var(--adm-border); border-radius: 8px; color: white;
+            transition: 0.2s;
+        }
+        .form-input:focus { border-color: var(--adm-primary); }
+        
+        /* * ==========================================================================
+         * 9. SKELETON LOADER & UTILS
+         * ==========================================================================
+         */
+        .skeleton {
+            background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+            background-size: 200% 100%; animation: shimmer 1.5s infinite;
+            border-radius: 4px; display: inline-block;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            min-width: 300px; padding: 16px; border-radius: 8px; background: var(--adm-panel);
+            border-left: 4px solid; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px;
+            animation: slideIn 0.3s;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        /* Responsive */
         @media (max-width: 1024px) {
-            .charts-wrapper { grid-template-columns: 1fr; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .modal-body { grid-template-columns: 1fr; }
+            .map-container { height: 300px; }
         }
         @media (max-width: 768px) {
-            .sidebar { position: fixed; transform: translateX(-100%); width: 260px; height: 100%; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
-            .sidebar.show { transform: translateX(0); }
-            .mobile-toggle { display: block; }
-            .top-header { gap: 10px; }
-            .search-box { width: 100%; }
-            .table-container { overflow-x: auto; }
+            .app-sidebar { position: fixed; transform: translateX(-100%); height: 100%; box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
+            .app-sidebar.active { transform: translateX(0); }
+            .top-navbar { padding: 0 16px; }
+            .mobile-toggle { display: block !important; }
         }
-
-        /* VIEW TRANSITIONS */
-        .view-section { display: none; animation: fadeIn 0.4s ease; }
-        .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .mobile-toggle { display: none; font-size: 1.5rem; cursor: pointer; color: white; }
     </style>
 </head>
 <body>
 
-    <div class="toast-container" id="toastBox"></div>
+    <div class="toast-container" id="toastContainer"></div>
 
-    <div class="admin-wrapper">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <img src="logo.jpg" alt="Logo" class="sidebar-logo">
-                <div>
-                    <h3 style="color:white; margin:0; font-size:1.1rem;">NIGOH</h3>
-                    <span style="color:var(--text-muted); font-size:0.75rem;">Admin Panel v2.0</span>
-                </div>
+    <aside class="app-sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-logo"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="brand-text">
+                <h3>NIGOH</h3>
+                <span>Admin Panel</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <div class="menu-label">Asosiy</div>
+            <div class="nav-item active" onclick="AdminPanel.navigate('dashboard', this)">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </div>
+            
+            <div class="menu-label" style="margin-top:20px;">Ma'lumotlar</div>
+            <div class="nav-item" onclick="AdminPanel.navigate('reports', this)">
+                <i class="fa-solid fa-file-invoice"></i> Murojaatlar
+                <span id="navPendingCount" style="margin-left:auto; background:var(--adm-warning); color:#fff; font-size:0.7rem; padding:2px 6px; border-radius:4px; display:none;">0</span>
+            </div>
+            <div class="nav-item" onclick="AdminPanel.navigate('users', this)">
+                <i class="fa-solid fa-users"></i> Foydalanuvchilar
             </div>
 
-            <nav class="nav-menu">
-                <div class="nav-item active" onclick="switchView('dashboard', this)">
-                    <i class="fa-solid fa-grid-2"></i> Dashboard
-                </div>
-                <div class="nav-item" onclick="switchView('reports', this)">
-                    <i class="fa-solid fa-file-shield"></i> Murojaatlar
-                </div>
-                <div class="nav-item" onclick="switchView('users', this)">
-                    <i class="fa-solid fa-users"></i> Foydalanuvchilar
-                </div>
-                <div class="nav-item" onclick="switchView('settings', this)">
-                    <i class="fa-solid fa-sliders"></i> Sozlamalar
-                </div>
-                <div style="flex:1"></div>
-                <a href="index.html" class="nav-item">
-                    <i class="fa-solid fa-globe"></i> Saytga qaytish
-                </a>
-            </nav>
+            <div class="menu-label" style="margin-top:20px;">Tizim</div>
+            <div class="nav-item" onclick="AdminPanel.navigate('settings', this)">
+                <i class="fa-solid fa-sliders"></i> Sozlamalar
+            </div>
+            <a href="index.html" class="nav-item">
+                <i class="fa-solid fa-globe"></i> Saytga qaytish
+            </a>
+        </nav>
 
-            <div style="padding: 20px; border-top:1px solid var(--border-color);">
-                <div class="user-info-cell">
-                    <div class="avatar-sm" style="background:var(--danger);" onclick="logout()">
-                        <i class="fa-solid fa-power-off"></i>
-                    </div>
-                    <div>
-                        <div style="color:white; font-size:0.9rem;">Admin</div>
-                        <div style="color:var(--text-muted); font-size:0.75rem;" id="adminEmailDisplay">...</div>
-                    </div>
+        <div class="sidebar-footer">
+            <div class="admin-profile">
+                <div class="avatar-box">
+                    <img src="logo.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=random'" alt="Admin">
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name" id="sidebarName">Admin</div>
+                    <div class="profile-role" id="sidebarEmail">loading...</div>
                 </div>
             </div>
-        </aside>
+        </div>
+    </aside>
 
-        <main class="main-content">
-            <div class="top-header">
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <div class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('show')">
-                        <i class="fa-solid fa-bars"></i>
-                    </div>
-                    <div class="page-title">
-                        <h1 id="pageTitle">Dashboard</h1>
-                        <p id="pageSub">Tizim holati va statistikasi</p>
-                    </div>
+    <main class="app-main">
+        <header class="top-navbar">
+            <div style="display:flex; align-items:center; gap:16px;">
+                <div class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')">
+                    <i class="fa-solid fa-bars"></i>
                 </div>
-                
-                <div class="search-box" id="globalSearchBox">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="searchInput" placeholder="Murojaat yoki ID qidirish...">
+                <div class="page-title">
+                    <h1 id="pageHeading">Dashboard</h1>
+                    <p id="currentDate">Tizim yuklanmoqda...</p>
                 </div>
             </div>
+            <div class="navbar-actions">
+                <button class="action-btn" onclick="AdminPanel.refreshData()">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+                <div style="width:1px; height:30px; background:var(--adm-border);"></div>
+                <button class="btn-logout" onclick="AdminPanel.logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Chiqish
+                </button>
+            </div>
+        </header>
 
+        <div class="content-scroll">
+            
             <div id="dashboardView" class="view-section active">
-                <div class="grid-4">
+                <div class="stats-container">
                     <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-folder-open"></i></div>
-                        <div class="stat-num" id="totalCount">0</div>
+                        <i class="fa-solid fa-layer-group stat-bg-icon"></i>
+                        <div class="stat-header">
+                            <div class="stat-icon" style="background:rgba(59,130,246,0.1); color:var(--adm-info);">
+                                <i class="fa-solid fa-inbox"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statTotal">0</div>
                         <div class="stat-label">Jami Murojaatlar</div>
+                        <div class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> Barcha vaqtlar bo'yicha</div>
                     </div>
+                    
                     <div class="stat-card">
-                        <div class="stat-icon" style="color:var(--success); background:rgba(16,185,129,0.1)"><i class="fa-solid fa-check-circle"></i></div>
-                        <div class="stat-num" style="color:var(--success)" id="solvedCount">0</div>
-                        <div class="stat-label">Hal etilgan</div>
+                        <i class="fa-solid fa-check-circle stat-bg-icon"></i>
+                        <div class="stat-header">
+                            <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:var(--adm-success);">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statSolved">0</div>
+                        <div class="stat-label">Hal Etilgan</div>
+                        <div class="stat-trend trend-up">Muvaffaqiyatli yechimlar</div>
                     </div>
+
                     <div class="stat-card">
-                        <div class="stat-icon" style="color:var(--warning); background:rgba(245,158,11,0.1)"><i class="fa-solid fa-clock"></i></div>
-                        <div class="stat-num" style="color:var(--warning)" id="pendingCount">0</div>
-                        <div class="stat-label">Jarayonda</div>
+                        <i class="fa-solid fa-clock stat-bg-icon"></i>
+                        <div class="stat-header">
+                            <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:var(--adm-warning);">
+                                <i class="fa-solid fa-hourglass-half"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statPending">0</div>
+                        <div class="stat-label">Ko'rib chiqilmoqda</div>
+                        <div class="stat-trend trend-down">Jarayondagi ishlar</div>
                     </div>
+
                     <div class="stat-card">
-                        <div class="stat-icon" style="color:#8b5cf6; background:rgba(139,92,246,0.1)"><i class="fa-solid fa-users"></i></div>
-                        <div class="stat-num" style="color:#8b5cf6" id="usersCount">0</div>
-                        <div class="stat-label">Foydalanuvchilar</div>
+                        <i class="fa-solid fa-users stat-bg-icon"></i>
+                        <div class="stat-header">
+                            <div class="stat-icon" style="background:rgba(99,102,241,0.1); color:var(--adm-primary);">
+                                <i class="fa-solid fa-user-group"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statUsers">0</div>
+                        <div class="stat-label">Faol Foydalanuvchilar</div>
+                        <div class="stat-trend">Ro'yxatdan o'tganlar</div>
                     </div>
                 </div>
 
-                <div class="charts-wrapper">
-                    <div class="chart-box">
-                        <h3 style="color:white; margin-bottom:15px;">Murojaat Turlari</h3>
-                        <canvas id="barChart"></canvas>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Murojaat Turlari Statistikasi</h3>
+                        </div>
+                        <div style="flex:1; position:relative;">
+                            <canvas id="barChart"></canvas>
+                        </div>
                     </div>
-                    <div class="chart-box">
-                        <h3 style="color:white; margin-bottom:15px;">Status Statistikasi</h3>
-                        <canvas id="doughnutChart"></canvas>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Statuslar Ulushi</h3>
+                        </div>
+                        <div style="flex:1; position:relative;">
+                            <canvas id="doughnutChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div id="reportsView" class="view-section">
-                <div class="table-container">
+                <div class="table-wrapper">
                     <div class="table-toolbar">
-                        <div style="display:flex; gap:10px;">
-                            <select id="filterStatus" class="btn-secondary" style="border-radius:10px; padding:8px;">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" class="search-input" id="reportSearch" placeholder="Qidirish (ID, Manzil, Tavsif)...">
+                        </div>
+                        <div class="filter-group">
+                            <select class="filter-select" id="statusFilter" onchange="AdminPanel.applyFilters()">
                                 <option value="all">Barcha Statuslar</option>
                                 <option value="Yangi">⏳ Yangi</option>
                                 <option value="Hal etildi">✅ Hal etildi</option>
                                 <option value="Rad etildi">🚫 Rad etildi</option>
                             </select>
+                            <button class="btn-export" onclick="AdminPanel.exportExcel()">
+                                <i class="fa-solid fa-file-excel"></i> Export Excel
+                            </button>
                         </div>
-                        <button class="btn-primary" onclick="exportToExcel()">
-                            <i class="fa-solid fa-file-excel"></i> Excel
-                        </button>
                     </div>
+                    
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
@@ -278,361 +602,466 @@
                                     <th>ID</th>
                                     <th>Sana</th>
                                     <th>Foydalanuvchi</th>
-                                    <th>Muammo Turi</th>
+                                    <th>Turi</th>
                                     <th>Manzil</th>
                                     <th>Status</th>
                                     <th>Amallar</th>
                                 </tr>
                             </thead>
-                            <tbody id="reportsTableBody"></tbody>
+                            <tbody id="reportsTableBody">
+                                </tbody>
                         </table>
+                    </div>
+
+                    <div class="table-footer">
+                        <span class="page-info" id="tableInfo">Yuklanmoqda...</span>
+                        <div class="pagination-controls">
+                            <button class="page-btn" onclick="AdminPanel.changePage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="page-btn" onclick="AdminPanel.changePage(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div id="usersView" class="view-section">
-                <div class="table-container">
+                <div class="table-wrapper">
+                    <div class="table-toolbar">
+                        <h3 style="color:white; margin:0;">Foydalanuvchilar Bazasi</h3>
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" class="search-input" id="userSearch" placeholder="Ism yoki Email qidirish...">
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Ro'yxatdan o'tgan</th>
-                                    <th>Foydalanuvchi</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
+                                    <th>Qo'shilgan Sana</th>
+                                    <th>Ism Familiya</th>
+                                    <th>Email / Telefon</th>
+                                    <th>Roli</th>
                                     <th>ID (UID)</th>
+                                    <th>Platforma</th>
                                 </tr>
                             </thead>
                             <tbody id="usersTableBody">
-                                <tr><td colspan="5" style="text-align:center">Yuklanmoqda...</td></tr>
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
             <div id="settingsView" class="view-section">
-                <div style="max-width:600px; background:var(--panel-bg); padding:30px; border-radius:16px; border:1px solid var(--border-color);">
-                    <h3 style="color:white; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">Admin Profili</h3>
+                <div class="settings-card">
+                    <h2 style="color:white; margin-bottom:30px; border-bottom:1px solid var(--adm-border); padding-bottom:15px;">Admin Profili</h2>
                     
-                    <form id="profileForm">
-                        <div class="input-group">
-                            <label>Admin Ismi</label>
-                            <input type="text" id="adminNameInput">
-                        </div>
-                        <button class="btn-primary" type="submit">Ismni Saqlash</button>
-                    </form>
-
-                    <div style="margin-top:40px;">
-                        <h3 style="color:white; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">Xavfsizlik</h3>
-                        <div class="input-group">
-                            <label>Yangi Parol</label>
-                            <input type="password" id="newAdminPass" placeholder="******">
-                        </div>
-                        <button class="btn-secondary" onclick="changePassword()" style="width:100%; border-color:var(--danger); color:var(--danger);">Parolni O'zgartirish</button>
+                    <div class="form-group">
+                        <label class="form-label">Ko'rinadigan Ism</label>
+                        <input type="text" class="form-input" id="adminNameInput">
                     </div>
+                    <button class="btn-export" style="width:100%; justify-content:center;" onclick="AdminPanel.updateProfile()">
+                        <i class="fa-solid fa-floppy-disk"></i> Saqlash
+                    </button>
+
+                    <h2 style="color:white; margin:40px 0 20px; border-bottom:1px solid var(--adm-border); padding-bottom:15px;">Xavfsizlik</h2>
+                    <div class="form-group">
+                        <label class="form-label">Yangi Parol</label>
+                        <input type="password" class="form-input" id="adminPassInput" placeholder="******">
+                    </div>
+                    <button class="btn-export" style="width:100%; justify-content:center; background:var(--adm-danger);" onclick="AdminPanel.updatePassword()">
+                        <i class="fa-solid fa-key"></i> Parolni Yangilash
+                    </button>
                 </div>
             </div>
 
-        </main>
-    </div>
+        </div>
+    </main>
 
-    <div class="modal-fullscreen" id="detailsModal">
-        <div class="modal-box" style="grid-template-columns: 1fr 1fr; overflow:hidden;">
-            <div id="modalMap" style="height:400px; width:100%;"></div>
-            
-            <div style="padding:30px; display:flex; flex-direction:column; background:var(--panel-bg);">
-                <div style="display:flex; justify-content:space-between; align-items:start;">
-                    <h2 style="color:white; margin:0;" id="modalType">Muammo turi</h2>
-                    <i class="fa-solid fa-xmark" onclick="closeModal()" style="font-size:1.5rem; cursor:pointer; color:var(--text-muted);"></i>
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3 class="modal-title">Murojaat Tafsilotlari</h3>
+                <button onclick="AdminPanel.closeModal()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="map-container">
+                    <div id="detailMap"></div>
                 </div>
-                <p style="color:var(--text-muted); font-size:0.9rem;" id="modalDate">...</p>
-                
-                <div style="margin:20px 0; flex:1;">
-                    <h4 style="color:var(--primary);">Tavsif:</h4>
-                    <p style="color:white; line-height:1.6;" id="modalDesc">...</p>
+                <div class="details-panel">
+                    <div class="detail-item">
+                        <label>Muammo Turi</label>
+                        <p id="mType" style="font-size:1.2rem; font-weight:700; color:var(--adm-primary);">...</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Tavsif</label>
+                        <div class="detail-desc" id="mDesc">...</div>
+                    </div>
+                    <div class="detail-item">
+                        <label>Manzil</label>
+                        <p id="mAddress"><i class="fa-solid fa-location-dot"></i> <span>...</span></p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Yuboruvchi</label>
+                        <p id="mUser" style="color:var(--text-secondary);">...</p>
+                    </div>
                     
-                    <h4 style="color:var(--primary); margin-top:15px;">Manzil:</h4>
-                    <p style="color:white;" id="modalAddress">...</p>
-
-                    <h4 style="color:var(--primary); margin-top:15px;">Yuboruvchi:</h4>
-                    <p style="color:white;" id="modalUser">...</p>
-                </div>
-
-                <div style="border-top:1px solid var(--border-color); padding-top:20px;">
-                    <label style="color:var(--text-muted); display:block; margin-bottom:10px;">Statusni o'zgartirish:</label>
-                    <div style="display:flex; gap:10px;">
-                        <button onclick="updateStatusFromModal('Hal etildi')" class="btn-primary" style="background:var(--success); border:none;">Hal etildi</button>
-                        <button onclick="updateStatusFromModal('Rad etildi')" class="btn-primary" style="background:var(--danger); border:none;">Rad etildi</button>
-                        <button onclick="deleteReportFromModal()" class="btn-secondary" style="margin-left:auto;"><i class="fa-solid fa-trash"></i></button>
+                    <div class="modal-actions">
+                        <button class="btn-action-lg btn-approve" onclick="AdminPanel.changeStatus('Hal etildi')">
+                            <i class="fa-solid fa-check"></i> Hal Etildi
+                        </button>
+                        <button class="btn-action-lg btn-reject" onclick="AdminPanel.changeStatus('Rad etildi')">
+                            <i class="fa-solid fa-xmark"></i> Rad Etish
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
-        import { auth, db, collection, getDocs, deleteDoc, doc, updateDoc, onAuthStateChanged, signOut, updateProfile, updatePassword } from './firebase-config.js';
+        import { auth, db, collection, getDocs, doc, updateDoc, deleteDoc, onAuthStateChanged, signOut, updateProfile, updatePassword } from './firebase-config.js';
 
         const ADMIN_EMAIL = "islomovjavohir939@gmail.com";
-        let allReports = [];
-        let allUsers = [];
-        let currentModalId = null;
-        let miniMap = null;
-        let currentUser = null;
 
-        // 1. AUTH & INIT
-        onAuthStateChanged(auth, (user) => {
-            if (!user || user.email !== ADMIN_EMAIL) {
-                window.location.href = "login.html";
-            } else {
-                currentUser = user;
-                document.getElementById('adminEmailDisplay').innerText = user.email;
-                document.getElementById('adminNameInput').value = user.displayName || "";
-                loadData();
+        // --- CORE APPLICATION CLASS ---
+        class DashboardEngine {
+            constructor() {
+                this.state = {
+                    reports: [],
+                    users: [],
+                    filteredReports: [],
+                    currentPage: 1,
+                    itemsPerPage: 10,
+                    currentModalId: null,
+                    charts: { bar: null, doughnut: null },
+                    map: null
+                };
+                
+                this.init();
             }
-        });
 
-        // 2. DATA LOADING (Reports & Users)
-        async function loadData() {
-            try {
-                // Reports
-                const rSnap = await getDocs(collection(db, "reports"));
-                allReports = [];
-                rSnap.forEach(d => allReports.push({ id: d.id, ...d.data() }));
-                allReports.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                // Users
-                const uSnap = await getDocs(collection(db, "users"));
-                allUsers = [];
-                uSnap.forEach(d => allUsers.push(d.data()));
-
-                updateUI();
-            } catch (error) {
-                console.error("Data load error:", error);
-                showToast("Xato", "Ma'lumotlarni yuklashda xatolik", "error");
+            init() {
+                // Auth Check
+                onAuthStateChanged(auth, (user) => {
+                    if (!user || user.email !== ADMIN_EMAIL) {
+                        window.location.href = 'login.html';
+                    } else {
+                        this.user = user;
+                        this.updateSidebar();
+                        this.fetchData();
+                        
+                        // Set Date
+                        moment.locale('uz-latn');
+                        document.getElementById('currentDate').innerText = moment().format('D MMMM YYYY, dddd');
+                        
+                        // Event Listeners
+                        document.getElementById('reportSearch').addEventListener('input', (e) => this.handleSearch(e.target.value));
+                        document.getElementById('userSearch').addEventListener('input', (e) => this.handleUserSearch(e.target.value));
+                    }
+                });
             }
-        }
 
-        // 3. UI UPDATE (Stats, Tables, Charts)
-        function updateUI() {
-            // Stats
-            document.getElementById('totalCount').innerText = allReports.length;
-            document.getElementById('solvedCount').innerText = allReports.filter(r => r.status === 'Hal etildi').length;
-            document.getElementById('pendingCount').innerText = allReports.filter(r => r.status === 'Yangi').length;
-            document.getElementById('usersCount').innerText = allUsers.length;
+            updateSidebar() {
+                document.getElementById('sidebarName').innerText = this.user.displayName || "Admin";
+                document.getElementById('sidebarEmail').innerText = this.user.email;
+                document.getElementById('adminNameInput').value = this.user.displayName || "";
+            }
 
-            // Reports Table
-            renderReportsTable(allReports);
+            // --- DATA FETCHING ---
+            async fetchData() {
+                try {
+                    // Reports
+                    const rSnap = await getDocs(collection(db, "reports"));
+                    this.state.reports = [];
+                    rSnap.forEach(d => this.state.reports.push({ id: d.id, ...d.data() }));
+                    this.state.reports.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    // Users
+                    const uSnap = await getDocs(collection(db, "users"));
+                    this.state.users = [];
+                    uSnap.forEach(d => this.state.users.push(d.data()));
 
-            // Users Table
-            renderUsersTable();
+                    this.state.filteredReports = [...this.state.reports];
+                    this.renderAll();
+                    this.showToast("Muvaffaqiyatli", "Ma'lumotlar yangilandi", "success");
+                } catch (error) {
+                    console.error(error);
+                    this.showToast("Xatolik", "Ma'lumotlarni yuklashda xato", "error");
+                }
+            }
 
-            // Charts
-            renderCharts();
-        }
+            renderAll() {
+                this.renderStats();
+                this.renderCharts();
+                this.renderReportsTable();
+                this.renderUsersTable();
+                
+                // Pending Badge
+                const pending = this.state.reports.filter(r => r.status === 'Yangi').length;
+                const badge = document.getElementById('navPendingCount');
+                if(pending > 0) { badge.style.display = 'inline-block'; badge.innerText = pending; }
+                else badge.style.display = 'none';
+            }
 
-        function renderReportsTable(data) {
-            const tbody = document.getElementById('reportsTableBody');
-            tbody.innerHTML = data.map(r => `
-                <tr onclick="openDetails('${r.id}')" style="cursor:pointer;">
-                    <td><span style="font-family:monospace; color:var(--primary);">${r.id.substring(0,6)}...</span></td>
-                    <td>${r.date.split(',')[0]}</td>
-                    <td>${r.email.split('@')[0]}</td>
-                    <td>${r.type}</td>
-                    <td>${r.address.substring(0,20)}...</td>
-                    <td><span class="badge badge-${r.status === 'Hal etildi' ? 'solved' : (r.status === 'Rad etildi' ? 'rejected' : 'new')}">${r.status}</span></td>
-                    <td><i class="fa-solid fa-chevron-right" style="font-size:0.8rem;"></i></td>
-                </tr>
-            `).join('');
-        }
+            // --- DASHBOARD RENDERERS ---
+            renderStats() {
+                const total = this.state.reports.length;
+                const solved = this.state.reports.filter(r => r.status === 'Hal etildi').length;
+                const pending = this.state.reports.filter(r => r.status === 'Yangi').length;
+                
+                this.animateCounter("statTotal", total);
+                this.animateCounter("statSolved", solved);
+                this.animateCounter("statPending", pending);
+                this.animateCounter("statUsers", this.state.users.length);
+            }
 
-        function renderUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = allUsers.map(u => `
-                <tr>
-                    <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}</td>
-                    <td>
-                        <div class="user-info-cell">
-                            <div class="avatar-sm" style="background:#64748b;">${(u.displayName||'U').charAt(0)}</div>
-                            <b>${u.displayName || 'Ismsiz'}</b>
-                        </div>
-                    </td>
-                    <td>${u.email}</td>
-                    <td><span class="badge badge-new" style="background:rgba(59,130,246,0.1); color:var(--primary);">${u.role||'User'}</span></td>
-                    <td style="font-family:monospace; font-size:0.8rem;">${u.uid}</td>
-                </tr>
-            `).join('');
-        }
+            animateCounter(id, target) {
+                const el = document.getElementById(id);
+                let current = 0;
+                const step = Math.ceil(target / 20);
+                if(target === 0) { el.innerText = "0"; return; }
+                const timer = setInterval(() => {
+                    current += step;
+                    if(current >= target) { current = target; clearInterval(timer); }
+                    el.innerText = current;
+                }, 30);
+            }
 
-        // 4. CHARTS LOGIC
-        let chart1, chart2;
-        function renderCharts() {
-            // Types Chart
-            const types = {};
-            allReports.forEach(r => types[r.type] = (types[r.type] || 0) + 1);
-            
-            const ctx1 = document.getElementById('barChart');
-            if(chart1) chart1.destroy();
-            chart1 = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(types),
-                    datasets: [{ label: 'Soni', data: Object.values(types), backgroundColor: '#3b82f6', borderRadius: 5 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } } } }
-            });
+            renderCharts() {
+                // Bar Chart Data
+                const types = {};
+                this.state.reports.forEach(r => types[r.type] = (types[r.type] || 0) + 1);
+                
+                if(this.state.charts.bar) this.state.charts.bar.destroy();
+                this.state.charts.bar = new Chart(document.getElementById('barChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(types),
+                        datasets: [{ label: 'Soni', data: Object.values(types), backgroundColor: '#6366f1', borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
+                });
 
-            // Status Chart
-            const statuses = { 'Yangi': 0, 'Hal etildi': 0, 'Rad etildi': 0 };
-            allReports.forEach(r => { if(statuses[r.status] !== undefined) statuses[r.status]++; });
-            
-            const ctx2 = document.getElementById('doughnutChart');
-            if(chart2) chart2.destroy();
-            chart2 = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(statuses),
-                    datasets: [{ data: Object.values(statuses), backgroundColor: ['#f59e0b', '#10b981', '#ef4444'], borderWidth: 0 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
-            });
-        }
+                // Doughnut Data
+                const stats = { 'Yangi': 0, 'Hal etildi': 0, 'Rad etildi': 0 };
+                this.state.reports.forEach(r => { if(stats[r.status] !== undefined) stats[r.status]++; });
+                
+                if(this.state.charts.doughnut) this.state.charts.doughnut.destroy();
+                this.state.charts.doughnut = new Chart(document.getElementById('doughnutChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(stats),
+                        datasets: [{ data: Object.values(stats), backgroundColor: ['#f59e0b', '#10b981', '#ef4444'], borderWidth: 0 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#9ca3af' } } } }
+                });
+            }
 
-        // 5. MODAL & ACTIONS
-        window.openDetails = (id) => {
-            const r = allReports.find(item => item.id === id);
-            currentModalId = id;
-            if(!r) return;
+            // --- TABLE LOGIC ---
+            renderReportsTable() {
+                const tbody = document.getElementById('reportsTableBody');
+                const start = (this.state.currentPage - 1) * this.state.itemsPerPage;
+                const end = start + this.state.itemsPerPage;
+                const pageData = this.state.filteredReports.slice(start, end);
 
-            document.getElementById('modalType').innerText = r.type;
-            document.getElementById('modalDate').innerText = r.date;
-            document.getElementById('modalDesc').innerText = r.description;
-            document.getElementById('modalAddress').innerText = r.address;
-            document.getElementById('modalUser').innerText = r.email;
+                document.getElementById('tableInfo').innerText = `${this.state.filteredReports.length} tadan ${start+1}-${Math.min(end, this.state.filteredReports.length)} ko'rsatilmoqda`;
 
-            const modal = document.getElementById('detailsModal');
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('active'), 10);
+                tbody.innerHTML = pageData.map(r => {
+                    let badgeClass = 'status-new';
+                    if(r.status === 'Hal etildi') badgeClass = 'status-solved';
+                    if(r.status === 'Rad etildi') badgeClass = 'status-rejected';
 
-            // Mini Map Initialization
-            if (miniMap) { miniMap.remove(); miniMap = null; } // Fix map error
-            if (r.latitude && r.longitude) {
+                    return `
+                    <tr style="animation: fadeIn 0.3s">
+                        <td><span style="font-family:monospace; color:var(--adm-primary);">#${r.id.substring(0,6)}</span></td>
+                        <td>${r.date.split(',')[0]}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:24px; height:24px; background:var(--adm-panel); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid var(--adm-border); font-size:0.7rem;">${r.email.charAt(0).toUpperCase()}</div>
+                                <span>${r.email.split('@')[0]}</span>
+                            </div>
+                        </td>
+                        <td style="font-weight:600;">${r.type}</td>
+                        <td style="max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.address}</td>
+                        <td><span class="status-badge ${badgeClass}">${r.status}</span></td>
+                        <td>
+                            <div class="action-cell">
+                                <button class="btn-icon btn-view" title="Ko'rish" onclick="AdminPanel.openDetails('${r.id}')"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn-icon btn-trash" title="O'chirish" onclick="AdminPanel.deleteReport('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            }
+
+            renderUsersTable() {
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = this.state.users.map(u => `
+                    <tr>
+                        <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="avatar-box" style="width:32px; height:32px; font-size:0.8rem;">
+                                    ${(u.displayName||'U').charAt(0)}
+                                </div>
+                                <b>${u.displayName || 'Ismsiz'}</b>
+                            </div>
+                        </td>
+                        <td>
+                            <div>${u.email}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">${u.phoneNumber || ''}</div>
+                        </td>
+                        <td><span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:4px; font-size:0.8rem;">${u.role || 'User'}</span></td>
+                        <td style="font-family:monospace; color:var(--text-muted);">${u.uid}</td>
+                        <td style="font-size:0.8rem; color:var(--text-muted);">${u.device ? (u.device.includes('Mobile')?'Mobile':'Desktop') : '-'}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // --- ACTIONS ---
+            changePage(dir) {
+                const maxPage = Math.ceil(this.state.filteredReports.length / this.state.itemsPerPage);
+                const newPage = this.state.currentPage + dir;
+                if(newPage > 0 && newPage <= maxPage) {
+                    this.state.currentPage = newPage;
+                    this.renderReportsTable();
+                }
+            }
+
+            applyFilters() {
+                const status = document.getElementById('statusFilter').value;
+                if(status === 'all') this.state.filteredReports = [...this.state.reports];
+                else this.state.filteredReports = this.state.reports.filter(r => r.status === status);
+                this.state.currentPage = 1;
+                this.renderReportsTable();
+            }
+
+            handleSearch(term) {
+                term = term.toLowerCase();
+                this.state.filteredReports = this.state.reports.filter(r => 
+                    r.address.toLowerCase().includes(term) ||
+                    r.id.toLowerCase().includes(term) ||
+                    r.description.toLowerCase().includes(term)
+                );
+                this.state.currentPage = 1;
+                this.renderReportsTable();
+            }
+
+            // --- MODAL LOGIC ---
+            openDetails(id) {
+                const r = this.state.reports.find(item => item.id === id);
+                if(!r) return;
+                this.state.currentModalId = id;
+
+                document.getElementById('mType').innerText = r.type;
+                document.getElementById('mDesc').innerText = r.description;
+                document.getElementById('mAddress').querySelector('span').innerText = r.address;
+                document.getElementById('mUser').innerText = r.email;
+
+                const modal = document.getElementById('detailModal');
+                modal.classList.add('active');
+
+                // Map Init (Leaflet Fix)
+                if(this.state.map) { this.state.map.remove(); this.state.map = null; }
                 setTimeout(() => {
-                    miniMap = L.map('modalMap').setView([r.latitude, r.longitude], 14);
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(miniMap);
-                    L.marker([r.latitude, r.longitude]).addTo(miniMap);
+                    const lat = r.latitude || 41.311;
+                    const lng = r.longitude || 69.240;
+                    this.state.map = L.map('detailMap').setView([lat, lng], 13);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(this.state.map);
+                    if(r.latitude) L.marker([lat, lng]).addTo(this.state.map);
                 }, 300);
-            } else {
-                document.getElementById('modalMap').innerHTML = '<div style="height:100%; display:flex; align-items:center; justify-content:center; color:#666;">Xarita ma\'lumoti yo\'q</div>';
             }
-        };
 
-        window.closeModal = () => {
-            const modal = document.getElementById('detailsModal');
-            modal.classList.remove('active');
-            setTimeout(() => modal.style.display = 'none', 300);
-        };
-
-        window.updateStatusFromModal = async (status) => {
-            if(!currentModalId) return;
-            await updateDoc(doc(db, "reports", currentModalId), { status: status });
-            showToast("Yangilandi", `Status: ${status}`, "success");
-            closeModal();
-            loadData();
-        };
-
-        window.deleteReportFromModal = async () => {
-            if(!currentModalId || !confirm("O'chirilsinmi?")) return;
-            await deleteDoc(doc(db, "reports", currentModalId));
-            showToast("O'chirildi", "Murojaat bazadan o'chirildi", "success");
-            closeModal();
-            loadData();
-        };
-
-        // 6. SEARCH & FILTER
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allReports.filter(r => 
-                r.description.toLowerCase().includes(term) || 
-                r.type.toLowerCase().includes(term) ||
-                r.id.toLowerCase().includes(term)
-            );
-            renderReportsTable(filtered);
-        });
-
-        document.getElementById('filterStatus').addEventListener('change', (e) => {
-            const status = e.target.value;
-            const filtered = status === 'all' ? allReports : allReports.filter(r => r.status === status);
-            renderReportsTable(filtered);
-        });
-
-        // 7. VIEW SWITCHER
-        window.switchView = (view, btn) => {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(view + 'View').classList.add('active');
-            btn.classList.add('active');
-            
-            // Sahifa nomini yangilash
-            const titles = {
-                dashboard: "Dashboard",
-                reports: "Murojaatlar",
-                users: "Foydalanuvchilar",
-                settings: "Sozlamalar"
-            };
-            document.getElementById('pageTitle').innerText = titles[view];
-            
-            if(window.innerWidth < 768) document.getElementById('sidebar').classList.remove('show');
-        };
-
-        // 8. SETTINGS & LOGOUT
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('adminNameInput').value;
-            if(name) {
-                await updateProfile(currentUser, { displayName: name });
-                showToast("Saqlandi", "Ism yangilandi", "success");
+            closeModal() {
+                document.getElementById('detailModal').classList.remove('active');
             }
-        });
 
-        window.changePassword = async () => {
-            const p = document.getElementById('newAdminPass').value;
-            if(p.length < 6) return showToast("Xato", "Parol qisqa", "error");
-            try {
-                await updatePassword(currentUser, p);
-                showToast("OK", "Parol o'zgardi. Qayta kiring.", "success");
-                setTimeout(logout, 2000);
-            } catch(e) { showToast("Xato", "Tizimdan chiqib, qayta kiring", "error"); }
-        };
+            async changeStatus(newStatus) {
+                if(!this.state.currentModalId) return;
+                try {
+                    await updateDoc(doc(db, "reports", this.state.currentModalId), { status: newStatus });
+                    this.showToast("Yangilandi", `Status: ${newStatus}`, "success");
+                    this.closeModal();
+                    this.fetchData();
+                } catch(e) { this.showToast("Xatolik", e.message, "error"); }
+            }
 
-        window.logout = () => signOut(auth).then(() => location.href = "login.html");
+            async deleteReport(id) {
+                if(!confirm("Haqiqatan ham o'chirmoqchimisiz?")) return;
+                try {
+                    await deleteDoc(doc(db, "reports", id));
+                    this.showToast("O'chirildi", "Murojaat bazadan o'chirildi", "success");
+                    this.fetchData();
+                } catch(e) { this.showToast("Xatolik", e.message, "error"); }
+            }
 
-        // EXCEL
-        window.exportToExcel = () => {
-            const ws = XLSX.utils.json_to_sheet(allReports);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Data");
-            XLSX.writeFile(wb, "Nigoh_Reports.xlsx");
-        };
+            // --- UTILS ---
+            refreshData() { this.fetchData(); }
+            
+            navigate(view, el) {
+                document.querySelectorAll('.view-section').forEach(d => d.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(d => d.classList.remove('active'));
+                
+                document.getElementById(view+'View').classList.add('active');
+                if(el) el.classList.add('active');
+                
+                const titles = { dashboard: 'Dashboard', reports: 'Murojaatlar Markazi', users: 'Foydalanuvchilar', settings: 'Tizim Sozlamalari' };
+                document.getElementById('pageHeading').innerText = titles[view];
+                
+                // Mobile close
+                if(window.innerWidth < 768) document.getElementById('sidebar').classList.remove('active');
+            }
 
-        function showToast(title, message, type) {
-            const box = document.getElementById('toastBox');
-            const toast = document.createElement('div');
-            let color = type === 'success' ? '#10b981' : '#ef4444';
-            toast.className = 'toast';
-            toast.style.cssText = `background:#1e293b; border-left:4px solid ${color}; color:white; padding:15px; margin-bottom:10px; border-radius:8px; display:flex; gap:10px; animation:slideIn 0.3s;`;
-            toast.innerHTML = `<div><h4 style="margin:0;color:${color}">${title}</h4><p style="margin:0;font-size:0.9rem">${message}</p></div>`;
-            box.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            exportExcel() {
+                const ws = XLSX.utils.json_to_sheet(this.state.reports);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Murojaatlar");
+                XLSX.writeFile(wb, `Nigoh_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+            }
+
+            async updateProfile() {
+                const name = document.getElementById('adminNameInput').value;
+                if(name) {
+                    await updateProfile(this.user, { displayName: name });
+                    this.showToast("Saqlandi", "Profil yangilandi", "success");
+                    this.updateSidebar();
+                }
+            }
+
+            async updatePassword() {
+                const pass = document.getElementById('adminPassInput').value;
+                if(pass.length < 6) return this.showToast("Xato", "Parol qisqa", "error");
+                try {
+                    await updatePassword(this.user, pass);
+                    this.showToast("OK", "Parol yangilandi. Qayta kiring.", "success");
+                    setTimeout(() => this.logout(), 2000);
+                } catch(e) { this.showToast("Xato", "Qayta login qiling", "error"); }
+            }
+
+            logout() {
+                signOut(auth).then(() => location.href = "login.html");
+            }
+
+            showToast(title, msg, type) {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                
+                const colors = { success: '#10b981', error: '#ef4444' };
+                const icons = { success: 'circle-check', error: 'circle-xmark' };
+                
+                toast.style.borderLeftColor = colors[type];
+                toast.innerHTML = `
+                    <i class="fa-solid fa-${icons[type]}" style="font-size:1.5rem; color:${colors[type]}"></i>
+                    <div><h4 style="margin:0;font-size:0.9rem;">${title}</h4><p style="margin:0;font-size:0.8rem;color:#9ca3af">${msg}</p></div>
+                `;
+                container.appendChild(toast);
+                setTimeout(() => { toast.remove() }, 3000);
+            }
         }
-        
-        // CSS Animation
-        const s = document.createElement('style');
-        s.innerHTML = `@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`;
-        document.head.appendChild(s);
 
+        window.AdminPanel = new DashboardEngine();
     </script>
 </body>
 </html>

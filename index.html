@@ -3,541 +3,739 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nigoh | Jamoatchilik Nazorati</title>
+    <meta name="description" content="Nigoh - Jamoatchilik nazorati va shaffoflik platformasi. Muammolarni xabar bering va yechimini kuzating.">
+    <meta name="theme-color" content="#0f172a">
+    <title>Nigoh | Jamoatchilik Nazorati Platformasi</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* INDEX SPECIFIC STYLES */
+        /* * ==========================================================================
+         * 1. CORE LANDING VARIABLES
+         * ==========================================================================
+         */
+        :root {
+            /* Landing Palette */
+            --land-bg: #020617;
+            --land-card: rgba(30, 41, 59, 0.7);
+            --land-border: rgba(255, 255, 255, 0.08);
+            
+            /* Accents */
+            --accent-main: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.4);
+            --accent-secondary: #8b5cf6;
+            
+            /* Status Indicators */
+            --st-success: #10b981;
+            --st-warn: #f59e0b;
+            --st-err: #ef4444;
+            
+            /* Z-Index Layers */
+            --z-back: -1;
+            --z-map: 10;
+            --z-nav: 100;
+            --z-modal: 1000;
+            --z-toast: 2000;
+        }
+
+        /* * ==========================================================================
+         * 2. LAYOUT & TYPOGRAPHY OVERRIDES
+         * ==========================================================================
+         */
+        body {
+            background-color: var(--land-bg);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; }
+
+        /* Animated Background */
+        .bg-canvas { position: fixed; inset: 0; z-index: var(--z-back); pointer-events: none; overflow: hidden; }
+        .bg-blob {
+            position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.3;
+            animation: pulseBlob 10s infinite alternate;
+        }
+        .blob-1 { width: 800px; height: 800px; background: var(--accent-main); top: -20%; left: -10%; }
+        .blob-2 { width: 600px; height: 600px; background: var(--accent-secondary); bottom: -10%; right: -10%; animation-delay: -5s; }
+        @keyframes pulseBlob { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+
+        /* * ==========================================================================
+         * 3. NAVIGATION BAR (Dynamic)
+         * ==========================================================================
+         */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: var(--z-nav);
+            padding: 20px 0; transition: all 0.3s ease;
+            border-bottom: 1px solid transparent;
+        }
+        .navbar.scrolled {
+            background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px);
+            padding: 15px 0; border-bottom-color: var(--land-border);
+        }
+
+        .nav-container {
+            max-width: 1280px; margin: 0 auto; padding: 0 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .brand-logo {
+            width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent-main), var(--accent-secondary));
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.2rem; box-shadow: 0 0 15px var(--accent-glow);
+        }
+        .brand-text { font-size: 1.5rem; font-weight: 700; color: white; }
+
+        .nav-menu { display: flex; align-items: center; gap: 30px; }
+        .nav-link {
+            color: var(--text-muted); font-weight: 500; font-size: 0.95rem;
+            transition: 0.2s; position: relative;
+        }
+        .nav-link:hover { color: white; }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px;
+            background: var(--accent-main); transition: 0.3s;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* Auth Buttons */
+        .auth-actions { display: flex; align-items: center; gap: 15px; }
         
-        /* 3D FLOATING CARD ANIMATION */
-        .hero-visual {
-            perspective: 1000px;
+        .btn-login {
+            padding: 10px 24px; border-radius: 50px; font-weight: 600; font-size: 0.9rem;
+            border: 1px solid var(--land-border); background: rgba(255,255,255,0.05);
+            color: white; transition: 0.2s;
         }
-        .glass-card-3d {
-            width: 320px;
-            padding: 30px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform-style: preserve-3d;
-            animation: floatCard 6s ease-in-out infinite;
-            position: relative;
+        .btn-login:hover { background: white; color: var(--land-bg); }
+
+        .user-dropdown { position: relative; display: none; }
+        .user-dropdown.active { display: block; }
+        
+        .user-toggle {
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
+            padding: 5px 12px 5px 5px; background: rgba(255,255,255,0.05);
+            border-radius: 50px; border: 1px solid var(--land-border); transition: 0.2s;
+        }
+        .user-toggle:hover { background: rgba(255,255,255,0.1); }
+        .user-avatar {
+            width: 32px; height: 32px; border-radius: 50%; background: var(--accent-main);
+            display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;
+        }
+        .user-name { font-size: 0.9rem; font-weight: 600; color: white; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* * ==========================================================================
+         * 4. HERO SECTION (Main Visual)
+         * ==========================================================================
+         */
+        .hero {
+            position: relative; padding-top: 140px; padding-bottom: 80px;
+            min-height: 85vh; display: flex; align-items: center;
         }
         
-        @keyframes floatCard {
-            0%, 100% { transform: translateY(0) rotateX(0) rotateY(0); }
-            50% { transform: translateY(-20px) rotateX(5deg) rotateY(-5deg); }
+        .hero-grid {
+            display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 60px;
+            align-items: center; max-width: 1280px; margin: 0 auto; padding: 0 24px;
         }
 
-        .card-icon-lg {
-            font-size: 3.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 15px;
-        }
-
-        /* HERO STATS (Kichik statistika) */
-        .hero-stats {
-            display: flex; gap: 20px; margin-top: 40px;
-        }
-        .mini-stat {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px 25px; border-radius: 16px;
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(5px);
-        }
-        .mini-stat h3 { font-size: 1.5rem; color: white; margin: 0; line-height: 1; }
-        .mini-stat p { font-size: 0.85rem; color: var(--text-muted); margin: 5px 0 0 0; }
-
-        /* MAP SECTION */
-        #map {
-            height: 100%; width: 100%; border-radius: 24px;
-            z-index: 1;
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px;
+            background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 20px; color: var(--accent-main); font-size: 0.85rem; font-weight: 600;
+            margin-bottom: 24px;
         }
         
-        /* FILE UPLOAD STYLE */
-        .file-upload-box {
-            border: 2px dashed var(--border-color);
-            padding: 20px; border-radius: 12px;
-            text-align: center; cursor: pointer;
-            transition: var(--transition);
-            background: rgba(0,0,0,0.2);
+        .hero-title {
+            font-size: 3.5rem; line-height: 1.1; font-weight: 800; color: white; margin-bottom: 24px;
         }
-        .file-upload-box:hover {
-            border-color: var(--primary);
-            background: rgba(59, 130, 246, 0.1);
+        .text-gradient {
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .file-icon { font-size: 1.5rem; color: var(--text-muted); margin-bottom: 8px; }
-        .file-text { font-size: 0.9rem; color: var(--text-muted); }
+        
+        .hero-desc {
+            font-size: 1.1rem; color: var(--text-muted); line-height: 1.6;
+            margin-bottom: 40px; max-width: 550px;
+        }
 
-        @media (max-width: 768px) {
-            .hero-stats { justify-content: center; }
-            .glass-card-3d { width: 100%; max-width: 300px; margin: 0 auto; }
+        .hero-btns { display: flex; gap: 16px; }
+        
+        .btn-primary {
+            padding: 14px 32px; background: var(--accent-main); color: white;
+            border-radius: 12px; font-weight: 600; font-size: 1rem; border: none;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px var(--accent-glow);
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px var(--accent-glow); }
+        
+        .btn-outline {
+            padding: 14px 32px; background: transparent; color: white;
+            border: 1px solid var(--land-border); border-radius: 12px;
+            font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.3s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); border-color: white; }
+
+        /* Hero Stats Visual */
+        .hero-visual { position: relative; perspective: 1000px; }
+        .glass-card {
+            background: var(--land-card); backdrop-filter: blur(20px);
+            border: 1px solid var(--land-border); border-radius: 24px; padding: 30px;
+            transform: rotateY(-10deg) rotateX(5deg); transition: 0.5s;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        .glass-card:hover { transform: rotateY(0) rotateX(0); }
+
+        .stat-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px solid var(--land-border);
+        }
+        .stat-row:last-child { border-bottom: none; }
+        
+        .stat-info h3 { font-size: 1.5rem; color: white; margin: 0; }
+        .stat-info p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+        .stat-icon { font-size: 1.5rem; width: 50px; height: 50px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+
+        /* * ==========================================================================
+         * 5. MAP SECTION (Interactive GIS)
+         * ==========================================================================
+         */
+        .map-section { position: relative; padding: 60px 24px; background: #0b1120; border-top: 1px solid var(--land-border); }
+        
+        .section-header { text-align: center; margin-bottom: 40px; }
+        .section-title { font-size: 2.2rem; color: white; margin-bottom: 10px; }
+        .section-sub { color: var(--text-muted); }
+
+        .map-wrapper {
+            max-width: 1280px; margin: 0 auto; height: 600px;
+            border-radius: 24px; overflow: hidden; border: 1px solid var(--land-border);
+            position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        #mainMap { width: 100%; height: 100%; background: #1e293b; z-index: 1; }
+
+        /* Custom Map Controls */
+        .map-overlay-stats {
+            position: absolute; top: 20px; right: 20px; z-index: 400;
+            background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px);
+            padding: 15px; border-radius: 12px; border: 1px solid var(--land-border);
+            min-width: 200px;
+        }
+        .overlay-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; color: white; font-size: 0.9rem; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot.red { background: var(--st-err); box-shadow: 0 0 8px var(--st-err); }
+        .dot.green { background: var(--st-success); box-shadow: 0 0 8px var(--st-success); }
+        .dot.yellow { background: var(--st-warn); box-shadow: 0 0 8px var(--st-warn); }
+
+        /* * ==========================================================================
+         * 6. MODAL: REPORT FORM (Complex)
+         * ==========================================================================
+         */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            z-index: var(--z-modal); display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: 0.3s;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+
+        .modal-card {
+            background: #1e293b; width: 90%; max-width: 600px; max-height: 90vh;
+            border-radius: 24px; border: 1px solid var(--land-border);
+            display: flex; flex-direction: column; transform: scale(0.95); transition: 0.3s;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);
+        }
+        .modal-overlay.active .modal-card { transform: scale(1); }
+
+        .modal-header {
+            padding: 24px; border-bottom: 1px solid var(--land-border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 700; color: white; margin: 0; }
+        
+        .modal-body { padding: 30px; overflow-y: auto; }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 12px 16px; background: #334155;
+            border: 1px solid var(--land-border); border-radius: 10px;
+            color: white; font-size: 1rem; transition: 0.2s;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--accent-main); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); outline: none;
+        }
+
+        .geo-btn {
+            width: 100%; padding: 12px; background: rgba(59, 130, 246, 0.1);
+            border: 1px dashed var(--accent-main); border-radius: 10px;
+            color: var(--accent-main); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s; margin-top: 5px;
+        }
+        .geo-btn:hover { background: rgba(59, 130, 246, 0.2); }
+        .geo-status { font-size: 0.8rem; margin-top: 5px; display: none; }
+        .geo-status.success { color: var(--st-success); display: block; }
+
+        .file-drop {
+            border: 2px dashed var(--land-border); padding: 20px; text-align: center;
+            border-radius: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .file-drop:hover { border-color: var(--accent-main); background: rgba(255,255,255,0.02); }
+        .file-text { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* * ==========================================================================
+         * 7. FOOTER & UTILS
+         * ==========================================================================
+         */
+        .footer { padding: 40px 24px; background: #020617; border-top: 1px solid var(--land-border); text-align: center; }
+        .footer-text { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Toast */
+        .toast-box { position: fixed; top: 20px; right: 20px; z-index: var(--z-toast); display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            min-width: 300px; padding: 16px; background: #1e293b; border-left: 4px solid;
+            border-radius: 8px; color: white; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideIn 0.3s;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        /* Spinner */
+        .spinner {
+            width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white; border-radius: 50%;
+            animation: spin 0.8s linear infinite; display: none;
+        }
+        .btn-primary.loading .spinner { display: block; }
+        .btn-primary.loading span, .btn-primary.loading i { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Mobile */
+        @media (max-width: 900px) {
+            .hero-grid { grid-template-columns: 1fr; padding-top: 100px; }
+            .hero-visual { display: none; } /* Hide 3D card on mobile for performance */
+            .nav-menu { display: none; } /* Simplified Nav */
+            .hero-title { font-size: 2.5rem; }
         }
     </style>
 </head>
 <body>
 
-    <div class="background-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
+    <div class="bg-canvas">
+        <div class="bg-blob blob-1"></div>
+        <div class="bg-blob blob-2"></div>
     </div>
 
-    <div class="toast-container" id="toastBox"></div>
+    <div class="toast-box" id="toastContainer"></div>
 
-    <header class="glass-header">
-        <div class="logo">
-            <i class="fa-solid fa-shield-halved" style="color:var(--primary)"></i>
-            <span>NIGOH</span>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <div class="brand-logo"><i class="fa-solid fa-shield-halved"></i></div>
+                <span class="brand-text">NIGOH</span>
+            </a>
+
+            <div class="nav-menu">
+                <a href="#" class="nav-link">Asosiy</a>
+                <a href="#features" class="nav-link">Imkoniyatlar</a>
+                <a href="#mapSection" class="nav-link">Xarita</a>
+                <a href="#" class="nav-link">Qo'llanma</a>
+            </div>
+
+            <div class="auth-actions" id="authBox">
+                <a href="login.html" class="btn-login">Kirish</a>
+            </div>
         </div>
-        <nav>
-            <ul>
-                <li><a href="#" class="nav-link active">Asosiy</a></li>
-                <li><a href="profile.html" class="nav-link">Profil</a></li>
-                <li><a href="login.html" class="nav-link btn-login" id="authBtn">Kirish</a></li>
-            </ul>
-        </nav>
-    </header>
+    </nav>
 
-    <main>
-        <section class="hero">
+    <section class="hero">
+        <div class="hero-grid">
             <div class="hero-content">
-                <div class="badge-new" style="display:inline-block; margin-bottom:15px; padding:6px 15px; border-radius:20px; font-size:0.85rem;">
-                    🚀 Jamoatchilik nazorati 2.0
+                <div class="hero-badge">
+                    <i class="fa-solid fa-bolt"></i> Jamoatchilik nazorati 2.0
                 </div>
-                <h1>Haqiqatga <br><span>Tik Boq</span></h1>
-                <p>Korrupsiya, infratuzilma va qonunbuzarlik holatlarini anonim tarzda xabar bering. Biz sizning ovozingizni tegishli joyga yetkazamiz.</p>
-                
-                <div class="hero-buttons">
-                    <button class="btn-primary" id="openModalBtn">
-                        Xabar Berish <i class="fa-solid fa-paper-plane"></i>
+                <h1 class="hero-title">
+                    Muammolarga <br>
+                    <span class="text-gradient">Tik Boqing</span>
+                </h1>
+                <p class="hero-desc">
+                    Korrupsiya, infratuzilma va qonunbuzarlik holatlarini anonim tarzda xabar bering. 
+                    Biz sizning ovozingizni tegishli joyga yetkazamiz va nazorat qilamiz.
+                </p>
+                <div class="hero-btns">
+                    <button class="btn-primary" onclick="App.openReportModal()">
+                        <i class="fa-solid fa-paper-plane"></i> Xabar Berish
                     </button>
-                    <button class="btn-secondary" onclick="document.getElementById('mapSection').scrollIntoView({behavior: 'smooth'})">
+                    <button class="btn-outline" onclick="document.getElementById('mapSection').scrollIntoView()">
                         <i class="fa-solid fa-map"></i> Xaritani Ko'rish
                     </button>
-                </div>
-
-                <div class="hero-stats">
-                    <div class="mini-stat">
-                        <h3 id="statTotal">0+</h3>
-                        <p>Xabarlar</p>
-                    </div>
-                    <div class="mini-stat">
-                        <h3 id="statSolved" style="color:var(--success)">0%</h3>
-                        <p>Hal etildi</p>
-                    </div>
-                    <div class="mini-stat">
-                        <h3>24/7</h3>
-                        <p>Monitoring</p>
-                    </div>
                 </div>
             </div>
 
             <div class="hero-visual">
-                <div class="glass-card-3d">
-                    <div class="card-icon-lg"><i class="fa-solid fa-eye"></i></div>
-                    <h3 style="color:white; margin-bottom:10px;">Shaffof Tizim</h3>
-                    <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.5;">Har bir murojaat blokcheyn kabi himoyalangan va to'g'ridan-to'g'ri mas'ullarga yetkaziladi.</p>
-                    
-                    <div style="margin-top:20px; display:flex; align-items:center; gap:10px;">
-                        <div style="width:40px; height:40px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center;">🛡️</div>
-                        <div style="font-size:0.8rem; color:white;">
-                            <div>100% Anonimlik</div>
-                            <div style="color:var(--success)">Kafolatlangan</div>
+                <div class="glass-card">
+                    <div class="stat-row">
+                        <div class="stat-info">
+                            <h3 id="liveTotal">0+</h3>
+                            <p>Jami Murojaatlar</p>
                         </div>
+                        <div class="stat-icon" style="color:#3b82f6"><i class="fa-solid fa-layer-group"></i></div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-info">
+                            <h3 id="liveSolved" style="color:#10b981">0%</h3>
+                            <p>Hal Etilgan</p>
+                        </div>
+                        <div class="stat-icon" style="color:#10b981"><i class="fa-solid fa-circle-check"></i></div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-info">
+                            <h3>24/7</h3>
+                            <p>Monitoring Tizimi</p>
+                        </div>
+                        <div class="stat-icon" style="color:#f59e0b"><i class="fa-solid fa-video"></i></div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="map-section" id="mapSection">
-            <h2 class="auth-title" style="text-align:center; font-size:2rem; margin-bottom:10px;">Muammolar Xaritasi</h2>
-            <p style="text-align:center; color:var(--text-muted); margin-bottom:30px;">Real vaqt rejimida kelib tushayotgan murojaatlar va ularning holati.</p>
+    <section class="map-section" id="mapSection">
+        <div class="section-header">
+            <h2 class="section-title">Muammolar Xaritasi</h2>
+            <p class="section-sub">Real vaqt rejimida kelib tushayotgan murojaatlar va ularning holati</p>
+        </div>
+
+        <div class="map-wrapper">
+            <div id="mainMap"></div>
             
-            <div class="map-container-glass">
-                <div id="map"></div>
-                <div style="position:absolute; bottom:20px; left:20px; z-index:400; background:var(--panel-bg); padding:10px; border-radius:10px; border:1px solid var(--border-color); font-size:0.8rem; color:white;">
-                    <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px;"><span style="width:10px; height:10px; background:#ef4444; border-radius:50%;"></span> Yangi / Muammo</div>
-                    <div style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; background:#10b981; border-radius:50%;"></span> Hal etilgan</div>
+            <div class="map-overlay-stats">
+                <div class="overlay-item">
+                    <div class="dot red"></div> <span>Yangi / Muammo</span>
+                </div>
+                <div class="overlay-item">
+                    <div class="dot yellow"></div> <span>Jarayonda</span>
+                </div>
+                <div class="overlay-item">
+                    <div class="dot green"></div> <span>Hal Etilgan</span>
                 </div>
             </div>
-        </section>
-    </main>
-
-    <footer class="glass-footer">
-        <div class="footer-content">
-            <div class="footer-col brand-col">
-                <div class="logo"><i class="fa-solid fa-shield-halved" style="color:var(--primary)"></i> NIGOH</div>
-                <p style="margin-top:15px; color:var(--text-muted); font-size:0.9rem;">
-                    Korrupsiyaga qarshi kurashish va shaffoflikni ta'minlash uchun xalqchil platforma.
-                </p>
-            </div>
-            
-            <div class="footer-col">
-                <h4 style="color:white; margin-bottom:15px;">Platforma</h4>
-                <a href="#">Loyiha haqida</a>
-                <a href="#">Qo'llanma</a>
-                <a href="admin.html">Admin Panel</a>
-            </div>
-
-            <div class="footer-col">
-                <h4 style="color:white; margin-bottom:15px;">Bog'lanish</h4>
-                <a href="#"><i class="fa-solid fa-location-dot"></i> Samarqand, Urgut</a>
-                <a href="#"><i class="fa-solid fa-phone"></i> +998 93 107 88 16</a>
-                <a href="#"><i class="fa-brands fa-telegram"></i> @nigoh_bot</a>
-            </div>
         </div>
-        <div class="footer-bottom">
-            <p>© 2026 Nigoh Loyihasi. Barcha huquqlar himoyalangan.</p>
-        </div>
+    </section>
+
+    <footer class="footer">
+        <p class="footer-text">&copy; 2026 Nigoh Loyihasi. Barcha huquqlar himoyalangan.</p>
     </footer>
 
     <div class="modal-overlay" id="reportModal">
-        <div class="modal-content">
-            <i class="fa-solid fa-xmark" id="closeModal" style="position:absolute; top:20px; right:20px; font-size:1.5rem; cursor:pointer; color:var(--text-muted);"></i>
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title">Murojaat Yuborish</h3>
+                <button onclick="App.closeReportModal()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
             
-            <h2 style="color:white; margin-bottom:5px;">Muammo haqida xabar</h2>
-            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">Ma'lumotlar anonim qoladi.</p>
-            
-            <form id="reportForm">
-                <div class="input-group">
-                    <label>Muammo turi</label>
-                    <select id="type" required>
-                        <option value="" disabled selected>Tanlang...</option>
-                        <option value="Pora olish/berish">💰 Pora olish/berish</option>
-                        <option value="Infratuzilma">🏗️ Infratuzilma (Yo'l, Gaz, Svet)</option>
-                        <option value="Vakolat suiiste'moli">👮 Vakolatni suiiste'mol qilish</option>
-                        <option value="O'g'rilik">🚫 O'g'rilik va Jinoyat</option>
-                        <option value="Ekologiya">🌳 Ekologiya buzilishi</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label>Manzil</label>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="address" placeholder="Mo'ljal yoki manzil..." required style="margin-bottom:0;">
-                        <button type="button" id="geoBtn" class="btn-secondary" style="padding:10px 15px;" title="Joylashuvimni olish">
-                            <i class="fa-solid fa-location-crosshairs"></i>
-                        </button>
+            <div class="modal-body">
+                <form id="reportForm">
+                    <div class="form-group">
+                        <label class="form-label">Muammo Turi</label>
+                        <select id="rType" class="form-select" required>
+                            <option value="" disabled selected>Tanlang...</option>
+                            <option value="Infratuzilma">🏗️ Yo'l va Infratuzilma</option>
+                            <option value="Kommunal">💡 Gaz, Svet, Suv</option>
+                            <option value="Korrupsiya">💰 Korrupsiya holati</option>
+                            <option value="Ekologiya">🌳 Ekologiya buzilishi</option>
+                            <option value="Boshqa">📝 Boshqa</option>
+                        </select>
                     </div>
-                    <input type="hidden" id="lat">
-                    <input type="hidden" id="lng">
-                    <small id="geoStatus" style="color:var(--success); font-size:0.8rem; display:none; margin-top:5px;">
-                        <i class="fa-solid fa-check"></i> Joylashuv aniqlandi!
-                    </small>
-                </div>
 
-                <div class="input-group">
-                    <label>Batafsil ma'lumot</label>
-                    <textarea id="desc" rows="3" placeholder="Muammo haqida qisqacha yozing..." required></textarea>
-                </div>
-
-                <div class="input-group">
-                    <label>Isbot (Rasm/Video)</label>
-                    <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
-                        <div class="file-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                        <div class="file-text" id="fileName">Faylni tanlash (Ixtiyoriy)</div>
-                        <input type="file" id="fileInput" hidden accept="image/*,video/*">
+                    <div class="form-group">
+                        <label class="form-label">Tavsif (Batafsil)</label>
+                        <textarea id="rDesc" class="form-textarea" rows="4" placeholder="Muammo haqida to'liq yozing..." required></textarea>
                     </div>
-                </div>
 
-                <button type="submit" class="btn-primary full-width" id="submitBtn">
-                    YUBORISH <i class="fa-solid fa-paper-plane" style="margin-left:5px;"></i>
-                </button>
-            </form>
+                    <div class="form-group">
+                        <label class="form-label">Manzil</label>
+                        <input type="text" id="rAddress" class="form-input" placeholder="Mo'ljal yoki aniq manzil" required>
+                        
+                        <div class="geo-btn" onclick="App.getGeoLocation()">
+                            <i class="fa-solid fa-location-crosshairs"></i> GPS orqali aniqlash
+                        </div>
+                        <div class="geo-status" id="geoStatus"><i class="fa-solid fa-check"></i> Joylashuv aniqlandi!</div>
+                        <input type="hidden" id="rLat">
+                        <input type="hidden" id="rLng">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Fayl yuklash (Rasm/Video)</label>
+                        <label class="file-drop">
+                            <input type="file" id="rFile" hidden accept="image/*,video/*">
+                            <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem; color:var(--accent-main); margin-bottom:10px;"></i>
+                            <div class="file-text" id="fileName">Faylni tanlash (Ixtiyoriy)</div>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="width:100%; justify-content:center;" id="submitBtn">
+                        <span class="spinner"></span>
+                        <span><i class="fa-solid fa-paper-plane"></i> Yuborish</span>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script> <script type="module">
+        import { auth, db, collection, addDoc, getDocs, onAuthStateChanged, signOut, query, orderBy } from './firebase-config.js';
 
-    <script type="module">
-        import { auth, db, addDoc, collection, onAuthStateChanged, getDocs, signOut } from './firebase-config.js';
-
-        // --- GLOBAL VARS ---
-        let map;
-        let currentUser = null;
-
-        // --- AUTH CHECK ---
-        const authBtn = document.getElementById('authBtn');
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                authBtn.innerText = "Chiqish";
-                authBtn.style.borderColor = "var(--danger)";
-                authBtn.style.color = "var(--danger)";
-                authBtn.href = "#";
-                authBtn.onclick = (e) => {
-                    e.preventDefault();
-                    if(confirm("Tizimdan chiqmoqchimisiz?")) {
-                        signOut(auth).then(() => window.location.reload());
-                    }
-                };
-            } else {
-                authBtn.innerText = "Kirish";
-                authBtn.href = "login.html";
+        // --- ENTERPRISE APP ENGINE ---
+        class NigohApp {
+            constructor() {
+                this.user = null;
+                this.map = null;
+                this.markers = [];
+                this.reports = [];
+                
+                this.init();
             }
-        });
 
-        // --- MAP INITIALIZATION ---
-        function initMap() {
-            // Urgut coordinates default
-            map = L.map('map').setView([39.4056, 67.2430], 12);
-            
-            // Dark Theme Tiles
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { 
-                attribution: '&copy; OpenStreetMap & CARTO',
-                maxZoom: 19
-            }).addTo(map);
+            init() {
+                // 1. Navbar Scroll Effect
+                window.addEventListener('scroll', () => {
+                    const nav = document.getElementById('navbar');
+                    if(window.scrollY > 50) nav.classList.add('scrolled');
+                    else nav.classList.remove('scrolled');
+                });
 
-            loadMapData();
-        }
+                // 2. Auth Listener
+                onAuthStateChanged(auth, (user) => {
+                    this.user = user;
+                    this.updateAuthUI();
+                });
 
-        // --- LOAD DATA FOR MAP & STATS ---
-        async function loadMapData() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "reports"));
-                let heatData = [];
-                let total = 0;
-                let solved = 0;
+                // 3. Initialize Map
+                this.initMap();
 
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    total++;
-                    if(data.status === "Hal etildi") solved++;
+                // 4. Load Data
+                this.loadReports();
 
-                    if (data.latitude && data.longitude) {
-                        // Heatmap Data
-                        heatData.push([data.latitude, data.longitude, 0.6]);
+                // 5. Form Handler
+                document.getElementById('reportForm').addEventListener('submit', (e) => this.handleReportSubmit(e));
+            }
 
-                        // Markers
-                        let color = data.status === "Hal etildi" ? "#10b981" : "#ef4444";
-                        
-                        const marker = L.circleMarker([data.latitude, data.longitude], {
-                            radius: 6,
-                            fillColor: color,
-                            color: "#fff",
-                            weight: 1,
-                            opacity: 1,
-                            fillOpacity: 0.8
-                        }).addTo(map);
-
-                        marker.bindPopup(`
-                            <div style="font-family:'Inter',sans-serif; min-width:150px;">
-                                <b style="color:${color}">${data.type}</b><br>
-                                <span style="font-size:0.85rem; color:#333;">${data.description}</span><br>
-                                <small style="color:#666;">${data.date.split(',')[0]}</small>
+            updateAuthUI() {
+                const box = document.getElementById('authBox');
+                if (this.user) {
+                    box.innerHTML = `
+                        <div class="user-dropdown active">
+                            <div class="user-toggle" onclick="location.href='profile.html'">
+                                <div class="user-avatar">${(this.user.displayName||'U').charAt(0).toUpperCase()}</div>
+                                <span class="user-name">${this.user.displayName || 'Foydalanuvchi'}</span>
                             </div>
-                        `);
-                    }
-                });
-
-                // Add Heatmap Layer
-                if (heatData.length > 0) {
-                    L.heatLayer(heatData, { radius: 25, blur: 15, maxZoom: 17 }).addTo(map);
+                        </div>
+                    `;
+                } else {
+                    box.innerHTML = `<a href="login.html" class="btn-login">Kirish</a>`;
                 }
-
-                // Update Stats UI
-                animateValue("statTotal", 0, total, 1000);
-                const percent = total > 0 ? Math.round((solved / total) * 100) : 0;
-                document.getElementById('statSolved').innerText = percent + "%";
-
-            } catch (error) {
-                console.error("Map Data Error:", error);
             }
-        }
 
-        // --- ANIMATE NUMBERS ---
-        function animateValue(id, start, end, duration) {
-            if (start === end) return;
-            const range = end - start;
-            let current = start;
-            const increment = end > start ? 1 : -1;
-            const stepTime = Math.abs(Math.floor(duration / range));
-            const obj = document.getElementById(id);
-            const timer = setInterval(() => {
-                current += increment;
-                obj.innerHTML = current + "+";
-                if (current == end) clearInterval(timer);
-            }, stepTime);
-        }
+            // --- MAP SYSTEM ---
+            initMap() {
+                // Default: Tashkent Center (Fallback)
+                this.map = L.map('mainMap').setView([41.311, 69.240], 12);
+                
+                // Dark Theme Tiles
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; OpenStreetMap & CARTO',
+                    maxZoom: 19
+                }).addTo(this.map);
+            }
 
-        // --- GPS LOGIC ---
-        const geoBtn = document.getElementById('geoBtn');
-        const geoStatus = document.getElementById('geoStatus');
-        
-        geoBtn.addEventListener('click', () => {
-            if (navigator.geolocation) {
-                geoBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
+            async loadReports() {
+                try {
+                    const q = query(collection(db, "reports")); // Real app would use limits
+                    const snapshot = await getDocs(q);
+                    
+                    this.reports = [];
+                    let solvedCount = 0;
+
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        this.reports.push(data);
+                        if(data.status === 'Hal etildi') solvedCount++;
                         
-                        document.getElementById('lat').value = lat;
-                        document.getElementById('lng').value = lng;
-                        
-                        const addrInput = document.getElementById('address');
-                        if(!addrInput.value) {
-                            addrInput.value = `GPS Lokatsiya (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                        // Add Marker
+                        if(data.latitude && data.longitude) {
+                            this.addMarker(data);
                         }
+                    });
 
-                        geoBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
-                        geoBtn.style.background = 'var(--success)';
-                        geoBtn.style.borderColor = 'var(--success)';
-                        geoStatus.style.display = 'block';
-                        showToast("Topildi", "Joylashuvingiz aniqlandi!", "success");
-                    },
-                    (error) => {
-                        geoBtn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
-                        showToast("Xatolik", "GPS ga ruxsat bering yoki yoqing.", "error");
-                    }
-                );
-            } else {
-                showToast("Xatolik", "Brauzeringiz GPS ni qo'llamaydi.", "error");
-            }
-        });
+                    // Update Stats
+                    this.animateStats(this.reports.length, solvedCount);
 
-        // --- FILE INPUT UI ---
-        document.getElementById('fileInput').addEventListener('change', function() {
-            if(this.files.length > 0) {
-                document.getElementById('fileName').innerText = "Tanlandi: " + this.files[0].name;
-                document.getElementById('fileName').style.color = "var(--primary)";
-                document.querySelector('.file-icon').style.color = "var(--primary)";
-                document.querySelector('.file-upload-box').style.borderColor = "var(--primary)";
-            }
-        });
-
-        // --- MODAL CONTROLS ---
-        const modal = document.getElementById('reportModal');
-        const openBtn = document.getElementById('openModalBtn');
-        const closeBtn = document.getElementById('closeModal');
-
-        openBtn.onclick = () => {
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('show'), 10);
-        };
-        
-        closeBtn.onclick = () => {
-            modal.classList.remove('show');
-            setTimeout(() => modal.style.display = 'none', 300);
-        };
-
-        // --- FORM SUBMISSION ---
-        document.getElementById('reportForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            if (!currentUser) {
-                showToast("Diqqat", "Xabar yuborish uchun tizimga kiring!", "warning");
-                setTimeout(() => window.location.href = "login.html", 1500);
-                return;
+                } catch (e) {
+                    console.error("Map Data Error:", e);
+                }
             }
 
-            const submitBtn = document.getElementById('submitBtn');
-            const originalBtnContent = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yuborilmoqda...';
-            submitBtn.disabled = true;
+            addMarker(data) {
+                let color = '#ef4444'; // Red
+                if(data.status === 'Hal etildi') color = '#10b981'; // Green
+                if(data.status === 'Jarayonda') color = '#f59e0b'; // Yellow
 
-            const type = document.getElementById('type').value;
-            const address = document.getElementById('address').value;
-            const desc = document.getElementById('desc').value;
-            const lat = document.getElementById('lat').value;
-            const lng = document.getElementById('lng').value;
-            const file = document.getElementById('fileInput').files[0];
-
-            try {
-                // 1. Save to Firebase
-                const docRef = await addDoc(collection(db, "reports"), {
-                    uid: currentUser.uid,
-                    email: currentUser.email,
-                    type: type,
-                    address: address,
-                    description: desc,
-                    status: "Yangi",
-                    latitude: lat ? parseFloat(lat) : null,
-                    longitude: lng ? parseFloat(lng) : null,
-                    date: new Date().toLocaleString('uz-UZ'),
-                    timestamp: new Date()
+                // Custom Pulse Icon
+                const customIcon = L.divIcon({
+                    className: 'custom-map-icon',
+                    html: `<div style="
+                        width: 12px; height: 12px; background: ${color}; 
+                        border-radius: 50%; box-shadow: 0 0 10px ${color};
+                        border: 2px solid white;"></div>`,
+                    iconSize: [12, 12]
                 });
 
-                // 2. Send to Telegram (via Backend)
-                const formData = new FormData();
-                formData.append('docId', docRef.id);
-                formData.append('type', type);
-                formData.append('address', address);
-                formData.append('desc', desc);
-                formData.append('email', currentUser.email);
-                formData.append('name', currentUser.displayName || "Foydalanuvchi");
-                if(lat) formData.append('lat', lat);
-                if(lng) formData.append('lng', lng);
-                if(file) formData.append('document', file);
-
-                // Use your Render URL here
-                await fetch("https://nigoh-bot.onrender.com/send-report", {
-                    method: 'POST',
-                    body: formData
-                });
-
-                showToast("Muvaffaqiyatli", "Xabaringiz adminga yuborildi!", "success");
+                const marker = L.marker([data.latitude, data.longitude], {icon: customIcon}).addTo(this.map);
                 
-                // Cleanup
-                document.getElementById('reportForm').reset();
-                document.getElementById('fileName').innerText = "Faylni tanlash (Ixtiyoriy)";
-                document.getElementById('geoStatus').style.display = 'none';
-                geoBtn.style.background = '';
-                geoBtn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
-                
-                modal.classList.remove('show');
-                setTimeout(() => modal.style.display = 'none', 300);
-                
-                // Refresh Map
-                initMap();
-
-            } catch (error) {
-                console.error(error);
-                showToast("Xatolik", "Serverga ulanishda xato: " + error.message, "error");
-            } finally {
-                submitBtn.innerHTML = originalBtnContent;
-                submitBtn.disabled = false;
+                marker.bindPopup(`
+                    <div style="font-family:'Inter'; min-width:200px;">
+                        <b style="color:${color}; text-transform:uppercase; font-size:0.8rem;">${data.type}</b>
+                        <p style="margin:5px 0; font-size:0.9rem; color:#333;">${data.description.substring(0,80)}...</p>
+                        <small style="color:#666;">${data.date?.split(',')[0] || ''}</small>
+                    </div>
+                `);
             }
-        });
 
-        // --- TOAST FUNCTION ---
-        function showToast(title, message, type) {
-            const box = document.getElementById('toastBox');
-            const toast = document.createElement('div');
-            let color = type === 'success' ? 'var(--success)' : (type === 'error' ? 'var(--danger)' : 'var(--warning)');
-            let icon = type === 'success' ? '<i class="fa-solid fa-check"></i>' : (type === 'error' ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-info"></i>');
+            // --- REPORT SUBMISSION ---
+            openReportModal() {
+                if(!this.user) {
+                    this.showToast('warning', 'Diqqat', 'Xabar yuborish uchun tizimga kiring!');
+                    setTimeout(() => location.href = 'login.html', 1500);
+                    return;
+                }
+                document.getElementById('reportModal').classList.add('active');
+            }
 
-            toast.className = 'toast';
-            toast.style.borderColor = color;
-            toast.innerHTML = `
-                <div style="font-size:1.5rem; color:${color}">${icon}</div>
-                <div>
-                    <h4 style="margin:0; font-size:0.95rem;">${title}</h4>
-                    <p style="margin:2px 0 0; font-size:0.85rem; opacity:0.8">${message}</p>
-                </div>
-            `;
-            box.appendChild(toast);
-            setTimeout(() => {
-                toast.style.animation = 'slideInRight 0.4s reverse forwards';
-                setTimeout(() => toast.remove(), 400);
-            }, 3000);
+            closeReportModal() {
+                document.getElementById('reportModal').classList.remove('active');
+            }
+
+            getGeoLocation() {
+                const btn = document.querySelector('.geo-btn');
+                const status = document.getElementById('geoStatus');
+                
+                if (navigator.geolocation) {
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Aniqlanmoqda...';
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            const { latitude, longitude } = pos.coords;
+                            document.getElementById('rLat').value = latitude;
+                            document.getElementById('rLng').value = longitude;
+                            document.getElementById('rAddress').value = `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                            
+                            btn.innerHTML = '<i class="fa-solid fa-check"></i> Qayta aniqlash';
+                            status.classList.add('success');
+                            this.showToast('success', 'Joylashuv', 'Koordinatalar aniqlandi!');
+                        },
+                        (err) => {
+                            btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Xatolik';
+                            this.showToast('error', 'Xatolik', 'GPS ruxsati berilmadi.');
+                        }
+                    );
+                } else {
+                    this.showToast('error', 'Xato', 'Brauzer GPS ni qo\'llamaydi.');
+                }
+            }
+
+            async handleReportSubmit(e) {
+                e.preventDefault();
+                const btn = document.getElementById('submitBtn');
+                
+                // Form Data
+                const type = document.getElementById('rType').value;
+                const desc = document.getElementById('rDesc').value;
+                const addr = document.getElementById('rAddress').value;
+                const lat = document.getElementById('rLat').value;
+                const lng = document.getElementById('rLng').value;
+
+                if(!type || !desc || !addr) return this.showToast('warning', 'Xato', 'Barcha maydonlarni to\'ldiring');
+
+                // Loading
+                btn.classList.add('loading');
+                btn.disabled = true;
+
+                try {
+                    await addDoc(collection(db, "reports"), {
+                        uid: this.user.uid,
+                        email: this.user.email,
+                        type: type,
+                        description: desc,
+                        address: addr,
+                        latitude: lat ? parseFloat(lat) : null,
+                        longitude: lng ? parseFloat(lng) : null,
+                        status: "Yangi",
+                        date: new Date().toLocaleString('uz-UZ'),
+                        timestamp: new Date()
+                    });
+
+                    this.showToast('success', 'Muvaffaqiyatli', 'Murojaatingiz qabul qilindi!');
+                    document.getElementById('reportForm').reset();
+                    this.closeReportModal();
+                    
+                    // Refresh Map
+                    this.loadReports();
+
+                } catch (error) {
+                    console.error(error);
+                    this.showToast('error', 'Xatolik', 'Serverga ulanishda xato.');
+                } finally {
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                }
+            }
+
+            // --- UTILS ---
+            animateStats(total, solved) {
+                const percent = total > 0 ? Math.round((solved / total) * 100) : 0;
+                
+                // Simple Counter Animation
+                const tEl = document.getElementById('liveTotal');
+                const sEl = document.getElementById('liveSolved');
+                tEl.innerText = total + "+";
+                sEl.innerText = percent + "%";
+            }
+
+            showToast(type, title, msg) {
+                const box = document.getElementById('toastContainer');
+                const t = document.createElement('div');
+                t.className = 'toast';
+                const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b' };
+                const icons = { success: 'check', error: 'circle-xmark', warning: 'triangle-exclamation' };
+                
+                t.style.borderLeftColor = colors[type];
+                t.innerHTML = `
+                    <i class="fa-solid fa-${icons[type]}" style="color:${colors[type]}; font-size:1.2rem;"></i>
+                    <div><h4 style="margin:0;font-size:0.9rem;">${title}</h4><p style="margin:0;font-size:0.8rem;opacity:0.8">${msg}</p></div>
+                `;
+                box.appendChild(t);
+                setTimeout(() => t.remove(), 3000);
+            }
         }
 
-        // --- INIT APP ---
-        window.addEventListener('load', initMap);
+        // File Input Change
+        document.getElementById('rFile').addEventListener('change', function() {
+            if(this.files.length > 0) {
+                document.getElementById('fileName').innerText = this.files[0].name;
+                document.querySelector('.file-drop').style.borderColor = '#3b82f6';
+            }
+        });
 
+        // Initialize Global App
+        window.App = new NigohApp();
     </script>
 </body>
 </html>
