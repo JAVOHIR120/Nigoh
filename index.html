@@ -539,65 +539,186 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script type="module">
-        import { auth, db, storage, collection, addDoc, getDocs, query, orderBy, onAuthStateChanged, ref, uploadBytes, getDownloadURL, sendTelegramNotification } from './config.js';
+        // Storage importlarini olib tashladik
+        import { auth, db, collection, addDoc, getDocs, query, orderBy, onAuthStateChanged, sendTelegramNotification } from './config.js';
 
-        // --- PARTICLE BACKGROUND ENGINE ---
-        class ParticleEngine {
-            constructor(id) {
-                this.canvas = document.getElementById(id);
-                this.ctx = this.canvas.getContext('2d');
-                this.resize();
-                window.addEventListener('resize', () => this.resize());
-                this.particles = [];
+        class NigohApp {
+            constructor() {
+                this.user = null;
+                this.map = null;
+                this.isAdmin = false;
+                this.isSubmitting = false;
                 this.init();
-                this.animate();
             }
-            resize() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-            }
+
             init() {
-                const count = Math.min(window.innerWidth / 15, 80);
-                for(let i=0; i<count; i++) {
-                    this.particles.push({
-                        x: Math.random() * this.canvas.width,
-                        y: Math.random() * this.canvas.height,
-                        vx: (Math.random() - 0.5) * 0.5,
-                        vy: (Math.random() - 0.5) * 0.5,
-                        size: Math.random() * 2
+                console.log("✅ Tizim ishga tushdi (No-Storage Mode)");
+
+                window.onload = () => {
+                    const loader = document.getElementById('preloader');
+                    if(loader) {
+                        loader.style.opacity = '0';
+                        setTimeout(() => loader.style.display='none', 500);
+                    }
+                };
+
+                onAuthStateChanged(auth, (user) => {
+                    this.user = user;
+                    this.isAdmin = (user?.email === "islomovjavohir939@gmail.com");
+                    this.updateUI();
+                });
+
+                this.initMap();
+                this.loadData();
+
+                // Formani ushlash
+                const form = document.getElementById('reportForm');
+                if(form) form.onsubmit = (e) => this.submitReport(e);
+
+                // Fayl preview
+                const fileIn = document.getElementById('rFile');
+                if(fileIn) {
+                    fileIn.addEventListener('change', (e) => {
+                        const file = e.target.files[0];
+                        if(file) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                document.getElementById('imagePreview').src = e.target.result;
+                                document.getElementById('imagePreview').style.display = 'block';
+                                document.getElementById('uploadText').style.display = 'none';
+                            };
+                            reader.readAsDataURL(file);
+                        }
                     });
                 }
             }
-            animate() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.ctx.fillStyle = 'rgba(59, 130, 246, 0.3)'; // Primary Color Dots
-                this.ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)'; // Line Color
-                
-                for(let i=0; i<this.particles.length; i++) {
-                    let p = this.particles[i];
-                    p.x += p.vx; p.y += p.vy;
-                    if(p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
-                    if(p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
-                    
-                    this.ctx.beginPath();
-                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-                    this.ctx.fill();
 
-                    for(let j=i+1; j<this.particles.length; j++) {
-                        let p2 = this.particles[j];
-                        let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                        if(dist < 150) {
-                            this.ctx.lineWidth = 1 - (dist/150);
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(p.x, p.y);
-                            this.ctx.lineTo(p2.x, p2.y);
-                            this.ctx.stroke();
-                        }
-                    }
+            // ... (updateUI, initMap, loadData, addMarker, getGeoLocation funksiyalari o'zgarmaydi) ...
+            updateUI() {
+                const box = document.getElementById('authBox');
+                if(!box) return;
+                if (this.user) {
+                    const adminBtn = this.isAdmin ? `<a href="admin.html" class="btn-auth" style="background:#f59e0b; border:none; margin-right:10px;">Admin</a>` : '';
+                    box.innerHTML = `${adminBtn}<div class="user-widget" onclick="location.href='profile.html'"><div class="user-avatar">${this.user.email[0].toUpperCase()}</div><span class="user-name">Profil</span></div>`;
+                } else {
+                    box.innerHTML = `<a href="login.html" class="btn-auth"><i class="fa-regular fa-user"></i> Kirish</a>`;
                 }
-                requestAnimationFrame(() => this.animate());
+            }
+
+            initMap() {
+                const mapEl = document.getElementById('map');
+                if(!mapEl) return;
+                this.map = L.map('map', { zoomControl: false }).setView([41.311, 69.240], 12);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap' }).addTo(this.map);
+            }
+
+            async loadData() {
+                try {
+                    const q = query(collection(db, "reports"), orderBy("timestamp", "desc"));
+                    const snapshot = await getDocs(q);
+                    let total = 0;
+                    snapshot.forEach(doc => { total++; if(doc.data().latitude) this.addMarker(doc.data()); });
+                    document.getElementById('liveTotal').innerText = total + "+";
+                } catch(e) { console.error(e); }
+            }
+
+            addMarker(d) {
+                if(!this.map) return;
+                const icon = L.divIcon({className: 'custom-map-pin', html: `<div style="width:10px;height:10px;background:red;border-radius:50%;"></div>`});
+                L.marker([d.latitude, d.longitude], {icon}).addTo(this.map);
+            }
+
+            getGeoLocation() {
+                if(navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(p => {
+                        document.getElementById('rAddress').value = `GPS: ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;
+                        this.toast('success', 'Koordinatalar olindi!');
+                    });
+                } else alert("GPS yo'q");
+            }
+
+            openModal() { document.getElementById('reportModal').style.display = 'flex'; setTimeout(() => document.getElementById('reportModal').classList.add('active'), 10); }
+            closeModal() { document.getElementById('reportModal').classList.remove('active'); setTimeout(() => document.getElementById('reportModal').style.display = 'none', 300); }
+
+            // --- YANGI SUBMIT LOGIKASI (STORAGE YO'Q) ---
+            async submitReport(e) {
+                e.preventDefault();
+                
+                if(!this.user) {
+                    this.toast('warning', 'Tizimga kiring!');
+                    return;
+                }
+
+                if(this.isSubmitting) return;
+                this.isSubmitting = true;
+
+                const btn = document.getElementById('submitBtn');
+                btn.classList.add('loading');
+                btn.disabled = true;
+
+                const type = document.getElementById('rType').value;
+                const address = document.getElementById('rAddress').value;
+                const desc = document.getElementById('rDesc').value;
+                const fileInput = document.getElementById('rFile');
+
+                try {
+                    // 1. Bazaga faqat matnli ma'lumotlarni yozamiz
+                    // (Rasmni bazaga yuklamaymiz, chunki Storage pullik dedingiz)
+                    const reportData = {
+                        uid: this.user.uid,
+                        email: this.user.email,
+                        type, address, description: desc,
+                        status: "Yangi",
+                        date: new Date().toLocaleString('uz-UZ'),
+                        timestamp: new Date(),
+                        latitude: address.includes('GPS') ? parseFloat(address.split(':')[1].split(',')[0]) : 41.311,
+                        longitude: address.includes('GPS') ? parseFloat(address.split(',')[1]) : 69.240,
+                        imageUrl: "Telegramga yuborildi" // Bazada belgi qo'yib ketamiz
+                    };
+
+                    await addDoc(collection(db, "reports"), reportData);
+
+                    // 2. Telegramga FAYLNING O'ZINI jo'natamiz
+                    // (Config.js dagi yangi funksiya buni bajaradi)
+                    await sendTelegramNotification({
+                        ...reportData,
+                        userEmail: this.user.email,
+                        mapLink: `https://www.google.com/maps?q=${reportData.latitude},${reportData.longitude}`,
+                        imageFile: fileInput?.files[0] // <-- Fayl obyektini beramiz
+                    });
+
+                    this.toast('success', 'Murojaat Yuborildi!');
+                    this.closeModal();
+                    document.getElementById('reportForm').reset();
+                    document.getElementById('imagePreview').style.display='none';
+                    document.getElementById('uploadText').style.display='block';
+                    
+                    this.loadData();
+
+                } catch(err) {
+                    console.error("Xatolik:", err);
+                    this.toast('error', 'Xatolik: ' + err.message);
+                } finally {
+                    this.isSubmitting = false;
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                }
+            }
+
+            toast(type, msg) {
+                const box = document.getElementById('toastBox');
+                if(!box) return;
+                const t = document.createElement('div');
+                t.className = 'toast';
+                t.innerHTML = `<span>${msg}</span>`;
+                box.appendChild(t);
+                setTimeout(() => t.remove(), 4000);
             }
         }
+
+        const appInstance = new NigohApp();
+        window.App = appInstance;
+    </script>
 
         // --- CORE APPLICATION ---
         class NigohApp {
