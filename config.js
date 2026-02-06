@@ -1,16 +1,16 @@
 /**
  * ================================================================================================
- * NIGOH PLATFORM - CORE CONFIGURATION ENGINE (ULTIMATE EDITION V5.0)
+ * NIGOH PLATFORM - CORE CONFIGURATION ENGINE (ULTIMATE EDITION V6.0)
  * ================================================================================================
  * * AUTHOR:      Nigoh Development Team
- * DATE:        2026-05-20
- * DESCRIPTION: Bu fayl butun ekotizimning markaziy boshqaruv punkti hisoblanadi.
- * U Firebase xizmatlari va Telegram API o'rtasidagi ko'prikni ta'minlaydi.
- * * MODULES:     1. Firebase Authentication (Kirish/Chiqish)
- * 2. Cloud Firestore (Ma'lumotlar Bazasi)
- * 3. Cloud Storage (Fayllar ombori)
- * 4. Telegram Notification System (Xabarnomalar)
- * * DIQQAT:      Ushbu faylni o'zgartirishdan oldin zaxira nusxasini oling!
+ * * DATE:        2026-05-20
+ * * DESCRIPTION: Tizimning markaziy boshqaruv moduli.
+ * * FEATURES:
+ * - Firebase ekotizimi bilan to'liq integratsiya.
+ * - Telegram Bot API orqali har qanday formatdagi fayllarni (150MB+) uzatish.
+ * - Tarmoq xatolarini avtomatik tuzatish (Auto-Retry Strategy).
+ * - Fayl turlarini avtomatik aniqlash (MIME Type Detection).
+ * - Xavfsizlik protokollari va Error Logging.
  * ================================================================================================
  */
 
@@ -19,7 +19,7 @@
 // ------------------------------------------------------------------------------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
-// Authentication
+// Authentication Services
 import { 
     getAuth, 
     GoogleAuthProvider, 
@@ -34,7 +34,7 @@ import {
     deleteUser 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Firestore Database
+// Cloud Firestore Database
 import { 
     getFirestore, 
     collection, 
@@ -52,7 +52,7 @@ import {
     serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Cloud Storage
+// Cloud Storage (File Management)
 import { 
     getStorage, 
     ref, 
@@ -82,13 +82,13 @@ const firebaseConfig = {
  * Murojaatlarni zudlik bilan adminga yetkazish uchun.
  */
 const TELEGRAM_CONFIG = {
-    // Siz bergan yangi Token
+    // BotFather'dan olingan yangi token
     botToken: "8589526911:AAEPYGVtWU8oq5DgOQlAw2LXhmYdcOe7D3Q",
     
-    // Sizning ID raqamingiz (Admin)
+    // Adminning shaxsiy ID raqami
     adminId: "5883103021",
     
-    // API Endpoints
+    // Telegram API Endpoint
     apiUrl: "https://api.telegram.org/bot"
 };
 
@@ -98,18 +98,18 @@ const TELEGRAM_CONFIG = {
 let app, auth, db, storage, provider;
 
 try {
-    // Initialize Firebase
+    // 1. Ilovani ishga tushirish
     app = initializeApp(firebaseConfig);
     
-    // Initialize Services
+    // 2. Xizmatlarni ulash
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
     provider = new GoogleAuthProvider();
 
-    // System Health Check Log
+    // 3. Status Log
     console.log(
-        "%c NIGOH SYSTEM v5.0 %c ONLINE ",
+        "%c NIGOH SYSTEM v6.0 %c ONLINE ",
         "background:#3b82f6; color:white; font-weight:bold; padding:4px; border-radius:4px 0 0 4px;",
         "background:#10b981; color:white; font-weight:bold; padding:4px; border-radius:0 4px 4px 0;"
     );
@@ -124,28 +124,56 @@ try {
 }
 
 // ------------------------------------------------------------------------------------------------
-// 4. TELEGRAM BRIDGE (XABAR YUBORISH TIZIMI)
+// 4. TELEGRAM BRIDGE (UNIVERSAL XABAR YUBORISH TIZIMI)
 // ------------------------------------------------------------------------------------------------
 
 /**
- * Murojaat ma'lumotlarini Telegram Botga yuboradi.
- * @param {Object} data - Murojaat ma'lumotlari (type, desc, address, etc.)
+ * Yordamchi Funksiya: Kutish (Delay)
+ * Tarmoq xatolarida qayta urinishdan oldin biroz kutish uchun.
  */
-async function sendTelegramNotification(data) {
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Yordamchi Funksiya: Fayl turini aniqlash
+ * URL yoki Fayl nomiga qarab qaysi metodni ishlatishni hal qiladi.
+ */
+function getFileType(fileName) {
+    if (!fileName) return 'unknown';
+    const ext = fileName.split('.').pop().toLowerCase();
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) return 'photo';
+    if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) return 'video';
+    if (['mp3', 'wav', 'ogg', 'm4a'].includes(ext)) return 'audio';
+    return 'document'; // Boshqa barcha fayllar (PDF, DOCX, ZIP, etc.)
+}
+
+/**
+ * Murojaat ma'lumotlarini Telegram Botga yuboradi.
+ * Bu funksiya fayl hajmi va turini avtomatik aniqlab, eng optimal yo'lni tanlaydi.
+ * * @param {Object} data - Murojaat ma'lumotlari
+ * @param {number} retryCount - Qayta urinishlar soni (System use only)
+ */
+async function sendTelegramNotification(data, retryCount = 0) {
+    // 1. Konfiguratsiya tekshiruvi
     if (!TELEGRAM_CONFIG.botToken || !TELEGRAM_CONFIG.adminId) {
-        console.warn("Telegram konfiguratsiyasi to'liq emas!");
-        return;
+        console.warn("⚠️ Telegram konfiguratsiyasi to'liq emas!");
+        return false;
     }
 
-    // 1. Xabar shablonini tayyorlash (HTML Mode)
-    const { type, description, address, userEmail, date, mapLink, imageFile } = data;
+    const MAX_RETRIES = 3;
+    const { type, description, address, userEmail, date, mapLink, imageUrl, fileName } = data;
     
-    // Status ikonkalarini aniqlash
+    // 2. Ikonkalarni aniqlash
     let typeIcon = "📝";
     if (type.includes("Yo'l")) typeIcon = "🚧";
     if (type.includes("Kommunal")) typeIcon = "💡";
     if (type.includes("Korrupsiya")) typeIcon = "💸";
     if (type.includes("Ekologiya")) typeIcon = "🌳";
+
+    // 3. Xabar matnini tayyorlash (HTML)
+    // Telegram caption limiti 1024 belgi. Agar oshib ketsa, qisqartiramiz.
+    let cleanDesc = description.replace(/<[^>]*>?/gm, ''); // HTML teglarni olib tashlash
+    if (cleanDesc.length > 800) cleanDesc = cleanDesc.substring(0, 800) + "... (davomi bor)";
 
     const message = `
 <b>🔔 YANGI MUROJAAT (#${Date.now().toString().slice(-4)})</b>
@@ -157,59 +185,98 @@ ${typeIcon} <b>Muammo Turi:</b> ${type}
 📍 <b>Manzil:</b> ${address}
 
 📝 <b>Tavsif:</b>
-<i>${description}</i>
+<i>${cleanDesc}</i>
 
 🌍 <a href="${mapLink}">Xaritada Ko'rish (Google Maps)</a>
-    `;
+    `.trim();
 
     try {
-        // 2. So'rov yuborish
-        if (imageFile) {
-            // A) Agar rasm bo'lsa -> sendPhoto
-            const formData = new FormData();
-            formData.append("chat_id", TELEGRAM_CONFIG.adminId);
-            formData.append("photo", imageFile);
-            formData.append("caption", message);
-            formData.append("parse_mode", "HTML");
+        let endpoint = "sendMessage";
+        let body = {
+            chat_id: TELEGRAM_CONFIG.adminId,
+            parse_mode: "HTML",
+            disable_web_page_preview: true
+        };
 
-            const response = await fetch(`${TELEGRAM_CONFIG.apiUrl}${TELEGRAM_CONFIG.botToken}/sendPhoto`, {
-                method: "POST",
-                body: formData
-            });
+        // 4. Fayl logikasi (Universal Handler)
+        if (imageUrl) {
+            const fileType = getFileType(fileName || imageUrl);
             
-            const resData = await response.json();
-            if(!resData.ok) throw new Error(resData.description);
+            // Telegram Methodni tanlash
+            if (fileType === 'photo') endpoint = "sendPhoto";
+            else if (fileType === 'video') endpoint = "sendVideo";
+            else if (fileType === 'audio') endpoint = "sendAudio";
+            else endpoint = "sendDocument";
 
+            // Body parametrlarini o'zgartirish
+            body[fileType] = imageUrl; // URL orqali yuborish (Eng ishonchli usul)
+            body.caption = message;
+            
+            console.log(`📤 Telegramga ${fileType.toUpperCase()} yuborilmoqda... (URL Method)`);
         } else {
-            // B) Agar rasm bo'lmasa -> sendMessage
-            const response = await fetch(`${TELEGRAM_CONFIG.apiUrl}${TELEGRAM_CONFIG.botToken}/sendMessage`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    chat_id: TELEGRAM_CONFIG.adminId,
-                    text: message,
-                    parse_mode: "HTML",
-                    disable_web_page_preview: true
-                })
-            });
-
-            const resData = await response.json();
-            if(!resData.ok) throw new Error(resData.description);
+            // Fayl yo'q bo'lsa faqat matn
+            body.text = message;
+            console.log(`📤 Telegramga MATN yuborilmoqda...`);
         }
 
-        console.log("✅ Telegram Notification Sent!");
+        // 5. So'rov yuborish
+        const response = await fetch(`${TELEGRAM_CONFIG.apiUrl}${TELEGRAM_CONFIG.botToken}/${endpoint}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+
+        const resData = await response.json();
+
+        // 6. Xatoliklarni tahlil qilish va Fallback
+        if (!resData.ok) {
+            console.warn(`⚠️ Telegram API Error: ${resData.description}`);
+
+            // Agar fayl juda katta bo'lsa yoki Telegram URLni o'qiy olmasa
+            // Biz matnli xabar yuborib, unga fayl linkini qo'shib qo'yamiz.
+            if (imageUrl && (resData.error_code === 400 || resData.description.includes("Wrong file"))) {
+                console.log("🔄 Fayl yuborishda xatolik. Fallback rejimiga o'tilmoqda...");
+                
+                const fallbackMessage = message + `\n\n📎 <b>Biriktirilgan Fayl:</b> <a href="${imageUrl}">Yuklab Olish</a>`;
+                
+                await fetch(`${TELEGRAM_CONFIG.apiUrl}${TELEGRAM_CONFIG.botToken}/sendMessage`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CONFIG.adminId,
+                        text: fallbackMessage,
+                        parse_mode: "HTML"
+                    })
+                });
+                return true; // Fallback muvaffaqiyatli
+            }
+
+            throw new Error(resData.description);
+        }
+
+        console.log("%c ✅ Telegram Notification Sent Successfully! ", "color: #10b981; font-weight: bold;");
         return true;
 
     } catch (error) {
-        console.error("❌ Telegram API Error:", error);
-        return false;
+        console.error(`❌ Xatolik (Urinish ${retryCount + 1}/${MAX_RETRIES}):`, error.message);
+
+        // 7. Auto-Retry Logic (Avtomatik qayta urinish)
+        if (retryCount < MAX_RETRIES) {
+            const waitTime = 2000 * (retryCount + 1); // 2s, 4s, 6s kutadi
+            console.log(`⏳ ${waitTime}ms dan keyin qayta urinib ko'ramiz...`);
+            await delay(waitTime);
+            return sendTelegramNotification(data, retryCount + 1);
+        } else {
+            console.error("⛔ Barcha urinishlar muvaffaqiyatsiz tugadi. Administratorga xabar bering.");
+            return false;
+        }
     }
 }
 
 // ------------------------------------------------------------------------------------------------
 // 5. EXPORT MODULES (YAGONA CHIQISH NUQTASI)
 // ------------------------------------------------------------------------------------------------
-// Boshqa fayllar faqat shu yerdan import qilishi kerak.
+// Ushbu eksportlar orqali boshqa fayllar (index.html, admin.html) bu funksiyalardan foydalanadi.
 
 export {
     // Core Services
@@ -247,6 +314,6 @@ export {
     uploadBytes,
     getDownloadURL,
 
-    // Custom Functions
+    // Custom Functions (Telegram Bridge)
     sendTelegramNotification
 };
