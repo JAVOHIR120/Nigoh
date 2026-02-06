@@ -15,8 +15,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="style.css">
-
     <style>
         /* 1. LAYOUT VARIABLES */
         :root {
@@ -28,11 +26,15 @@
             --active-item: rgba(59, 130, 246, 0.15);
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+
         body {
             background-color: #0b1120;
             display: flex;
             height: 100vh;
             overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            color: white;
         }
 
         /* 2. SIDEBAR NAVIGATION */
@@ -368,6 +370,16 @@
             .page-title h1 { font-size: 1.2rem; }
         }
         .mobile-toggle { display: none; font-size: 1.5rem; color: white; cursor: pointer; background: none; border: none; }
+        
+        /* 10. TOAST */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .toast {
+            min-width: 300px; padding: 16px; background: #1f2937;
+            border-radius: 8px; border-left: 4px solid; color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 10px;
+            display: flex; gap: 10px; align-items: center;
+            animation: fadeIn 0.3s forwards;
+        }
     </style>
 </head>
 <body>
@@ -580,12 +592,8 @@
     </main>
 
     <script type="module">
-        import { 
-            auth, db, storage, 
-            collection, getDocs, doc, getDoc, updateDoc, query, where, orderBy, 
-            ref, uploadBytes, getDownloadURL, 
-            onAuthStateChanged, signOut, updateProfile, updatePassword, deleteUser 
-        } from './config.js';
+        // DIQQAT: Faqat mavjud funksiyalarni import qilamiz (Storage yo'q)
+        import { auth, db, collection, getDocs, doc, getDoc, updateDoc, query, where, onAuthStateChanged, signOut, updateProfile, updatePassword, deleteUser } from './config.js';
 
         class ProfileManager {
             constructor() {
@@ -626,14 +634,10 @@
                 document.getElementById('inputName').value = this.user.displayName || "";
                 document.getElementById('inputEmail').value = this.user.email;
                 
-                if (this.user.photoURL) {
-                    document.getElementById('miniAvatar').src = this.user.photoURL;
-                    document.getElementById('editAvatar').src = this.user.photoURL;
-                } else {
-                    const fallback = `https://ui-avatars.com/api/?name=${this.user.email}&background=random`;
-                    document.getElementById('miniAvatar').src = fallback;
-                    document.getElementById('editAvatar').src = fallback;
-                }
+                // Avatar (Default)
+                const fallback = `https://ui-avatars.com/api/?name=${this.user.email}&background=random`;
+                document.getElementById('miniAvatar').src = this.user.photoURL || fallback;
+                document.getElementById('editAvatar').src = this.user.photoURL || fallback;
 
                 // Get Extra Data (Phone)
                 try {
@@ -647,15 +651,22 @@
 
             async loadReports() {
                 try {
+                    // DIQQAT: orderBy ni olib tashladik (Index xatosi bo'lmasligi uchun)
                     const q = query(
                         collection(db, "reports"), 
-                        where("uid", "==", this.user.uid), 
-                        orderBy("timestamp", "desc")
+                        where("uid", "==", this.user.uid)
                     );
                     const snap = await getDocs(q);
                     
                     this.reports = [];
                     snap.forEach(d => this.reports.push({ id: d.id, ...d.data() }));
+
+                    // BRAUZERDA SORTING (Vaqt bo'yicha)
+                    this.reports.sort((a, b) => {
+                        const tA = a.timestamp?.seconds || 0;
+                        const tB = b.timestamp?.seconds || 0;
+                        return tB - tA; // Yangisi tepada
+                    });
 
                     this.renderStats();
                     this.renderTable(this.reports);
@@ -754,21 +765,17 @@
 
             // --- ACTIONS ---
             async handleAvatar(e) {
+                // Storage yo'qligi uchun vizual o'zgarish qilamiz
                 const file = e.target.files[0];
                 if(!file) return;
 
-                try {
-                    const storageRef = ref(storage, `avatars/${this.user.uid}_${file.name}`);
-                    await uploadBytes(storageRef, file);
-                    const url = await getDownloadURL(storageRef);
-
-                    await updateProfile(this.user, { photoURL: url });
-                    this.toast('success', 'Rasm yangilandi!');
-                    this.loadProfile();
-                } catch(err) {
-                    console.error(err);
-                    this.toast('error', 'Rasmni yuklashda xatolik');
-                }
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    document.getElementById('miniAvatar').src = ev.target.result;
+                    document.getElementById('editAvatar').src = ev.target.result;
+                    this.toast('success', 'Rasm vaqtincha o\'zgartirildi (No-Storage Mode)');
+                };
+                reader.readAsDataURL(file);
             }
 
             async updateInfo(e) {
@@ -860,22 +867,10 @@
                 t.className = 'toast';
                 const color = type === 'success' ? '#10b981' : '#ef4444';
                 t.style.borderLeft = `4px solid ${color}`;
-                t.style.background = '#1f2937';
-                t.style.padding = '16px';
-                t.style.borderRadius = '8px';
-                t.style.color = 'white';
-                t.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
-                t.style.marginBottom = '10px';
-                t.style.display = 'flex';
-                t.style.gap = '10px';
-                t.style.minWidth = '300px';
-                t.style.animation = 'fadeIn 0.3s forwards';
-                
                 t.innerHTML = `
                     <i class="fa-solid fa-${type==='success'?'check':'circle-exclamation'}" style="color:${color};font-size:1.2rem;"></i>
                     <div><b>${type.toUpperCase()}</b><br><small style="color:#9ca3af">${msg}</small></div>
                 `;
-                
                 box.appendChild(t);
                 setTimeout(() => t.remove(), 3000);
             }
