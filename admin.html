@@ -1,502 +1,305 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Nigoh | Boshqaruv Markazi</title>
+    <title>Nigoh | Admin Boshqaruv Markazi</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/uz-latn.min.js"></script>
     
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* * ==========================================================================
-         * 1. ADMIN THEME & VARIABLES (OVERRIDES)
-         * ==========================================================================
-         */
         :root {
-            /* Admin Palette */
-            --adm-bg-dark: #0b1120;
-            --adm-sidebar: #111827;
+            --adm-sidebar-w: 280px;
+            --adm-bg: #0b1120;
             --adm-panel: #1f2937;
             --adm-border: rgba(255, 255, 255, 0.08);
-            
-            /* Accent Colors */
             --adm-primary: #6366f1;
-            --adm-primary-hover: #4f46e5;
-            --adm-success: #10b981;
-            --adm-warning: #f59e0b;
-            --adm-danger: #ef4444;
-            --adm-info: #3b82f6;
-            
-            /* Text Colors */
-            --text-main: #f9fafb;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            
-            /* Layout Dimensions */
-            --sidebar-width: 280px;
-            --header-height: 70px;
-            
-            /* Shadows & Effects */
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --glow: 0 0 15px rgba(99, 102, 241, 0.3);
         }
 
-        /* * ==========================================================================
-         * 2. GLOBAL RESET & SCROLLBAR
-         * ==========================================================================
-         */
         body {
-            background-color: var(--adm-bg-dark);
-            font-family: 'Inter', sans-serif;
-            color: var(--text-main);
-            overflow: hidden; /* Scroll management inside components */
-            height: 100vh;
+            background-color: var(--adm-bg);
+            overflow: hidden; /* Scroll faqat content qismida bo'ladi */
             display: flex;
+            height: 100vh;
         }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--adm-bg-dark); }
-        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--adm-primary); }
-
-        /* * ==========================================================================
-         * 3. SIDEBAR NAVIGATION
-         * ==========================================================================
-         */
-        .app-sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--adm-sidebar);
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--adm-sidebar-w);
+            background: #111827;
             border-right: 1px solid var(--adm-border);
             display: flex; flex-direction: column;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 50;
+            z-index: 50; position: relative;
         }
 
-        .sidebar-header {
-            height: var(--header-height);
-            display: flex; align-items: center; padding: 0 24px;
-            border-bottom: 1px solid var(--adm-border);
-            gap: 12px;
+        .sidebar-brand {
+            height: 80px; display: flex; align-items: center; padding: 0 24px;
+            border-bottom: 1px solid var(--adm-border); gap: 12px;
         }
-
         .brand-logo {
-            width: 36px; height: 36px; border-radius: 8px;
+            width: 40px; height: 40px; border-radius: 10px;
             background: linear-gradient(135deg, var(--adm-primary), #4338ca);
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; color: white; box-shadow: var(--glow);
+            font-size: 1.5rem; color: white; box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
         }
-        .brand-text h3 { font-size: 1.1rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
-        .brand-text span { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .brand-name h3 { margin: 0; font-size: 1.2rem; color: white; }
+        .brand-name p { margin: 0; font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; }
 
-        .sidebar-menu { flex: 1; padding: 24px 16px; overflow-y: auto; }
+        .nav-menu { flex: 1; padding: 24px 16px; overflow-y: auto; }
+        .nav-group { margin-bottom: 20px; }
+        .nav-label { font-size: 0.75rem; text-transform: uppercase; color: #6b7280; font-weight: 700; margin-bottom: 10px; padding-left: 12px; }
         
-        .menu-label {
-            font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);
-            font-weight: 700; margin-bottom: 12px; padding-left: 12px; letter-spacing: 0.5px;
-        }
-
         .nav-item {
             display: flex; align-items: center; gap: 12px;
-            padding: 12px 16px; border-radius: 10px;
-            color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;
-            cursor: pointer; transition: all 0.2s ease; margin-bottom: 4px;
+            padding: 12px 16px; border-radius: 12px;
+            color: #9ca3af; font-weight: 500; cursor: pointer;
+            transition: 0.2s; margin-bottom: 4px;
         }
-        .nav-item:hover { background: rgba(255,255,255,0.03); color: white; }
-        .nav-item.active {
-            background: rgba(99, 102, 241, 0.1); color: var(--adm-primary);
-            font-weight: 600;
-        }
-        .nav-item i { width: 20px; text-align: center; font-size: 1rem; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(99, 102, 241, 0.15); color: var(--adm-primary); font-weight: 600; }
+        .nav-item i { width: 20px; text-align: center; }
 
-        .sidebar-footer {
-            padding: 20px; border-top: 1px solid var(--adm-border);
-        }
-        .admin-profile {
-            display: flex; align-items: center; gap: 12px;
-            background: rgba(255,255,255,0.02); padding: 12px;
-            border-radius: 12px; border: 1px solid transparent;
-            transition: 0.2s;
-        }
-        .admin-profile:hover { border-color: var(--adm-border); background: rgba(255,255,255,0.04); }
-        
-        .avatar-box {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: var(--adm-panel); border: 2px solid var(--adm-primary);
-            overflow: hidden; display: flex; align-items: center; justify-content: center;
-        }
-        .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .profile-info { flex: 1; overflow: hidden; }
-        .profile-name { font-size: 0.9rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .profile-role { font-size: 0.75rem; color: var(--text-muted); }
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--adm-border); }
+        .admin-profile { display: flex; align-items: center; gap: 12px; }
+        .admin-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--adm-panel); border: 2px solid var(--adm-primary); }
+        .admin-info h4 { margin: 0; font-size: 0.9rem; color: white; }
+        .admin-info p { margin: 0; font-size: 0.75rem; color: #9ca3af; }
 
-        /* * ==========================================================================
-         * 4. MAIN CONTENT AREA
-         * ==========================================================================
-         */
-        .app-main {
+        /* --- MAIN CONTENT --- */
+        .main-content {
             flex: 1; display: flex; flex-direction: column;
-            overflow: hidden; background: radial-gradient(circle at top right, #1e1b4b 0%, var(--adm-bg-dark) 40%);
+            overflow: hidden; background: radial-gradient(circle at top right, #1e1b4b 0%, var(--adm-bg) 40%);
         }
 
-        .top-navbar {
-            height: var(--header-height); border-bottom: 1px solid var(--adm-border);
+        .top-header {
+            height: 80px; border-bottom: 1px solid var(--adm-border);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 32px; background: rgba(11, 17, 32, 0.8);
-            backdrop-filter: blur(12px); z-index: 40;
+            padding: 0 32px; background: rgba(11, 17, 32, 0.8); backdrop-filter: blur(12px);
         }
+        .page-title h1 { margin: 0; font-size: 1.5rem; }
+        .page-title p { margin: 0; font-size: 0.85rem; color: #9ca3af; }
 
-        .page-title h1 { font-size: 1.5rem; font-weight: 700; margin: 0; color: white; }
-        .page-title p { font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0 0; }
-
-        .navbar-actions { display: flex; align-items: center; gap: 16px; }
-        
+        .header-actions { display: flex; align-items: center; gap: 16px; }
         .action-btn {
-            width: 40px; height: 40px; border-radius: 10px;
-            background: var(--adm-panel); border: 1px solid var(--adm-border);
-            color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--adm-border);
+            background: var(--adm-panel); color: #9ca3af; display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: 0.2s; position: relative;
         }
-        .action-btn:hover { background: rgba(255,255,255,0.05); color: white; border-color: var(--adm-primary); }
-        .badge-dot {
-            position: absolute; top: 10px; right: 10px; width: 8px; height: 8px;
-            background: var(--adm-danger); border-radius: 50%; border: 2px solid var(--adm-panel);
-        }
+        .action-btn:hover { border-color: var(--adm-primary); color: white; }
+        .badge-dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
 
-        .btn-logout {
-            padding: 8px 16px; background: rgba(239, 68, 68, 0.1);
-            color: var(--adm-danger); border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 8px; font-size: 0.9rem; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center; gap: 8px;
-            transition: 0.2s;
+        .logout-btn {
+            padding: 8px 16px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 8px; transition: 0.2s;
         }
-        .btn-logout:hover { background: var(--adm-danger); color: white; }
+        .logout-btn:hover { background: #ef4444; color: white; }
 
-        /* * ==========================================================================
-         * 5. CONTENT VIEWS & DASHBOARD
-         * ==========================================================================
-         */
+        /* --- SCROLL AREA --- */
         .content-scroll { flex: 1; overflow-y: auto; padding: 32px; }
         
-        .view-section { display: none; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .view-section { display: none; animation: fadeIn 0.4s ease; }
         .view-section.active { display: block; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Stats Grid */
-        .stats-container {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px; margin-bottom: 32px;
-        }
-
+        /* --- DASHBOARD CARDS --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 30px; }
         .stat-card {
             background: var(--adm-panel); border: 1px solid var(--adm-border);
             border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s;
         }
         .stat-card:hover { transform: translateY(-5px); border-color: var(--adm-primary); }
         
-        .stat-bg-icon {
-            position: absolute; right: -10px; top: -10px; font-size: 6rem;
-            opacity: 0.03; transform: rotate(15deg); color: white;
-        }
+        .stat-bg { position: absolute; right: -10px; top: -10px; font-size: 6rem; opacity: 0.05; transform: rotate(15deg); color: white; }
+        .stat-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .stat-value { font-size: 2.2rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 5px; }
+        .stat-label { font-size: 0.9rem; color: #9ca3af; }
 
-        .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-        .stat-icon {
-            width: 48px; height: 48px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-        }
-        
-        .stat-value { font-size: 2.2rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 8px; }
-        .stat-label { font-size: 0.9rem; color: var(--text-secondary); }
-        .stat-trend { font-size: 0.8rem; display: flex; align-items: center; gap: 4px; margin-top: 12px; }
-        .trend-up { color: var(--adm-success); } .trend-down { color: var(--adm-danger); }
-
-        /* Charts Layout */
-        .charts-grid {
-            display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px;
-        }
+        /* --- CHARTS --- */
+        .charts-wrapper { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 30px; }
         .chart-card {
             background: var(--adm-panel); border: 1px solid var(--adm-border);
-            border-radius: 16px; padding: 24px; height: 420px;
-            display: flex; flex-direction: column;
+            border-radius: 16px; padding: 24px; height: 400px; display: flex; flex-direction: column;
         }
-        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .chart-title { font-size: 1.1rem; font-weight: 700; color: white; }
+        .chart-head h3 { margin: 0; font-size: 1.1rem; color: white; }
 
-        /* * ==========================================================================
-         * 6. DATA TABLES (ADVANCED)
-         * ==========================================================================
-         */
-        .table-wrapper {
+        /* --- DATATABLE --- */
+        .table-card {
             background: var(--adm-panel); border: 1px solid var(--adm-border);
             border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
         }
-
         .table-toolbar {
             padding: 20px 24px; border-bottom: 1px solid var(--adm-border);
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
         }
-
-        .search-box { position: relative; width: 320px; }
+        
+        .search-box { position: relative; width: 300px; }
         .search-input {
-            width: 100%; padding: 12px 16px 12px 44px;
-            background: var(--adm-bg-dark); border: 1px solid var(--adm-border);
-            border-radius: 10px; color: white; font-size: 0.9rem;
-            transition: 0.2s;
+            width: 100%; padding: 10px 16px 10px 40px; background: #111827;
+            border: 1px solid var(--adm-border); border-radius: 10px; color: white; transition: 0.2s;
         }
-        .search-input:focus { border-color: var(--adm-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
-        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-input:focus { border-color: var(--adm-primary); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #6b7280; }
 
         .filter-group { display: flex; gap: 10px; }
         .filter-select {
-            padding: 10px 16px; background: var(--adm-bg-dark); border: 1px solid var(--adm-border);
-            border-radius: 10px; color: var(--text-main); font-size: 0.9rem; cursor: pointer;
+            padding: 10px; background: #111827; border: 1px solid var(--adm-border);
+            border-radius: 10px; color: white; cursor: pointer;
         }
-        
         .btn-export {
-            padding: 10px 20px; background: var(--adm-primary); color: white;
-            border: none; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
-            cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
+            padding: 10px 20px; background: var(--adm-primary); color: white; border: none;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;
         }
-        .btn-export:hover { background: var(--adm-primary-hover); box-shadow: var(--glow); }
 
-        /* Table Structure */
-        .table-responsive { overflow-x: auto; width: 100%; }
         .data-table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        
         .data-table th {
             text-align: left; padding: 16px 24px; background: rgba(0,0,0,0.2);
-            color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
-            font-weight: 700; border-bottom: 1px solid var(--adm-border);
+            color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;
+            border-bottom: 1px solid var(--adm-border);
         }
         .data-table td {
             padding: 16px 24px; border-bottom: 1px solid var(--adm-border);
-            color: var(--text-main); font-size: 0.9rem; vertical-align: middle;
+            color: #f3f4f6; font-size: 0.9rem; vertical-align: middle;
         }
-        .data-table tr:last-child td { border-bottom: none; }
         .data-table tr:hover { background: rgba(255,255,255,0.02); }
 
         /* Badges */
-        .status-badge {
-            display: inline-flex; align-items: center; padding: 6px 12px;
-            border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-        }
-        .status-new { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
-        .status-solved { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
-        .status-rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; border: 1px solid transparent; }
+        .s-new { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.2); }
+        .s-solved { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
+        .s-rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
 
         /* Actions */
-        .action-cell { display: flex; gap: 8px; }
         .btn-icon {
-            width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--adm-border);
-            background: transparent; color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s;
+            width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--adm-border);
+            background: transparent; color: #9ca3af; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
         }
-        .btn-view:hover { background: rgba(99, 102, 241, 0.1); color: var(--adm-primary); border-color: var(--adm-primary); }
-        .btn-trash:hover { background: rgba(239, 68, 68, 0.1); color: var(--adm-danger); border-color: var(--adm-danger); }
+        .btn-view:hover { border-color: var(--adm-primary); color: var(--adm-primary); background: rgba(99, 102, 241, 0.1); }
+        .btn-del:hover { border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); }
 
-        /* Pagination */
-        .table-footer {
-            padding: 16px 24px; border-top: 1px solid var(--adm-border);
-            display: flex; justify-content: space-between; align-items: center;
+        /* --- MODAL (DETAILS) --- */
+        .modal-wrap {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s;
         }
-        .page-info { font-size: 0.85rem; color: var(--text-muted); }
-        .pagination-controls { display: flex; gap: 8px; }
-        .page-btn {
-            padding: 6px 12px; background: var(--adm-bg-dark); border: 1px solid var(--adm-border);
-            color: var(--text-secondary); border-radius: 6px; cursor: pointer; transition: 0.2s;
-        }
-        .page-btn:hover:not(:disabled) { background: var(--adm-primary); color: white; border-color: var(--adm-primary); }
-        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* * ==========================================================================
-         * 7. MODALS & FORMS
-         * ==========================================================================
-         */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px); z-index: 1000;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: 0.3s;
-        }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-
-        .modal-window {
-            background: var(--adm-panel); width: 90%; max-width: 900px;
-            border-radius: 20px; border: 1px solid var(--adm-border);
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            display: flex; flex-direction: column; max-height: 90vh;
-            transform: scale(0.95); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .modal-overlay.active .modal-window { transform: scale(1); }
-
-        .modal-header {
-            padding: 24px; border-bottom: 1px solid var(--adm-border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .modal-title { font-size: 1.2rem; font-weight: 700; color: white; margin: 0; }
+        .modal-wrap.active { display: flex; opacity: 1; }
         
+        .modal-xl {
+            background: var(--adm-panel); width: 90%; max-width: 900px; height: 85vh;
+            border-radius: 20px; border: 1px solid var(--adm-border); display: flex; flex-direction: column;
+            transform: scale(0.95); transition: 0.3s; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        .modal-wrap.active .modal-xl { transform: scale(1); }
+
         .modal-body { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; }
+        .map-col { background: #111; min-height: 400px; position: relative; }
+        #detailMap { width: 100%; height: 100%; z-index: 1; }
         
-        /* Map Area */
-        .map-container { background: #111; min-height: 400px; position: relative; }
-        #detailMap { width: 100%; height: 100%; }
+        .info-col { padding: 30px; display: flex; flex-direction: column; gap: 20px; border-left: 1px solid var(--adm-border); }
+        .info-group label { font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .info-group p { font-size: 1rem; color: white; margin: 0; line-height: 1.5; }
+        .desc-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; border: 1px solid var(--adm-border); }
 
-        /* Details Area */
-        .details-panel { padding: 24px; display: flex; flex-direction: column; gap: 20px; border-left: 1px solid var(--adm-border); }
-        
-        .detail-item label { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-        .detail-item p { font-size: 1rem; color: white; line-height: 1.5; margin: 0; }
-        .detail-desc { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--adm-border); }
-
-        .modal-actions {
-            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--adm-border);
-            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-        }
-        .btn-action-lg {
-            padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
-        }
-        .btn-approve { background: var(--adm-success); color: #064e3b; }
-        .btn-approve:hover { background: #34d399; }
-        .btn-reject { background: var(--adm-danger); color: #450a0a; }
-        .btn-reject:hover { background: #f87171; }
-
-        /* * ==========================================================================
-         * 8. SETTINGS FORM
-         * ==========================================================================
-         */
-        .settings-card {
-            max-width: 600px; background: var(--adm-panel); border: 1px solid var(--adm-border);
-            border-radius: 16px; padding: 32px;
-        }
-        .form-group { margin-bottom: 24px; }
-        .form-label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 0.9rem; }
-        .form-input {
-            width: 100%; padding: 12px 16px; background: var(--adm-bg-dark);
-            border: 1px solid var(--adm-border); border-radius: 8px; color: white;
-            transition: 0.2s;
-        }
-        .form-input:focus { border-color: var(--adm-primary); }
-        
-        /* * ==========================================================================
-         * 9. SKELETON LOADER & UTILS
-         * ==========================================================================
-         */
-        .skeleton {
-            background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
-            background-size: 200% 100%; animation: shimmer 1.5s infinite;
-            border-radius: 4px; display: inline-block;
-        }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
-        .toast {
-            min-width: 300px; padding: 16px; border-radius: 8px; background: var(--adm-panel);
-            border-left: 4px solid; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px;
-            animation: slideIn 0.3s;
-        }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .modal-actions { padding: 20px; border-top: 1px solid var(--adm-border); display: flex; justify-content: flex-end; gap: 15px; background: rgba(255,255,255,0.02); }
 
         /* Responsive */
         @media (max-width: 1024px) {
-            .charts-grid { grid-template-columns: 1fr; }
+            .charts-wrapper { grid-template-columns: 1fr; }
             .modal-body { grid-template-columns: 1fr; }
-            .map-container { height: 300px; }
+            .map-col { height: 300px; }
         }
         @media (max-width: 768px) {
-            .app-sidebar { position: fixed; transform: translateX(-100%); height: 100%; box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
-            .app-sidebar.active { transform: translateX(0); }
-            .top-navbar { padding: 0 16px; }
+            .sidebar { position: fixed; transform: translateX(-100%); height: 100%; }
+            .sidebar.active { transform: translateX(0); }
             .mobile-toggle { display: block !important; }
         }
-        .mobile-toggle { display: none; font-size: 1.5rem; cursor: pointer; color: white; }
+        .mobile-toggle { display: none; font-size: 1.5rem; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <aside class="app-sidebar" id="sidebar">
-        <div class="sidebar-header">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
             <div class="brand-logo"><i class="fa-solid fa-shield-halved"></i></div>
-            <div class="brand-text">
+            <div class="brand-name">
                 <h3>NIGOH</h3>
-                <span>Admin Panel</span>
+                <p>Admin Panel v5.0</p>
             </div>
         </div>
 
-        <nav class="sidebar-menu">
-            <div class="menu-label">Asosiy</div>
-            <div class="nav-item active" onclick="AdminPanel.navigate('dashboard', this)">
-                <i class="fa-solid fa-chart-pie"></i> Dashboard
+        <nav class="nav-menu">
+            <div class="nav-group">
+                <div class="nav-label">Asosiy</div>
+                <div class="nav-item active" onclick="Admin.switchView('dashboard', this)">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </div>
             </div>
             
-            <div class="menu-label" style="margin-top:20px;">Ma'lumotlar</div>
-            <div class="nav-item" onclick="AdminPanel.navigate('reports', this)">
-                <i class="fa-solid fa-file-invoice"></i> Murojaatlar
-                <span id="navPendingCount" style="margin-left:auto; background:var(--adm-warning); color:#fff; font-size:0.7rem; padding:2px 6px; border-radius:4px; display:none;">0</span>
-            </div>
-            <div class="nav-item" onclick="AdminPanel.navigate('users', this)">
-                <i class="fa-solid fa-users"></i> Foydalanuvchilar
+            <div class="nav-group">
+                <div class="nav-label">Ma'lumotlar</div>
+                <div class="nav-item" onclick="Admin.switchView('reports', this)">
+                    <i class="fa-solid fa-inbox"></i> Murojaatlar
+                    <span id="badgePending" style="margin-left:auto; background:#f59e0b; color:black; font-size:0.7rem; padding:2px 6px; border-radius:4px; display:none;">0</span>
+                </div>
+                <div class="nav-item" onclick="Admin.switchView('users', this)">
+                    <i class="fa-solid fa-users"></i> Foydalanuvchilar
+                </div>
             </div>
 
-            <div class="menu-label" style="margin-top:20px;">Tizim</div>
-            <div class="nav-item" onclick="AdminPanel.navigate('settings', this)">
-                <i class="fa-solid fa-sliders"></i> Sozlamalar
+            <div class="nav-group">
+                <div class="nav-label">Tizim</div>
+                <div class="nav-item" onclick="Admin.switchView('settings', this)">
+                    <i class="fa-solid fa-gear"></i> Sozlamalar
+                </div>
+                <a href="index.html" class="nav-item">
+                    <i class="fa-solid fa-globe"></i> Saytga Qaytish
+                </a>
             </div>
-            <a href="index.html" class="nav-item">
-                <i class="fa-solid fa-globe"></i> Saytga qaytish
-            </a>
         </nav>
 
         <div class="sidebar-footer">
             <div class="admin-profile">
-                <div class="avatar-box">
-                    <img src="logo.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=random'" alt="Admin">
-                </div>
-                <div class="profile-info">
-                    <div class="profile-name" id="sidebarName">Admin</div>
-                    <div class="profile-role" id="sidebarEmail">loading...</div>
+                <img src="logo.png" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=random'" class="admin-avatar">
+                <div class="admin-info">
+                    <h4 id="adminNameDisplay">Admin</h4>
+                    <p id="adminEmailDisplay">loading...</p>
                 </div>
             </div>
         </div>
     </aside>
 
-    <main class="app-main">
-        <header class="top-navbar">
-            <div style="display:flex; align-items:center; gap:16px;">
+    <main class="main-content">
+        <header class="top-header">
+            <div style="display:flex; align-items:center; gap:15px;">
                 <div class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')">
                     <i class="fa-solid fa-bars"></i>
                 </div>
                 <div class="page-title">
-                    <h1 id="pageHeading">Dashboard</h1>
+                    <h1 id="pageTitle">Dashboard</h1>
                     <p id="currentDate">Tizim yuklanmoqda...</p>
                 </div>
             </div>
-            <div class="navbar-actions">
-                <button class="action-btn" onclick="AdminPanel.refreshData()">
+            <div class="header-actions">
+                <button class="action-btn" title="Yangilash" onclick="Admin.refresh()">
                     <i class="fa-solid fa-rotate"></i>
                 </button>
-                <div style="width:1px; height:30px; background:var(--adm-border);"></div>
-                <button class="btn-logout" onclick="AdminPanel.logout()">
+                <button class="logout-btn" onclick="Admin.logout()">
                     <i class="fa-solid fa-right-from-bracket"></i> Chiqish
                 </button>
             </div>
@@ -505,70 +308,59 @@
         <div class="content-scroll">
             
             <div id="dashboardView" class="view-section active">
-                <div class="stats-container">
+                <div class="stats-grid">
                     <div class="stat-card">
-                        <i class="fa-solid fa-layer-group stat-bg-icon"></i>
+                        <i class="fa-solid fa-layer-group stat-bg"></i>
                         <div class="stat-header">
-                            <div class="stat-icon" style="background:rgba(59,130,246,0.1); color:var(--adm-info);">
-                                <i class="fa-solid fa-inbox"></i>
+                            <div class="stat-icon" style="background:rgba(99,102,241,0.1); color:#6366f1;">
+                                <i class="fa-solid fa-folder-open"></i>
                             </div>
                         </div>
-                        <div class="stat-value" id="statTotal">0</div>
+                        <div class="stat-value" id="countTotal">0</div>
                         <div class="stat-label">Jami Murojaatlar</div>
-                        <div class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> Barcha vaqtlar bo'yicha</div>
                     </div>
-                    
                     <div class="stat-card">
-                        <i class="fa-solid fa-check-circle stat-bg-icon"></i>
+                        <i class="fa-solid fa-check-circle stat-bg"></i>
                         <div class="stat-header">
-                            <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:var(--adm-success);">
+                            <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">
                                 <i class="fa-solid fa-check"></i>
                             </div>
                         </div>
-                        <div class="stat-value" id="statSolved">0</div>
+                        <div class="stat-value" id="countSolved">0</div>
                         <div class="stat-label">Hal Etilgan</div>
-                        <div class="stat-trend trend-up">Muvaffaqiyatli yechimlar</div>
                     </div>
-
                     <div class="stat-card">
-                        <i class="fa-solid fa-clock stat-bg-icon"></i>
+                        <i class="fa-solid fa-clock stat-bg"></i>
                         <div class="stat-header">
-                            <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:var(--adm-warning);">
+                            <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:#f59e0b;">
                                 <i class="fa-solid fa-hourglass-half"></i>
                             </div>
                         </div>
-                        <div class="stat-value" id="statPending">0</div>
-                        <div class="stat-label">Ko'rib chiqilmoqda</div>
-                        <div class="stat-trend trend-down">Jarayondagi ishlar</div>
+                        <div class="stat-value" id="countPending">0</div>
+                        <div class="stat-label">Jarayonda</div>
                     </div>
-
                     <div class="stat-card">
-                        <i class="fa-solid fa-users stat-bg-icon"></i>
+                        <i class="fa-solid fa-users stat-bg"></i>
                         <div class="stat-header">
-                            <div class="stat-icon" style="background:rgba(99,102,241,0.1); color:var(--adm-primary);">
+                            <div class="stat-icon" style="background:rgba(59,130,246,0.1); color:#3b82f6;">
                                 <i class="fa-solid fa-user-group"></i>
                             </div>
                         </div>
-                        <div class="stat-value" id="statUsers">0</div>
-                        <div class="stat-label">Faol Foydalanuvchilar</div>
-                        <div class="stat-trend">Ro'yxatdan o'tganlar</div>
+                        <div class="stat-value" id="countUsers">0</div>
+                        <div class="stat-label">Foydalanuvchilar</div>
                     </div>
                 </div>
 
-                <div class="charts-grid">
+                <div class="charts-wrapper">
                     <div class="chart-card">
-                        <div class="chart-header">
-                            <h3 class="chart-title">Murojaat Turlari Statistikasi</h3>
-                        </div>
-                        <div style="flex:1; position:relative;">
+                        <div class="chart-head"><h3>Murojaat Turlari Bo'yicha</h3></div>
+                        <div style="flex:1; position:relative; margin-top:20px;">
                             <canvas id="barChart"></canvas>
                         </div>
                     </div>
                     <div class="chart-card">
-                        <div class="chart-header">
-                            <h3 class="chart-title">Statuslar Ulushi</h3>
-                        </div>
-                        <div style="flex:1; position:relative;">
+                        <div class="chart-head"><h3>Statuslar Nisbati</h3></div>
+                        <div style="flex:1; position:relative; margin-top:20px;">
                             <canvas id="doughnutChart"></canvas>
                         </div>
                     </div>
@@ -576,33 +368,32 @@
             </div>
 
             <div id="reportsView" class="view-section">
-                <div class="table-wrapper">
+                <div class="table-card">
                     <div class="table-toolbar">
                         <div class="search-box">
                             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                            <input type="text" class="search-input" id="reportSearch" placeholder="Qidirish (ID, Manzil, Tavsif)...">
+                            <input type="text" class="search-input" id="reportSearch" placeholder="Qidirish (ID, Manzil)...">
                         </div>
                         <div class="filter-group">
-                            <select class="filter-select" id="statusFilter" onchange="AdminPanel.applyFilters()">
+                            <select class="filter-select" id="statusFilter" onchange="Admin.applyFilters()">
                                 <option value="all">Barcha Statuslar</option>
                                 <option value="Yangi">⏳ Yangi</option>
                                 <option value="Hal etildi">✅ Hal etildi</option>
                                 <option value="Rad etildi">🚫 Rad etildi</option>
                             </select>
-                            <button class="btn-export" onclick="AdminPanel.exportExcel()">
-                                <i class="fa-solid fa-file-excel"></i> Export Excel
+                            <button class="btn-export" onclick="Admin.exportToExcel()">
+                                <i class="fa-solid fa-file-excel"></i> Excel
                             </button>
                         </div>
                     </div>
-                    
-                    <div class="table-responsive">
+                    <div style="overflow-x:auto;">
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>Sana</th>
                                     <th>Foydalanuvchi</th>
-                                    <th>Turi</th>
+                                    <th>Muammo Turi</th>
                                     <th>Manzil</th>
                                     <th>Status</th>
                                     <th>Amallar</th>
@@ -612,27 +403,25 @@
                                 </tbody>
                         </table>
                     </div>
-
-                    <div class="table-footer">
-                        <span class="page-info" id="tableInfo">Yuklanmoqda...</span>
-                        <div class="pagination-controls">
-                            <button class="page-btn" onclick="AdminPanel.changePage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-                            <button class="page-btn" onclick="AdminPanel.changePage(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                    <div style="padding:20px; border-top:1px solid var(--adm-border); display:flex; justify-content:space-between; color:#9ca3af; font-size:0.85rem;">
+                        <span id="tableInfo">Yuklanmoqda...</span>
+                        <div style="display:flex; gap:10px;">
+                            <button class="action-btn" onclick="Admin.changePage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="action-btn" onclick="Admin.changePage(1)"><i class="fa-solid fa-chevron-right"></i></button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div id="usersView" class="view-section">
-                <div class="table-wrapper">
+                <div class="table-card">
                     <div class="table-toolbar">
                         <h3 style="color:white; margin:0;">Foydalanuvchilar Bazasi</h3>
                         <div class="search-box">
-                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
                             <input type="text" class="search-input" id="userSearch" placeholder="Ism yoki Email qidirish...">
                         </div>
                     </div>
-                    <div class="table-responsive">
+                    <div style="overflow-x:auto;">
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -652,23 +441,23 @@
             </div>
 
             <div id="settingsView" class="view-section">
-                <div class="settings-card">
-                    <h2 style="color:white; margin-bottom:30px; border-bottom:1px solid var(--adm-border); padding-bottom:15px;">Admin Profili</h2>
+                <div style="max-width:600px; background:var(--adm-panel); padding:30px; border-radius:16px; border:1px solid var(--adm-border);">
+                    <h2 style="color:white; margin-bottom:20px;">Admin Profili</h2>
                     
-                    <div class="form-group">
-                        <label class="form-label">Ko'rinadigan Ism</label>
-                        <input type="text" class="form-input" id="adminNameInput">
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; color:#9ca3af; margin-bottom:8px; font-size:0.9rem;">Admin Ismi</label>
+                        <input type="text" id="adminNameInput" class="search-input">
                     </div>
-                    <button class="btn-export" style="width:100%; justify-content:center;" onclick="AdminPanel.updateProfile()">
+                    <button class="btn-export" style="width:100%; justify-content:center;" onclick="Admin.updateProfile()">
                         <i class="fa-solid fa-floppy-disk"></i> Saqlash
                     </button>
 
-                    <h2 style="color:white; margin:40px 0 20px; border-bottom:1px solid var(--adm-border); padding-bottom:15px;">Xavfsizlik</h2>
-                    <div class="form-group">
-                        <label class="form-label">Yangi Parol</label>
-                        <input type="password" class="form-input" id="adminPassInput" placeholder="******">
+                    <h2 style="color:white; margin:40px 0 20px;">Xavfsizlik</h2>
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; color:#9ca3af; margin-bottom:8px; font-size:0.9rem;">Yangi Parol</label>
+                        <input type="password" id="adminPassInput" class="search-input" placeholder="******">
                     </div>
-                    <button class="btn-export" style="width:100%; justify-content:center; background:var(--adm-danger);" onclick="AdminPanel.updatePassword()">
+                    <button class="btn-export" style="width:100%; justify-content:center; background:#ef4444;" onclick="Admin.updatePassword()">
                         <i class="fa-solid fa-key"></i> Parolni Yangilash
                     </button>
                 </div>
@@ -677,65 +466,72 @@
         </div>
     </main>
 
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal-window">
-            <div class="modal-header">
-                <h3 class="modal-title">Murojaat Tafsilotlari</h3>
-                <button onclick="AdminPanel.closeModal()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+    <div class="modal-wrap" id="detailModal">
+        <div class="modal-xl">
+            <div class="modal-header" style="padding:20px; border-bottom:1px solid var(--adm-border); display:flex; justify-content:space-between;">
+                <h3 style="color:white; margin:0;">Murojaat Tafsilotlari</h3>
+                <button onclick="Admin.closeModal()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="map-container">
+                <div class="map-col">
                     <div id="detailMap"></div>
                 </div>
-                <div class="details-panel">
-                    <div class="detail-item">
+                <div class="info-col">
+                    <div class="info-group">
                         <label>Muammo Turi</label>
-                        <p id="mType" style="font-size:1.2rem; font-weight:700; color:var(--adm-primary);">...</p>
+                        <p id="mType" style="color:var(--adm-primary); font-weight:700; font-size:1.2rem;">...</p>
                     </div>
-                    <div class="detail-item">
+                    <div class="info-group">
                         <label>Tavsif</label>
-                        <div class="detail-desc" id="mDesc">...</div>
+                        <div class="desc-box" id="mDesc">...</div>
                     </div>
-                    <div class="detail-item">
+                    <div class="info-group">
                         <label>Manzil</label>
                         <p id="mAddress"><i class="fa-solid fa-location-dot"></i> <span>...</span></p>
                     </div>
-                    <div class="detail-item">
+                    <div class="info-group">
                         <label>Yuboruvchi</label>
-                        <p id="mUser" style="color:var(--text-secondary);">...</p>
+                        <p id="mUser" style="color:#9ca3af; font-family:monospace;">...</p>
                     </div>
-                    
-                    <div class="modal-actions">
-                        <button class="btn-action-lg btn-approve" onclick="AdminPanel.changeStatus('Hal etildi')">
-                            <i class="fa-solid fa-check"></i> Hal Etildi
-                        </button>
-                        <button class="btn-action-lg btn-reject" onclick="AdminPanel.changeStatus('Rad etildi')">
-                            <i class="fa-solid fa-xmark"></i> Rad Etish
-                        </button>
+                    <div class="info-group" id="mImageContainer" style="display:none;">
+                        <label>Biriktirilgan Fayl</label>
+                        <a href="#" target="_blank" id="mImageLink" style="color:var(--adm-primary);">Rasmni ko'rish</a>
                     </div>
                 </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-export" style="background:#10b981;" onclick="Admin.updateStatus('Hal etildi')">
+                    <i class="fa-solid fa-check"></i> Hal Etildi
+                </button>
+                <button class="btn-export" style="background:#ef4444;" onclick="Admin.updateStatus('Rad etildi')">
+                    <i class="fa-solid fa-xmark"></i> Rad Etish
+                </button>
+                <button class="action-btn" onclick="Admin.deleteReport()">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
             </div>
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
-        import { auth, db, collection, getDocs, doc, updateDoc, deleteDoc, onAuthStateChanged, signOut, updateProfile, updatePassword } from './firebase-config.js';
+        import { auth, db, collection, getDocs, doc, updateDoc, deleteDoc, onAuthStateChanged, signOut, updateProfile, updatePassword } from './config.js';
 
         const ADMIN_EMAIL = "islomovjavohir939@gmail.com";
 
-        // --- CORE APPLICATION CLASS ---
-        class DashboardEngine {
+        // --- ADMIN SYSTEM ENGINE ---
+        class AdminSystem {
             constructor() {
-                this.state = {
+                this.data = {
                     reports: [],
                     users: [],
-                    filteredReports: [],
-                    currentPage: 1,
-                    itemsPerPage: 10,
-                    currentModalId: null,
-                    charts: { bar: null, doughnut: null },
-                    map: null
+                    filtered: [],
+                    page: 1,
+                    limit: 10
                 };
+                this.map = null;
+                this.currentId = null;
+                this.charts = { bar: null, doughnut: null };
                 
                 this.init();
             }
@@ -747,46 +543,48 @@
                         window.location.href = 'login.html';
                     } else {
                         this.user = user;
-                        this.updateSidebar();
+                        this.setupUI();
                         this.fetchData();
                         
                         // Set Date
                         moment.locale('uz-latn');
                         document.getElementById('currentDate').innerText = moment().format('D MMMM YYYY, dddd');
                         
-                        // Event Listeners
-                        document.getElementById('reportSearch').addEventListener('input', (e) => this.handleSearch(e.target.value));
-                        document.getElementById('userSearch').addEventListener('input', (e) => this.handleUserSearch(e.target.value));
+                        // Search Listeners
+                        document.getElementById('reportSearch').addEventListener('input', (e) => this.filterReports(e.target.value));
+                        document.getElementById('userSearch').addEventListener('input', (e) => this.filterUsers(e.target.value));
                     }
                 });
             }
 
-            updateSidebar() {
-                document.getElementById('sidebarName').innerText = this.user.displayName || "Admin";
-                document.getElementById('sidebarEmail').innerText = this.user.email;
+            setupUI() {
+                document.getElementById('adminNameDisplay').innerText = this.user.displayName || "Admin";
+                document.getElementById('adminEmailDisplay').innerText = this.user.email;
                 document.getElementById('adminNameInput').value = this.user.displayName || "";
             }
 
-            // --- DATA FETCHING ---
+            // --- DATA LOADING ---
             async fetchData() {
                 try {
                     // Reports
                     const rSnap = await getDocs(collection(db, "reports"));
-                    this.state.reports = [];
-                    rSnap.forEach(d => this.state.reports.push({ id: d.id, ...d.data() }));
-                    this.state.reports.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    
+                    this.data.reports = [];
+                    rSnap.forEach(d => this.data.reports.push({ id: d.id, ...d.data() }));
+                    // Sort descending
+                    this.data.reports.sort((a, b) => new Date(b.timestamp?.seconds * 1000 || 0) - new Date(a.timestamp?.seconds * 1000 || 0));
+
                     // Users
                     const uSnap = await getDocs(collection(db, "users"));
-                    this.state.users = [];
-                    uSnap.forEach(d => this.state.users.push(d.data()));
+                    this.data.users = [];
+                    uSnap.forEach(d => this.data.users.push(d.data()));
 
-                    this.state.filteredReports = [...this.state.reports];
+                    this.data.filtered = [...this.data.reports];
                     this.renderAll();
-                    this.showToast("Muvaffaqiyatli", "Ma'lumotlar yangilandi", "success");
-                } catch (error) {
-                    console.error(error);
-                    this.showToast("Xatolik", "Ma'lumotlarni yuklashda xato", "error");
+                    this.toast('success', "Ma'lumotlar yangilandi");
+
+                } catch (e) {
+                    console.error(e);
+                    this.toast('error', "Ma'lumotlarni yuklashda xatolik");
                 }
             }
 
@@ -797,43 +595,45 @@
                 this.renderUsersTable();
                 
                 // Pending Badge
-                const pending = this.state.reports.filter(r => r.status === 'Yangi').length;
-                const badge = document.getElementById('navPendingCount');
-                if(pending > 0) { badge.style.display = 'inline-block'; badge.innerText = pending; }
-                else badge.style.display = 'none';
+                const pending = this.data.reports.filter(r => r.status === 'Yangi').length;
+                const badge = document.getElementById('badgePending');
+                if(pending > 0) { badge.style.display='inline-block'; badge.innerText = pending; }
+                else badge.style.display='none';
             }
 
-            // --- DASHBOARD RENDERERS ---
+            // --- STATS & CHARTS ---
             renderStats() {
-                const total = this.state.reports.length;
-                const solved = this.state.reports.filter(r => r.status === 'Hal etildi').length;
-                const pending = this.state.reports.filter(r => r.status === 'Yangi').length;
-                
-                this.animateCounter("statTotal", total);
-                this.animateCounter("statSolved", solved);
-                this.animateCounter("statPending", pending);
-                this.animateCounter("statUsers", this.state.users.length);
+                const total = this.data.reports.length;
+                const solved = this.data.reports.filter(r => r.status === 'Hal etildi').length;
+                const pending = this.data.reports.filter(r => r.status === 'Yangi').length;
+
+                this.animateValue("countTotal", total);
+                this.animateValue("countSolved", solved);
+                this.animateValue("countPending", pending);
+                this.animateValue("countUsers", this.data.users.length);
             }
 
-            animateCounter(id, target) {
-                const el = document.getElementById(id);
-                let current = 0;
-                const step = Math.ceil(target / 20);
-                if(target === 0) { el.innerText = "0"; return; }
-                const timer = setInterval(() => {
-                    current += step;
-                    if(current >= target) { current = target; clearInterval(timer); }
-                    el.innerText = current;
-                }, 30);
+            animateValue(id, end) {
+                const obj = document.getElementById(id);
+                let start = 0;
+                if(end === 0) { obj.innerText = "0"; return; }
+                const duration = 1000;
+                let startTime = null;
+                const step = (timestamp) => {
+                    if (!startTime) startTime = timestamp;
+                    const progress = Math.min((timestamp - startTime) / duration, 1);
+                    obj.innerText = Math.floor(progress * (end - start) + start);
+                    if (progress < 1) window.requestAnimationFrame(step);
+                };
+                window.requestAnimationFrame(step);
             }
 
             renderCharts() {
-                // Bar Chart Data
                 const types = {};
-                this.state.reports.forEach(r => types[r.type] = (types[r.type] || 0) + 1);
+                this.data.reports.forEach(r => types[r.type] = (types[r.type] || 0) + 1);
                 
-                if(this.state.charts.bar) this.state.charts.bar.destroy();
-                this.state.charts.bar = new Chart(document.getElementById('barChart'), {
+                if(this.charts.bar) this.charts.bar.destroy();
+                this.charts.bar = new Chart(document.getElementById('barChart'), {
                     type: 'bar',
                     data: {
                         labels: Object.keys(types),
@@ -842,12 +642,11 @@
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
                 });
 
-                // Doughnut Data
                 const stats = { 'Yangi': 0, 'Hal etildi': 0, 'Rad etildi': 0 };
-                this.state.reports.forEach(r => { if(stats[r.status] !== undefined) stats[r.status]++; });
+                this.data.reports.forEach(r => { if(stats[r.status] !== undefined) stats[r.status]++; });
                 
-                if(this.state.charts.doughnut) this.state.charts.doughnut.destroy();
-                this.state.charts.doughnut = new Chart(document.getElementById('doughnutChart'), {
+                if(this.charts.doughnut) this.charts.doughnut.destroy();
+                this.charts.doughnut = new Chart(document.getElementById('doughnutChart'), {
                     type: 'doughnut',
                     data: {
                         labels: Object.keys(stats),
@@ -857,37 +656,37 @@
                 });
             }
 
-            // --- TABLE LOGIC ---
+            // --- TABLES ---
             renderReportsTable() {
                 const tbody = document.getElementById('reportsTableBody');
-                const start = (this.state.currentPage - 1) * this.state.itemsPerPage;
-                const end = start + this.state.itemsPerPage;
-                const pageData = this.state.filteredReports.slice(start, end);
+                const start = (this.data.page - 1) * this.data.limit;
+                const end = start + this.data.limit;
+                const viewData = this.data.filtered.slice(start, end);
 
-                document.getElementById('tableInfo').innerText = `${this.state.filteredReports.length} tadan ${start+1}-${Math.min(end, this.state.filteredReports.length)} ko'rsatilmoqda`;
+                document.getElementById('tableInfo').innerText = `${this.data.filtered.length} tadan ${start+1}-${Math.min(end, this.data.filtered.length)}`;
 
-                tbody.innerHTML = pageData.map(r => {
-                    let badgeClass = 'status-new';
-                    if(r.status === 'Hal etildi') badgeClass = 'status-solved';
-                    if(r.status === 'Rad etildi') badgeClass = 'status-rejected';
+                tbody.innerHTML = viewData.map(r => {
+                    let badge = 's-new';
+                    if(r.status === 'Hal etildi') badge = 's-solved';
+                    if(r.status === 'Rad etildi') badge = 's-rejected';
 
                     return `
-                    <tr style="animation: fadeIn 0.3s">
-                        <td><span style="font-family:monospace; color:var(--adm-primary);">#${r.id.substring(0,6)}</span></td>
+                    <tr>
+                        <td><span style="font-family:monospace; color:var(--adm-primary);">#${r.id.slice(0,6)}</span></td>
                         <td>${r.date.split(',')[0]}</td>
                         <td>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <div style="width:24px; height:24px; background:var(--adm-panel); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid var(--adm-border); font-size:0.7rem;">${r.email.charAt(0).toUpperCase()}</div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:24px;height:24px;background:#1f2937;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;border:1px solid #374151;">${r.email[0].toUpperCase()}</div>
                                 <span>${r.email.split('@')[0]}</span>
                             </div>
                         </td>
-                        <td style="font-weight:600;">${r.type}</td>
-                        <td style="max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.address}</td>
-                        <td><span class="status-badge ${badgeClass}">${r.status}</span></td>
+                        <td><b>${r.type}</b></td>
+                        <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.address}</td>
+                        <td><span class="status-badge ${badge}">${r.status}</span></td>
                         <td>
-                            <div class="action-cell">
-                                <button class="btn-icon btn-view" title="Ko'rish" onclick="AdminPanel.openDetails('${r.id}')"><i class="fa-solid fa-eye"></i></button>
-                                <button class="btn-icon btn-trash" title="O'chirish" onclick="AdminPanel.deleteReport('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn-icon btn-view" onclick="Admin.openDetails('${r.id}')"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn-icon btn-del" onclick="Admin.deleteReportConfirm('${r.id}')"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -897,109 +696,143 @@
 
             renderUsersTable() {
                 const tbody = document.getElementById('usersTableBody');
-                tbody.innerHTML = this.state.users.map(u => `
+                tbody.innerHTML = this.data.users.map(u => `
                     <tr>
                         <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}</td>
                         <td>
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <div class="avatar-box" style="width:32px; height:32px; font-size:0.8rem;">
-                                    ${(u.displayName||'U').charAt(0)}
-                                </div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:30px;height:30px;background:#374151;border-radius:50%;display:flex;align-items:center;justify-content:center;">${(u.displayName||'U')[0]}</div>
                                 <b>${u.displayName || 'Ismsiz'}</b>
                             </div>
                         </td>
                         <td>
                             <div>${u.email}</div>
-                            <div style="font-size:0.75rem; color:var(--text-muted);">${u.phoneNumber || ''}</div>
+                            <small style="color:#6b7280;">${u.phoneNumber || ''}</small>
                         </td>
-                        <td><span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:4px; font-size:0.8rem;">${u.role || 'User'}</span></td>
-                        <td style="font-family:monospace; color:var(--text-muted);">${u.uid}</td>
-                        <td style="font-size:0.8rem; color:var(--text-muted);">${u.device ? (u.device.includes('Mobile')?'Mobile':'Desktop') : '-'}</td>
+                        <td><span style="background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:4px;font-size:0.8rem;">${u.role || 'User'}</span></td>
+                        <td style="font-family:monospace;color:#6b7280;">${u.uid}</td>
+                        <td style="font-size:0.8rem;color:#6b7280;">${u.deviceInfo ? (u.deviceInfo.includes('Mobile')?'Mobile':'PC') : '-'}</td>
                     </tr>
                 `).join('');
             }
 
-            // --- ACTIONS ---
-            changePage(dir) {
-                const maxPage = Math.ceil(this.state.filteredReports.length / this.state.itemsPerPage);
-                const newPage = this.state.currentPage + dir;
-                if(newPage > 0 && newPage <= maxPage) {
-                    this.state.currentPage = newPage;
-                    this.renderReportsTable();
-                }
-            }
-
-            applyFilters() {
-                const status = document.getElementById('statusFilter').value;
-                if(status === 'all') this.state.filteredReports = [...this.state.reports];
-                else this.state.filteredReports = this.state.reports.filter(r => r.status === status);
-                this.state.currentPage = 1;
-                this.renderReportsTable();
-            }
-
-            handleSearch(term) {
+            // --- FILTERS & PAGINATION ---
+            filterReports(term) {
                 term = term.toLowerCase();
-                this.state.filteredReports = this.state.reports.filter(r => 
+                this.data.filtered = this.data.reports.filter(r => 
                     r.address.toLowerCase().includes(term) ||
                     r.id.toLowerCase().includes(term) ||
                     r.description.toLowerCase().includes(term)
                 );
-                this.state.currentPage = 1;
+                this.data.page = 1;
                 this.renderReportsTable();
             }
 
-            // --- MODAL LOGIC ---
+            applyFilters() {
+                const status = document.getElementById('statusFilter').value;
+                if(status === 'all') this.data.filtered = [...this.data.reports];
+                else this.data.filtered = this.data.reports.filter(r => r.status === status);
+                this.data.page = 1;
+                this.renderReportsTable();
+            }
+
+            changePage(dir) {
+                const max = Math.ceil(this.data.filtered.length / this.data.limit);
+                const next = this.data.page + dir;
+                if(next > 0 && next <= max) {
+                    this.data.page = next;
+                    this.renderReportsTable();
+                }
+            }
+
+            // --- MODAL & ACTIONS ---
             openDetails(id) {
-                const r = this.state.reports.find(item => item.id === id);
+                const r = this.data.reports.find(x => x.id === id);
                 if(!r) return;
-                this.state.currentModalId = id;
+                this.currentId = id;
 
                 document.getElementById('mType').innerText = r.type;
                 document.getElementById('mDesc').innerText = r.description;
                 document.getElementById('mAddress').querySelector('span').innerText = r.address;
                 document.getElementById('mUser').innerText = r.email;
 
+                // Image handling
+                const imgBox = document.getElementById('mImageContainer');
+                if(r.imageUrl) {
+                    imgBox.style.display = 'block';
+                    document.getElementById('mImageLink').href = r.imageUrl;
+                } else {
+                    imgBox.style.display = 'none';
+                }
+
                 const modal = document.getElementById('detailModal');
                 modal.classList.add('active');
 
-                // Map Init (Leaflet Fix)
-                if(this.state.map) { this.state.map.remove(); this.state.map = null; }
+                // Map Init
+                if(this.map) { this.map.remove(); this.map = null; }
                 setTimeout(() => {
                     const lat = r.latitude || 41.311;
                     const lng = r.longitude || 69.240;
-                    this.state.map = L.map('detailMap').setView([lat, lng], 13);
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(this.state.map);
-                    if(r.latitude) L.marker([lat, lng]).addTo(this.state.map);
+                    this.map = L.map('detailMap').setView([lat, lng], 13);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(this.map);
+                    if(r.latitude) L.marker([lat, lng]).addTo(this.map);
                 }, 300);
             }
 
-            closeModal() {
-                document.getElementById('detailModal').classList.remove('active');
-            }
+            closeModal() { document.getElementById('detailModal').classList.remove('active'); }
 
-            async changeStatus(newStatus) {
-                if(!this.state.currentModalId) return;
+            async updateStatus(status) {
+                if(!this.currentId) return;
                 try {
-                    await updateDoc(doc(db, "reports", this.state.currentModalId), { status: newStatus });
-                    this.showToast("Yangilandi", `Status: ${newStatus}`, "success");
+                    await updateDoc(doc(db, "reports", this.currentId), { status: status });
+                    this.toast('success', `Status: ${status}`);
                     this.closeModal();
                     this.fetchData();
-                } catch(e) { this.showToast("Xatolik", e.message, "error"); }
+                } catch(e) { this.toast('error', e.message); }
             }
 
-            async deleteReport(id) {
-                if(!confirm("Haqiqatan ham o'chirmoqchimisiz?")) return;
+            deleteReportConfirm(id) {
+                if(confirm("Haqiqatan ham o'chirmoqchimisiz?")) {
+                    this.currentId = id;
+                    this.deleteReport();
+                }
+            }
+
+            async deleteReport() {
                 try {
-                    await deleteDoc(doc(db, "reports", id));
-                    this.showToast("O'chirildi", "Murojaat bazadan o'chirildi", "success");
+                    await deleteDoc(doc(db, "reports", this.currentId));
+                    this.toast('success', "Murojaat o'chirildi");
+                    if(document.getElementById('detailModal').classList.contains('active')) this.closeModal();
                     this.fetchData();
-                } catch(e) { this.showToast("Xatolik", e.message, "error"); }
+                } catch(e) { this.toast('error', e.message); }
+            }
+
+            // --- SETTINGS ---
+            async updateProfile() {
+                const name = document.getElementById('adminNameInput').value;
+                if(name) {
+                    await updateProfile(this.user, { displayName: name });
+                    this.toast('success', "Ism yangilandi");
+                    this.setupUI();
+                }
+            }
+
+            async updatePassword() {
+                const p = document.getElementById('adminPassInput').value;
+                if(p.length < 6) return this.toast('error', "Parol juda qisqa");
+                try {
+                    await updatePassword(this.user, p);
+                    this.toast('success', "Parol o'zgardi. Qayta kiring.");
+                    setTimeout(() => this.logout(), 2000);
+                } catch(e) { this.toast('error', "Xatolik: Qayta login qiling"); }
             }
 
             // --- UTILS ---
-            refreshData() { this.fetchData(); }
+            refresh() { this.fetchData(); }
             
-            navigate(view, el) {
+            logout() { signOut(auth).then(() => location.href = "login.html"); }
+
+            switchView(view, el) {
                 document.querySelectorAll('.view-section').forEach(d => d.classList.remove('active'));
                 document.querySelectorAll('.nav-item').forEach(d => d.classList.remove('active'));
                 
@@ -1007,61 +840,31 @@
                 if(el) el.classList.add('active');
                 
                 const titles = { dashboard: 'Dashboard', reports: 'Murojaatlar Markazi', users: 'Foydalanuvchilar', settings: 'Tizim Sozlamalari' };
-                document.getElementById('pageHeading').innerText = titles[view];
+                document.getElementById('pageTitle').innerText = titles[view];
                 
-                // Mobile close
                 if(window.innerWidth < 768) document.getElementById('sidebar').classList.remove('active');
             }
 
-            exportExcel() {
-                const ws = XLSX.utils.json_to_sheet(this.state.reports);
+            exportToExcel() {
+                const ws = XLSX.utils.json_to_sheet(this.data.reports);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Murojaatlar");
                 XLSX.writeFile(wb, `Nigoh_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
             }
 
-            async updateProfile() {
-                const name = document.getElementById('adminNameInput').value;
-                if(name) {
-                    await updateProfile(this.user, { displayName: name });
-                    this.showToast("Saqlandi", "Profil yangilandi", "success");
-                    this.updateSidebar();
-                }
-            }
-
-            async updatePassword() {
-                const pass = document.getElementById('adminPassInput').value;
-                if(pass.length < 6) return this.showToast("Xato", "Parol qisqa", "error");
-                try {
-                    await updatePassword(this.user, pass);
-                    this.showToast("OK", "Parol yangilandi. Qayta kiring.", "success");
-                    setTimeout(() => this.logout(), 2000);
-                } catch(e) { this.showToast("Xato", "Qayta login qiling", "error"); }
-            }
-
-            logout() {
-                signOut(auth).then(() => location.href = "login.html");
-            }
-
-            showToast(title, msg, type) {
-                const container = document.getElementById('toastContainer');
-                const toast = document.createElement('div');
-                toast.className = 'toast';
-                
-                const colors = { success: '#10b981', error: '#ef4444' };
-                const icons = { success: 'circle-check', error: 'circle-xmark' };
-                
-                toast.style.borderLeftColor = colors[type];
-                toast.innerHTML = `
-                    <i class="fa-solid fa-${icons[type]}" style="font-size:1.5rem; color:${colors[type]}"></i>
-                    <div><h4 style="margin:0;font-size:0.9rem;">${title}</h4><p style="margin:0;font-size:0.8rem;color:#9ca3af">${msg}</p></div>
-                `;
-                container.appendChild(toast);
-                setTimeout(() => { toast.remove() }, 3000);
+            toast(type, msg) {
+                const box = document.getElementById('toastContainer');
+                const t = document.createElement('div');
+                t.className = 'toast';
+                const color = type === 'success' ? '#10b981' : '#ef4444';
+                t.style.borderLeft = `4px solid ${color}`;
+                t.innerHTML = `<div><strong style="color:${color}">${type.toUpperCase()}</strong><br><small>${msg}</small></div>`;
+                box.appendChild(t);
+                setTimeout(() => t.remove(), 3000);
             }
         }
 
-        window.AdminPanel = new DashboardEngine();
+        window.Admin = new AdminSystem();
     </script>
 </body>
 </html>

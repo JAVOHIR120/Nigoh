@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Nigoh tizimida xavfsiz ro'yxatdan o'tish.">
-    <meta name="theme-color" content="#4f46e5">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
     <title>Nigoh | Yangi Hisob Yaratish</title>
+    <meta name="description" content="Nigoh tizimida ro'yxatdan o'tish. Xavfsiz, anonim va shaffof jamoatchilik nazorati platformasi.">
+    <meta name="theme-color" content="#0f172a">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,507 +18,670 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* * ==========================================================================
-         * 1. MODULE-SPECIFIC DESIGN TOKENS
-         * ==========================================================================
-         */
+        /* 1. MODULE VARIABLES & TOKENS */
         :root {
-            /* Theme Palette */
-            --reg-bg: #0f172a;
-            --reg-panel: #1e293b;
-            --reg-border: rgba(255, 255, 255, 0.08);
+            /* Layout Dimensions */
+            --auth-split: 45%;
+            --auth-max-w: 1200px;
+            --auth-min-h: 800px;
             
-            /* Brand Colors */
-            --brand-primary: #6366f1;
-            --brand-hover: #4f46e5;
-            --brand-glow: rgba(99, 102, 241, 0.5);
+            /* Component Colors */
+            --input-bg-default: #1e293b;
+            --input-bg-focus: #0f172a;
+            --input-border-idle: rgba(148, 163, 184, 0.2);
+            --input-border-focus: #3b82f6;
             
             /* Status Colors */
-            --status-success: #10b981;
-            --status-error: #ef4444;
-            --status-warning: #f59e0b;
-            
-            /* Typography */
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --text-disabled: #475569;
-            
-            /* Inputs */
-            --input-bg: #334155;
-            --input-focus-border: #818cf8;
+            --strength-weak: #ef4444;
+            --strength-fair: #f97316;
+            --strength-good: #eab308;
+            --strength-strong: #3b82f6;
+            --strength-secure: #10b981;
             
             /* Animation Curves */
-            --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
             --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* * ==========================================================================
-         * 2. CORE LAYOUT & BACKGROUND FX
-         * ==========================================================================
-         */
+        /* 2. PAGE LAYOUT STRUCTURE */
         body {
-            background-color: var(--reg-bg);
-            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            display: flex; align-items: center; justify-content: center;
-            overflow-x: hidden; position: relative;
+            background-color: #020617;
+            overflow-x: hidden;
             padding: 20px;
+            position: relative;
         }
 
-        /* Dynamic Background Mesh */
-        .bg-fx-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-        .fx-orb {
-            position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.3;
-            animation: floatOrb 15s infinite alternate ease-in-out;
+        /* Animated Background Elements */
+        .auth-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
         }
-        .orb-1 { width: 700px; height: 700px; background: #4338ca; top: -20%; left: -10%; }
-        .orb-2 { width: 500px; height: 500px; background: #0ea5e9; bottom: -10%; right: -10%; animation-delay: -5s; }
-        .orb-3 { width: 300px; height: 300px; background: #ec4899; top: 40%; left: 40%; opacity: 0.15; animation-delay: -8s; }
-
-        @keyframes floatOrb {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(50px, 30px) scale(1.1); }
+        
+        .bg-mesh {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(245, 158, 11, 0.1) 0px, transparent 50%);
+            filter: blur(60px);
+            animation: meshRotate 60s linear infinite;
         }
 
-        /* * ==========================================================================
-         * 3. MAIN REGISTRATION CARD
-         * ==========================================================================
-         */
-        .register-card {
-            width: 100%; max-width: 1000px; min-height: 750px;
+        @keyframes meshRotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(10deg) scale(1.1); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+
+        .floating-particles {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            animation: particleDrift 20s linear infinite;
+        }
+
+        @keyframes particleDrift {
+            from { background-position: 0 0; }
+            to { background-position: 50px 50px; }
+        }
+
+        /* 3. AUTH CARD COMPONENT */
+        .auth-card {
+            width: 100%;
+            max-width: var(--auth-max-w);
+            min-height: var(--auth-min-h);
             background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--reg-border);
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            display: grid; grid-template-columns: 40% 60%;
-            overflow: hidden; position: relative; z-index: 10;
-            animation: slideUpFade 0.8s var(--ease-smooth);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 32px;
+            box-shadow: 
+                0 50px 100px -20px rgba(0, 0, 0, 0.5),
+                0 30px 60px -30px rgba(0, 0, 0, 0.6),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            display: grid;
+            grid-template-columns: var(--auth-split) 1fr;
+            overflow: hidden;
+            animation: cardEntrance 0.8s var(--ease-smooth);
+            position: relative;
+            z-index: 10;
         }
 
-        @keyframes slideUpFade {
+        @keyframes cardEntrance {
             from { opacity: 0; transform: translateY(40px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* * ==========================================================================
-         * 4. LEFT SIDE: BRANDING & INFO
-         * ==========================================================================
-         */
-        .brand-panel {
-            background: linear-gradient(160deg, #1e1b4b 0%, #312e81 100%);
-            padding: 50px; display: flex; flex-direction: column;
-            justify-content: space-between; position: relative; overflow: hidden;
-        }
-        
-        .brand-panel::before {
-            content: ''; position: absolute; inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+        /* 4. LEFT SIDE: BRAND VISUALS */
+        .visual-panel {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
         }
 
-        .brand-header { position: relative; z-index: 2; }
-        .logo-badge {
-            width: 70px; height: 70px; background: rgba(255,255,255,0.1);
-            border-radius: 18px; border: 1px solid rgba(255,255,255,0.2);
+        .visual-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+            z-index: 1;
+        }
+
+        .brand-header {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-symbol {
+            width: 50px; height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; color: white; margin-bottom: 25px;
-            box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+            font-size: 1.5rem; color: white;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .brand-title { font-size: 2.2rem; font-weight: 800; color: white; line-height: 1.1; margin-bottom: 15px; }
-        .brand-desc { color: #c7d2fe; font-size: 1rem; line-height: 1.6; max-width: 300px; }
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.02em;
+        }
 
-        .feature-list { margin-top: 40px; position: relative; z-index: 2; }
+        .visual-main {
+            position: relative;
+            z-index: 2;
+            margin: auto 0;
+        }
+
+        .visual-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .visual-desc {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #94a3b8;
+            max-width: 90%;
+        }
+
+        .feature-list {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
         .feature-item {
-            display: flex; align-items: center; gap: 12px; margin-bottom: 15px;
-            color: var(--text-main); font-size: 0.9rem; font-weight: 500;
-        }
-        .f-icon {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: rgba(16, 185, 129, 0.2); color: #34d399;
-            display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
 
-        /* * ==========================================================================
-         * 5. RIGHT SIDE: FORM CONTAINER
-         * ==========================================================================
-         */
+        .feature-icon {
+            width: 28px; height: 28px;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        /* 5. RIGHT SIDE: FORM */
         .form-panel {
-            padding: 50px 60px; background: var(--reg-panel);
-            display: flex; flex-direction: column; justify-content: center;
-            overflow-y: auto; position: relative;
+            padding: 60px;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+            position: relative;
         }
 
-        .form-header { margin-bottom: 35px; }
-        .form-h1 { font-size: 1.8rem; font-weight: 700; color: white; margin-bottom: 8px; }
-        .form-sub { color: var(--text-muted); font-size: 0.95rem; }
-
-        /* * ==========================================================================
-         * 6. INPUT ECOSYSTEM
-         * ==========================================================================
-         */
-        .input-group { margin-bottom: 24px; position: relative; }
-        
-        .label-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .label-text { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
-        .label-hint { color: var(--text-disabled); font-size: 0.75rem; }
-
-        .input-wrapper { position: relative; }
-        
-        .form-input {
-            width: 100%; padding: 14px 16px 14px 45px;
-            background: var(--input-bg); border: 1px solid var(--reg-border);
-            border-radius: 12px; color: white; font-size: 1rem;
-            transition: all 0.2s ease;
+        .form-header {
+            margin-bottom: 40px;
         }
-        .form-input:focus {
-            background: #1e293b; border-color: var(--brand-primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: white;
         }
-        .form-input::placeholder { color: rgba(148, 163, 184, 0.4); }
 
-        /* Validation States */
-        .form-input.valid { border-color: var(--status-success); }
-        .form-input.invalid { border-color: var(--status-error); }
+        .form-subtitle {
+            color: #64748b;
+            font-size: 1rem;
+        }
 
-        /* Icons */
-        .field-icon {
-            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-            color: var(--text-muted); font-size: 1.1rem; pointer-events: none;
+        .link-login {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
             transition: 0.2s;
         }
-        .form-input:focus + .field-icon { color: var(--brand-primary); }
+        .link-login:hover { text-decoration: underline; color: #60a5fa; }
 
-        .status-indicator {
-            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-            font-size: 1rem; opacity: 0; transform: translateY(-50%) scale(0.5);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* 6. INPUT SYSTEM */
+        .form-grid {
+            display: grid;
+            gap: 24px;
         }
-        .form-input.valid ~ .status-indicator.success { opacity: 1; transform: translateY(-50%) scale(1); color: var(--status-success); }
-        .form-input.invalid ~ .status-indicator.error { opacity: 1; transform: translateY(-50%) scale(1); color: var(--status-error); }
 
-        /* Error Message */
-        .err-msg {
-            color: var(--status-error); font-size: 0.8rem; margin-top: 6px;
-            display: flex; align-items: center; gap: 6px;
-            height: 0; overflow: hidden; opacity: 0; transition: 0.3s;
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
-        .form-input.invalid ~ .err-msg { height: auto; opacity: 1; margin-top: 6px; }
 
-        /* * ==========================================================================
-         * 7. PASSWORD ENGINE UI
-         * ==========================================================================
-         */
-        .pwd-strength-meter {
-            background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;
-            margin-top: 10px; display: none; border: 1px solid var(--reg-border);
-            animation: fadeIn 0.3s ease;
+        .form-group {
+            position: relative;
         }
-        .pwd-strength-meter.active { display: block; }
 
-        .bar-container { display: flex; gap: 4px; height: 4px; margin-bottom: 8px; }
-        .p-bar { flex: 1; background: #475569; border-radius: 2px; transition: 0.3s; }
-
-        .req-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        .req-item { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-        .req-item i { font-size: 0.6rem; color: var(--text-disabled); }
-        .req-item.met { color: var(--text-main); }
-        .req-item.met i { color: var(--status-success); }
-
-        /* Strength Levels */
-        .level-1 .p-bar:nth-child(1) { background: var(--status-error); }
-        .level-2 .p-bar:nth-child(1), .level-2 .p-bar:nth-child(2) { background: var(--status-warning); }
-        .level-3 .p-bar:nth-child(1), .level-3 .p-bar:nth-child(2), .level-3 .p-bar:nth-child(3) { background: #38bdf8; }
-        .level-4 .p-bar { background: var(--status-success); }
-
-        /* * ==========================================================================
-         * 8. LEGAL & ACTIONS
-         * ==========================================================================
-         */
-        .legal-check {
-            display: flex; align-items: flex-start; gap: 12px; margin-bottom: 30px;
-            padding: 15px; border-radius: 12px; background: rgba(255,255,255,0.02);
-            border: 1px solid transparent; transition: 0.2s;
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
         }
-        .legal-check:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.05); }
 
-        .checkbox-custom {
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 52px;
+            padding: 0 20px 0 45px;
+            background: var(--input-bg-default);
+            border: 1px solid var(--input-border-idle);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus {
+            background: var(--input-bg-focus);
+            border-color: var(--input-border-focus);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        .form-input::placeholder { color: #475569; }
+
+        /* Icons */
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 1.1rem;
+            transition: 0.3s;
+            pointer-events: none;
+        }
+
+        .form-input:focus + .input-icon { color: #3b82f6; }
+
+        /* Validation States */
+        .form-input.valid { border-color: #10b981; padding-right: 40px; }
+        .form-input.invalid { border-color: #ef4444; padding-right: 40px; animation: shake 0.4s ease-in-out; }
+
+        .status-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%) scale(0);
+            font-size: 1rem;
+            transition: 0.3s var(--ease-bounce);
+        }
+
+        .form-input.valid ~ .status-icon.success { transform: translateY(-50%) scale(1); color: #10b981; }
+        .form-input.invalid ~ .status-icon.error { transform: translateY(-50%) scale(1); color: #ef4444; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .error-feedback {
+            font-size: 0.8rem;
+            color: #ef4444;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: 0.3s;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .form-group.has-error .error-feedback {
+            opacity: 1;
+            transform: translateY(0);
+            height: auto;
+        }
+
+        /* 7. PASSWORD ENTROPY METER */
+        .password-meter {
+            margin-top: 12px;
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        .password-meter.active { display: block; }
+
+        .meter-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+        }
+        .meter-label { color: #94a3b8; }
+        .meter-text { font-weight: 700; color: #64748b; }
+
+        .meter-bars {
+            display: flex;
+            gap: 4px;
+            height: 4px;
+            margin-bottom: 10px;
+        }
+        .bar { flex: 1; background: #334155; border-radius: 2px; transition: 0.3s; }
+
+        /* Dynamic Levels */
+        .strength-1 .bar:nth-child(1) { background: var(--strength-weak); }
+        .strength-2 .bar:nth-child(1), .strength-2 .bar:nth-child(2) { background: var(--strength-fair); }
+        .strength-3 .bar:nth-child(1), .strength-3 .bar:nth-child(2), .strength-3 .bar:nth-child(3) { background: var(--strength-good); }
+        .strength-4 .bar:nth-child(1), .strength-4 .bar:nth-child(2), .strength-4 .bar:nth-child(3), .strength-4 .bar:nth-child(4) { background: var(--strength-secure); }
+
+        .meter-reqs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+        .req-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: #64748b;
+            transition: 0.2s;
+        }
+        .req-item i { font-size: 0.6rem; }
+        .req-item.met { color: #10b981; }
+
+        /* 8. TERMS & SUBMIT */
+        .terms-wrapper {
+            margin-top: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .terms-wrapper:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+        .terms-wrapper.error { border-color: #ef4444; }
+
+        .custom-checkbox {
             width: 20px; height: 20px; min-width: 20px;
-            background: var(--input-bg); border: 1px solid var(--text-disabled);
-            border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s;
-        }
-        .checkbox-custom i { font-size: 0.75rem; color: white; transform: scale(0); transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .checkbox-custom.checked { background: var(--brand-primary); border-color: var(--brand-primary); }
-        .checkbox-custom.checked i { transform: scale(1); }
-        
-        .legal-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
-        .legal-link { color: var(--brand-primary); font-weight: 600; cursor: pointer; text-decoration: none; }
-        .legal-link:hover { text-decoration: underline; color: #818cf8; }
-
-        /* Submit Button */
-        .btn-register {
-            width: 100%; padding: 16px; border-radius: 12px; border: none;
-            background: linear-gradient(135deg, var(--brand-primary), #4338ca);
-            color: white; font-size: 1rem; font-weight: 700; letter-spacing: 0.5px;
-            cursor: pointer; transition: all 0.3s;
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5); }
-        .btn-register:active { transform: scale(0.98); }
-        .btn-register:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
-
-        /* Loading Spinner */
-        .spinner {
-            width: 22px; height: 22px; border: 2.5px solid rgba(255,255,255,0.3);
-            border-top-color: white; border-radius: 50%;
-            animation: spin 0.8s linear infinite; display: none;
-        }
-        .btn-register.loading .spinner { display: block; }
-        .btn-register.loading span, .btn-register.loading i { display: none; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* * ==========================================================================
-         * 9. MODAL & TOASTS
-         * ==========================================================================
-         */
-        /* Modal Backdrop */
-        .modal-wrap {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px); z-index: 2000;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: 0.3s;
+            transition: 0.2s;
         }
-        .modal-wrap.active { opacity: 1; pointer-events: auto; }
+        .custom-checkbox i { color: white; font-size: 0.75rem; transform: scale(0); transition: 0.2s var(--ease-bounce); }
+        
+        .terms-wrapper.checked .custom-checkbox { background: #10b981; border-color: #10b981; }
+        .terms-wrapper.checked .custom-checkbox i { transform: scale(1); }
 
-        /* Modal Content */
-        .modal-box {
-            background: var(--reg-panel); width: 90%; max-width: 600px;
-            border-radius: 20px; border: 1px solid var(--reg-border);
-            display: flex; flex-direction: column; max-height: 80vh;
-            transform: scale(0.95); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        .terms-text { font-size: 0.9rem; color: #94a3b8; line-height: 1.5; }
+        .terms-link { color: #3b82f6; text-decoration: none; font-weight: 600; position: relative; z-index: 2; }
+        .terms-link:hover { text-decoration: underline; }
+
+        .btn-submit {
+            width: 100%;
+            height: 56px;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+            margin-top: 10px;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59, 130, 246, 0.6); }
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        /* 9. MODALS (Terms) */
+        .modal-wrap {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: 0.3s;
+        }
+        .modal-wrap.active { display: flex; opacity: 1; }
+        
+        .modal-legal {
+            background: #1e293b; width: 90%; max-width: 600px; max-height: 80vh;
+            border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column; transform: scale(0.95); transition: 0.3s var(--ease-bounce);
             box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);
         }
-        .modal-wrap.active .modal-box { transform: scale(1); }
+        .modal-wrap.active .modal-legal { transform: scale(1); }
 
-        .modal-head { padding: 25px; border-bottom: 1px solid var(--reg-border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 30px; overflow-y: auto; color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; }
-        .modal-foot { padding: 20px 25px; border-top: 1px solid var(--reg-border); display: flex; justify-content: flex-end; gap: 15px; }
+        .legal-header { padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .legal-body { padding: 30px; overflow-y: auto; color: #94a3b8; font-size: 0.95rem; line-height: 1.7; }
+        .legal-footer { padding: 20px 24px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; gap: 15px; }
 
-        /* Toast Notification */
-        .toast-dock { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 12px; }
-        .toast {
-            min-width: 340px; background: #1e293b; border-left: 4px solid;
-            padding: 16px; border-radius: 8px; box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-            display: flex; align-items: flex-start; gap: 15px;
-            animation: toastIn 0.4s var(--ease-elastic);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        /* Mobile Responsive */
+        /* 10. RESPONSIVE */
         @media (max-width: 960px) {
-            .register-card { grid-template-columns: 1fr; margin: 0; border-radius: 0; min-height: 100vh; }
-            .brand-panel { display: none; }
+            .auth-card { grid-template-columns: 1fr; margin: 0; min-height: 100vh; border-radius: 0; }
+            .visual-panel { display: none; }
             .form-panel { padding: 40px 20px; }
+            .input-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-fx-container">
-        <div class="fx-orb orb-1"></div>
-        <div class="fx-orb orb-2"></div>
-        <div class="fx-orb orb-3"></div>
+    <div class="auth-backdrop">
+        <div class="bg-mesh"></div>
+        <div class="floating-particles"></div>
     </div>
 
-    <div class="toast-dock" id="toastContainer"></div>
+    <div class="toast-container" id="toastContainer"></div>
 
-    <div class="register-card">
+    <div class="auth-card">
         
-        <div class="brand-panel">
+        <div class="visual-panel">
             <div class="brand-header">
-                <div class="logo-badge">
-                    <i class="fa-solid fa-user-plus"></i>
-                </div>
-                <h1 class="brand-title">Kelajakni<br>Birga Quramiz</h1>
-                <p class="brand-desc">
-                    Nigoh - Jamoatchilik nazorati uchun ishonchli platforma.
-                    Xavfsiz, shaffof va adolatli jamiyat sari qadam tashlang.
-                </p>
+                <div class="logo-symbol"><i class="fa-solid fa-fingerprint"></i></div>
+                <span class="logo-text">NIGOH</span>
             </div>
 
-            <div class="feature-list">
-                <div class="feature-item">
-                    <div class="f-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                    <span>Bank darajasidagi xavfsizlik</span>
+            <div class="visual-main">
+                <h1 class="visual-title">Xavfsiz Jamiyat <br> Sari Qadam</h1>
+                <p class="visual-desc">
+                    Minglab faol fuqarolar safiga qo'shiling. Sizning har bir murojaatingiz shaffoflik va adolatni ta'minlashga xizmat qiladi.
+                </p>
+                
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <span>Bank darajasidagi ma'lumotlar himoyasi</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fa-solid fa-user-secret"></i></div>
+                        <span>100% Anonimlik kafolati</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
+                        <span>Real vaqt rejimida nazorat</span>
+                    </div>
                 </div>
-                <div class="feature-item">
-                    <div class="f-icon"><i class="fa-solid fa-ghost"></i></div>
-                    <span>100% Anonimlik kafolati</span>
-                </div>
-                <div class="feature-item">
-                    <div class="f-icon"><i class="fa-solid fa-bolt"></i></div>
-                    <span>Tezkor murojaat yuborish</span>
-                </div>
+            </div>
+
+            <div style="font-size:0.8rem; color:#64748b;">
+                &copy; 2026 Nigoh Platformasi. Barcha huquqlar himoyalangan.
             </div>
         </div>
 
         <div class="form-panel">
             <div class="form-header">
-                <h2 class="form-h1">Ro'yxatdan O'tish</h2>
-                <p class="form-sub">Barcha imkoniyatlardan foydalanish uchun ma'lumotlaringizni kiriting</p>
+                <h2 class="form-title">Ro'yxatdan O'tish</h2>
+                <p class="form-subtitle">Tizim imkoniyatlaridan foydalanish uchun hisob yarating. <br> Allaqachon a'zomisiz? <a href="login.html" class="link-login">Kirish</a></p>
             </div>
 
-            <form id="regForm" autocomplete="off" novalidate>
-                
-                <div class="input-group">
-                    <div class="label-row">
-                        <label class="label-text" for="fullName">To'liq Ism (F.I.O)</label>
-                    </div>
-                    <div class="input-wrapper">
-                        <input type="text" id="fullName" class="form-input" placeholder="Abdullayev Anvar" required>
-                        <i class="fa-regular fa-user field-icon"></i>
-                        <i class="fa-solid fa-circle-check status-indicator success"></i>
-                        <i class="fa-solid fa-circle-exclamation status-indicator error"></i>
-                        <div class="err-msg" id="err-name"><i class="fa-solid fa-triangle-exclamation"></i> Ism kamida 3 ta harf bo'lishi shart</div>
-                    </div>
-                </div>
-
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                    <div class="input-group">
-                        <div class="label-row">
-                            <label class="label-text" for="phone">Telefon</label>
-                        </div>
+            <form id="signupForm" autocomplete="off" novalidate>
+                <div class="form-grid">
+                    
+                    <div class="form-group" id="grp-name">
+                        <label class="form-label" for="fullName">To'liq Ism (F.I.O)</label>
                         <div class="input-wrapper">
-                            <input type="tel" id="phone" class="form-input" placeholder="+998 (__) ___-__-__" value="+998 ">
-                            <i class="fa-solid fa-phone field-icon"></i>
-                            <i class="fa-solid fa-circle-check status-indicator success"></i>
+                            <input type="text" id="fullName" class="form-input" placeholder="Abdullayev Anvar" required>
+                            <i class="fa-regular fa-user input-icon"></i>
+                            <i class="fa-solid fa-circle-check status-icon success"></i>
+                            <i class="fa-solid fa-circle-exclamation status-icon error"></i>
+                        </div>
+                        <div class="error-feedback"><i class="fa-solid fa-circle-info"></i> Ism kamida 3 ta harfdan iborat bo'lishi kerak.</div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="form-group" id="grp-email">
+                            <label class="form-label" for="email">Email Manzil</label>
+                            <div class="input-wrapper">
+                                <input type="email" id="email" class="form-input" placeholder="name@example.com" required>
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <i class="fa-solid fa-circle-check status-icon success"></i>
+                            </div>
+                            <div class="error-feedback">Email noto'g'ri formatda.</div>
+                        </div>
+
+                        <div class="form-group" id="grp-phone">
+                            <label class="form-label" for="phone">Telefon Raqam</label>
+                            <div class="input-wrapper">
+                                <input type="tel" id="phone" class="form-input" placeholder="+998 (__) ___-__-__" value="+998 ">
+                                <i class="fa-solid fa-phone input-icon"></i>
+                                <i class="fa-solid fa-circle-check status-icon success"></i>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="input-group">
-                        <div class="label-row">
-                            <label class="label-text" for="email">Email</label>
-                        </div>
+                    <div class="form-group" id="grp-pass">
+                        <label class="form-label" for="password">Parol</label>
                         <div class="input-wrapper">
-                            <input type="email" id="email" class="form-input" placeholder="mail@example.com" required>
-                            <i class="fa-regular fa-envelope field-icon"></i>
-                            <i class="fa-solid fa-circle-check status-indicator success"></i>
-                            <div class="err-msg" id="err-email">Noto'g'ri format</div>
+                            <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <button type="button" onclick="App.togglePass('password')" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748b; cursor:pointer;">
+                                <i class="fa-regular fa-eye" id="eye-password"></i>
+                            </button>
+                        </div>
+
+                        <div class="password-meter" id="passMeter">
+                            <div class="meter-header">
+                                <span class="meter-label">Ishonchlilik darajasi</span>
+                                <span class="meter-text" id="strengthText">Hisoblanmoqda...</span>
+                            </div>
+                            <div class="meter-bars">
+                                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                            </div>
+                            <div class="meter-reqs">
+                                <div class="req-item" id="req-len"><i class="fa-solid fa-circle"></i> 8+ belgi</div>
+                                <div class="req-item" id="req-num"><i class="fa-solid fa-circle"></i> Raqam</div>
+                                <div class="req-item" id="req-cap"><i class="fa-solid fa-circle"></i> Katta harf</div>
+                                <div class="req-item" id="req-sym"><i class="fa-solid fa-circle"></i> Belgi</div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="input-group">
-                    <div class="label-row">
-                        <label class="label-text" for="password">Parol</label>
-                    </div>
-                    <div class="input-wrapper">
-                        <input type="password" id="password" class="form-input" placeholder="••••••••" required>
-                        <i class="fa-solid fa-lock field-icon"></i>
-                        <button type="button" class="field-icon" style="left:auto; right:16px; pointer-events:auto; background:none; border:none; cursor:pointer;" onclick="app.togglePass('password')">
-                            <i class="fa-regular fa-eye" id="eye-icon"></i>
-                        </button>
-                    </div>
-
-                    <div class="pwd-strength-meter" id="entropyMeter">
-                        <div class="bar-container">
-                            <div class="p-bar"></div><div class="p-bar"></div><div class="p-bar"></div><div class="p-bar"></div>
+                    <div class="form-group" id="grp-cpass">
+                        <label class="form-label" for="cPassword">Parolni Tasdiqlang</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="cPassword" class="form-input" placeholder="••••••••" required>
+                            <i class="fa-solid fa-shield-halved input-icon"></i>
+                            <i class="fa-solid fa-circle-check status-icon success"></i>
                         </div>
-                        <div class="req-grid">
-                            <div class="req-item" id="req-len"><i class="fa-solid fa-circle"></i> 8+ belgi</div>
-                            <div class="req-item" id="req-num"><i class="fa-solid fa-circle"></i> Raqam</div>
-                            <div class="req-item" id="req-cap"><i class="fa-solid fa-circle"></i> Katta harf</div>
-                            <div class="req-item" id="req-sym"><i class="fa-solid fa-circle"></i> Belgi</div>
+                        <div class="error-feedback">Parollar mos kelmayapti.</div>
+                    </div>
+
+                    <div class="terms-wrapper" id="termsBox">
+                        <div class="custom-checkbox">
+                            <input type="checkbox" id="termsInput" hidden>
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div class="terms-text">
+                            Men <a href="#" class="terms-link" onclick="App.openModal('terms', event)">Foydalanish Shartlari</a> va 
+                            <a href="#" class="terms-link" onclick="App.openModal('privacy', event)">Maxfiylik Siyosati</a> bilan tanishdim va qabul qilaman.
                         </div>
                     </div>
-                </div>
 
-                <div class="input-group">
-                    <div class="label-row">
-                        <label class="label-text" for="cPassword">Parolni Tasdiqlash</label>
-                    </div>
-                    <div class="input-wrapper">
-                        <input type="password" id="cPassword" class="form-input" placeholder="••••••••" required>
-                        <i class="fa-solid fa-shield-halved field-icon"></i>
-                        <i class="fa-solid fa-check status-indicator success"></i>
-                        <div class="err-msg" id="err-match">Parollar mos kelmayapti</div>
-                    </div>
-                </div>
+                    <button type="submit" id="submitBtn" class="btn-submit">
+                        <span class="spinner"></span>
+                        <span class="btn-text">Hisob Yaratish <i class="fa-solid fa-arrow-right"></i></span>
+                    </button>
 
-                <div class="legal-check">
-                    <div class="checkbox-custom" id="termsCheck">
-                        <input type="checkbox" id="termsInput" style="display:none;">
-                        <i class="fa-solid fa-check"></i>
-                    </div>
-                    <div class="legal-text">
-                        Men <span class="legal-link" onclick="app.openModal('terms')">Foydalanish Shartlari</span> va 
-                        <span class="legal-link" onclick="app.openModal('privacy')">Maxfiylik Siyosati</span> bilan tanishdim va qabul qilaman.
-                    </div>
                 </div>
-
-                <button type="submit" class="btn-register" id="submitBtn">
-                    <span class="spinner"></span>
-                    <span><i class="fa-solid fa-rocket"></i> Hisob Yaratish</span>
-                </button>
-                
-                <div style="text-align:center; margin-top:25px;">
-                    <p style="color:var(--text-disabled); font-size:0.9rem;">
-                        Allaqachon a'zomisiz? <a href="login.html" class="legal-link">Tizimga kiring</a>
-                    </p>
-                </div>
-
             </form>
         </div>
     </div>
 
     <div class="modal-wrap" id="legalModal">
-        <div class="modal-box">
-            <div class="modal-head">
-                <h3 style="color:white; margin:0;">Foydalanish Shartlari</h3>
-                <button onclick="app.closeModal()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+        <div class="modal-legal">
+            <div class="legal-header">
+                <h3 style="color:white; margin:0;">Hujjatlar</h3>
+                <button onclick="App.closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.5rem; cursor:pointer;">×</button>
             </div>
-            <div class="modal-body" id="legalContent">
+            <div class="legal-body" id="legalContent">
                 </div>
-            <div class="modal-foot">
-                <button class="btn-register" style="width:auto; padding:10px 25px; background:transparent; border:1px solid var(--reg-border);" onclick="app.closeModal()">Yopish</button>
-                <button class="btn-register" style="width:auto; padding:10px 25px;" onclick="app.acceptTerms()">Roziman</button>
+            <div class="legal-footer">
+                <button class="btn-submit" style="width:auto; height:40px; padding:0 20px; background:#334155; margin:0;" onclick="App.closeModal()">Yopish</button>
+                <button class="btn-submit" style="width:auto; height:40px; padding:0 20px; margin:0;" onclick="App.acceptTerms()">Roziman</button>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { auth, db, createUserWithEmailAndPassword, updateProfile, setDoc, doc, serverTimestamp } from './firebase-config.js';
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-        class RegistrationEngine {
+    <script type="module">
+        import { auth, db, createUserWithEmailAndPassword, updateProfile, setDoc, doc, serverTimestamp } from './config.js';
+
+        // --- ENTERPRISE REGISTRATION SYSTEM ---
+        class RegistrationSystem {
             constructor() {
-                // UI Elements
-                this.form = document.getElementById('regForm');
-                this.submitBtn = document.getElementById('submitBtn');
-                this.termsBox = document.getElementById('termsCheck');
+                // UI Refs
+                this.form = document.getElementById('signupForm');
+                this.btn = document.getElementById('submitBtn');
+                this.termsBox = document.getElementById('termsBox');
                 this.termsInput = document.getElementById('termsInput');
                 
-                // Internal State
+                // State Management
                 this.isSubmitting = false;
-                this.validationMap = {
-                    fullName: false,
+                this.validationState = {
+                    name: false,
                     email: false,
-                    password: false,
-                    cPassword: false
+                    pass: false,
+                    cpass: false
                 };
 
                 this.init();
             }
 
             init() {
-                // Event Listeners
+                // 1. Real-time Listeners
                 document.getElementById('fullName').addEventListener('input', (e) => this.validateName(e.target));
                 document.getElementById('email').addEventListener('input', (e) => this.validateEmail(e.target));
                 document.getElementById('phone').addEventListener('input', (e) => this.maskPhone(e.target));
                 
-                // Password Logic
+                // 2. Password Logic
                 const pass = document.getElementById('password');
                 pass.addEventListener('input', (e) => {
                     this.checkEntropy(e.target.value);
@@ -524,67 +689,84 @@
                 });
                 document.getElementById('cPassword').addEventListener('input', () => this.checkMatch());
 
-                // Terms
-                this.termsBox.addEventListener('click', () => this.toggleTerms());
+                // 3. Terms Logic
+                this.termsBox.addEventListener('click', (e) => {
+                    if(e.target.tagName !== 'A') this.toggleTerms();
+                });
 
-                // Submit
+                // 4. Submit
                 this.form.addEventListener('submit', (e) => this.handleSubmit(e));
             }
 
-            // --- 1. VALIDATION HELPERS ---
-            setStatus(input, isValid) {
-                this.validationMap[input.id] = isValid;
+            // --- VALIDATION CORE ---
+            setStatus(input, isValid, groupId) {
+                const group = document.getElementById(groupId);
                 if (isValid) {
                     input.classList.remove('invalid');
                     input.classList.add('valid');
+                    group.classList.remove('has-error');
                 } else {
                     input.classList.remove('valid');
-                    input.classList.add('invalid');
+                    if(input.value.length > 0) {
+                        input.classList.add('invalid');
+                        group.classList.add('has-error');
+                    }
                 }
+                return isValid;
             }
 
-            validateName(input) {
+            validateName(el) {
                 const regex = /^[a-zA-Z\u0400-\u04FF\s]{3,60}$/;
-                this.setStatus(input, regex.test(input.value.trim()));
+                this.validationState.name = this.setStatus(el, regex.test(el.value.trim()), 'grp-name');
             }
 
-            validateEmail(input) {
+            validateEmail(el) {
                 const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                this.setStatus(input, regex.test(input.value));
+                this.validationState.email = this.setStatus(el, regex.test(el.value), 'grp-email');
             }
 
-            maskPhone(input) {
-                let x = input.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
-                input.value = !x[2] ? x[1] : '+' + x[1] + ' (' + x[2] + ') ' + x[3] + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '');
+            maskPhone(el) {
+                let x = el.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
+                el.value = !x[2] ? x[1] : '+' + x[1] + ' (' + x[2] + ') ' + x[3] + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '');
             }
 
-            // --- 2. PASSWORD ENGINE ---
+            // --- PASSWORD ENGINE ---
             checkEntropy(val) {
-                const meter = document.getElementById('entropyMeter');
-                if (val.length > 0) meter.classList.add('active');
+                const meter = document.getElementById('passMeter');
+                const text = document.getElementById('strengthText');
+                
+                if(val.length > 0) meter.classList.add('active');
                 else meter.classList.remove('active');
 
+                // Checks
                 const hasLen = val.length >= 8;
                 const hasNum = /\d/.test(val);
                 const hasCap = /[A-Z]/.test(val);
                 const hasSym = /[^A-Za-z0-9]/.test(val);
 
-                this.uiReq('req-len', hasLen);
-                this.uiReq('req-num', hasNum);
-                this.uiReq('req-cap', hasCap);
-                this.uiReq('req-sym', hasSym);
+                // UI Requirements
+                this.toggleReq('req-len', hasLen);
+                this.toggleReq('req-num', hasNum);
+                this.toggleReq('req-cap', hasCap);
+                this.toggleReq('req-sym', hasSym);
 
+                // Score Calculation
                 let score = 0;
-                if (hasLen) score++;
-                if (hasNum) score++;
-                if (hasCap) score++;
-                if (hasSym) score++;
+                if(hasLen) score++;
+                if(hasNum) score++;
+                if(hasCap) score++;
+                if(hasSym) score++;
 
-                meter.className = `pwd-strength-meter active level-${score}`;
-                this.validationMap.password = score >= 3;
+                meter.className = `password-meter active strength-${score}`;
+                
+                const labels = ["Juda Kuchsiz", "Kuchsiz", "O'rtacha", "Yaxshi", "Mukammal"];
+                text.innerText = labels[score] || "Kuchsiz";
+
+                this.validationState.pass = score >= 3;
+                this.setStatus(document.getElementById('password'), this.validationState.pass, 'grp-pass');
             }
 
-            uiReq(id, met) {
+            toggleReq(id, met) {
                 const el = document.getElementById(id);
                 if(met) {
                     el.classList.add('met');
@@ -598,14 +780,13 @@
             checkMatch() {
                 const p1 = document.getElementById('password').value;
                 const p2 = document.getElementById('cPassword');
-                if(p2.value.length > 0) {
-                    this.setStatus(p2, p1 === p2.value);
-                }
+                const match = p1 === p2.value && p1.length > 0;
+                this.validationState.cpass = this.setStatus(p2, match, 'grp-cpass');
             }
 
             togglePass(id) {
                 const el = document.getElementById(id);
-                const icon = document.getElementById('eye-icon');
+                const icon = document.getElementById('eye-' + id);
                 if(el.type === 'password') {
                     el.type = 'text';
                     icon.className = 'fa-regular fa-eye-slash';
@@ -615,27 +796,30 @@
                 }
             }
 
-            // --- 3. LEGAL MODAL ---
+            // --- LEGAL & MODAL ---
             toggleTerms() {
                 this.termsInput.checked = !this.termsInput.checked;
-                this.termsBox.classList.toggle('checked');
+                if(this.termsInput.checked) this.termsBox.classList.add('checked');
+                else this.termsBox.classList.remove('checked');
+                this.termsBox.classList.remove('error');
             }
 
-            openModal(type) {
+            openModal(type, e) {
+                e.preventDefault(); e.stopPropagation();
                 const modal = document.getElementById('legalModal');
                 const content = document.getElementById('legalContent');
                 
-                if (type === 'terms') {
+                if(type === 'terms') {
                     content.innerHTML = `
                         <h4 style="color:white; margin-bottom:10px;">1. Umumiy Qoidalar</h4>
-                        <p>Ushbu platformadan foydalanishda siz O'zbekiston Respublikasi qonunlariga to'liq rioya qilishingiz shart. Yolg'on, tuhmat yoki haqoratli xabarlar yuborish taqiqlanadi.</p>
-                        <h4 style="color:white; margin:15px 0 10px;">2. Javobgarlik</h4>
-                        <p>Har bir foydalanuvchi o'zi kiritgan ma'lumotlarning haqqoniyligi uchun shaxsan javobgardir. Tizim ma'muriyati foydalanuvchilarning xatti-harakatlari uchun javobgar emas.</p>
+                        <p>Nigoh platformasidan foydalanishda O'zbekiston Respublikasi qonunchiligiga rioya qilish shart. Tuhmat va yolg'on xabar tarqatish javobgarlikka sabab bo'ladi.</p>
+                        <h4 style="color:white; margin:15px 0 10px;">2. Foydalanuvchi Majburiyatlari</h4>
+                        <p>Siz o'z hisobingiz xavfsizligi uchun javobgarsiz. Har bir yuborilgan murojaat haqqoniyligi uchun foydalanuvchi shaxsan javobgardir.</p>
                     `;
                 } else {
                     content.innerHTML = `
                         <h4 style="color:white; margin-bottom:10px;">Maxfiylik Siyosati</h4>
-                        <p>Biz sizning shaxsiy ma'lumotlaringizni (Ism, Telefon, Email) uchinchi shaxslarga bermaymiz. Ma'lumotlar shifrlangan holda saqlanadi. Faqat sud yoki tergov organlarining rasmiy so'rovi bo'lganda taqdim etilishi mumkin.</p>
+                        <p>Biz foydalanuvchilarning shaxsiy ma'lumotlarini (Ism, Telefon, Email) uchinchi shaxslarga bermaymiz. Ma'lumotlar shifrlangan holda saqlanadi. Faqat sud qarori asosida taqdim etilishi mumkin.</p>
                     `;
                 }
                 modal.classList.add('active');
@@ -650,92 +834,126 @@
                 this.closeModal();
             }
 
-            // --- 4. TOAST NOTIFIER ---
-            toast(type, title, msg) {
-                const dock = document.getElementById('toastContainer');
-                const t = document.createElement('div');
-                t.className = 'toast';
-                
-                const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b' };
-                const icons = { success: 'circle-check', error: 'triangle-exclamation', warning: 'bell' };
-                
-                t.style.borderLeftColor = colors[type];
-                t.innerHTML = `
-                    <i class="fa-solid fa-${icons[type]}" style="color:${colors[type]}; font-size:1.5rem;"></i>
-                    <div><h4 style="margin:0;color:white;font-size:0.95rem;">${title}</h4><p style="margin:2px 0 0;color:#94a3b8;font-size:0.85rem;">${msg}</p></div>
-                `;
-                dock.appendChild(t);
-                setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(100%)'; setTimeout(()=>t.remove(),300); }, 4000);
-            }
-
-            // --- 5. SUBMISSION HANDLER ---
+            // --- SUBMISSION HANDLER ---
             async handleSubmit(e) {
                 e.preventDefault();
                 if(this.isSubmitting) return;
 
-                // Final Validation Check
-                const name = document.getElementById('fullName').value;
-                const email = document.getElementById('email').value;
+                // Final Validations
+                if(!this.validationState.name) return this.shake('grp-name', 'Ismingizni to\'g\'ri kiriting');
+                if(!this.validationState.email) return this.shake('grp-email', 'Email xato');
+                if(!this.validationState.pass) return this.shake('grp-pass', 'Parol talablarga javob bermaydi');
+                if(!this.validationState.cpass) return this.shake('grp-cpass', 'Parollar mos kelmadi');
+                if(!this.termsInput.checked) {
+                    this.termsBox.classList.add('error');
+                    this.showToast('warning', 'Shartlarni qabul qiling');
+                    return;
+                }
+
+                // Start Process
+                this.isSubmitting = true;
+                this.btn.classList.add('loading');
+                this.btn.disabled = true;
+
+                const name = document.getElementById('fullName').value.trim();
+                const email = document.getElementById('email').value.trim();
                 const pass = document.getElementById('password').value;
                 const phone = document.getElementById('phone').value;
 
-                if(!this.validationMap.fullName) return this.toast('error', 'Ism Xato', 'Iltimos, ismingizni to\'liq kiriting.');
-                if(!this.validationMap.email) return this.toast('error', 'Email Xato', 'Email manzilingiz noto\'g\'ri formatda.');
-                if(!this.validationMap.password) return this.toast('error', 'Parol Kuchsiz', 'Parol talablarga javob bermaydi.');
-                if(!this.validationMap.cPassword) return this.toast('error', 'Moslik Xatosi', 'Parollar bir xil emas.');
-                if(!this.termsInput.checked) return this.toast('warning', 'Diqqat', 'Davom etish uchun shartlarni qabul qiling.');
-
-                // Start Loading
-                this.isSubmitting = true;
-                this.submitBtn.classList.add('loading');
-                this.submitBtn.disabled = true;
-
                 try {
-                    // A. Create Authentication
-                    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                    const user = cred.user;
+                    // 1. Auth Creation
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                    const user = userCredential.user;
 
-                    // B. Update Profile Name
+                    // 2. Profile Update
                     await updateProfile(user, { displayName: name });
 
-                    // C. SEED FIRESTORE (CRITICAL FOR ADMIN PANEL)
+                    // 3. Firestore Seeding (Metadata)
                     await setDoc(doc(db, "users", user.uid), {
                         uid: user.uid,
                         displayName: name,
                         email: email,
                         phoneNumber: phone,
-                        role: "user", // Default Role
+                        role: "user",
+                        status: "active",
                         createdAt: new Date().toISOString(),
                         lastLogin: new Date().toISOString(),
-                        device: navigator.userAgent,
-                        status: "active"
+                        deviceInfo: navigator.userAgent,
+                        platform: navigator.platform
                     });
 
-                    // D. Success
-                    this.toast('success', 'Muvaffaqiyatli!', 'Hisob yaratildi. Tizimga kirilmoqda...');
+                    // 4. Success Effects
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+
+                    this.showToast('success', 'Hisob yaratildi! Tizimga kirilmoqda...');
                     
                     setTimeout(() => {
                         window.location.href = "index.html";
-                    }, 2000);
+                    }, 2500);
 
                 } catch (error) {
                     console.error("Signup Error:", error);
-                    let title = "Xatolik";
-                    let msg = "Tizimda noma'lum xato.";
-
-                    if(error.code === 'auth/email-already-in-use') { title="Email Band"; msg="Bu email bilan ro'yxatdan o'tilgan."; }
-                    if(error.code === 'auth/network-request-failed') { title="Internet"; msg="Serverga ulanib bo'lmadi."; }
+                    let msg = "Tizimda xatolik";
+                    if(error.code === 'auth/email-already-in-use') msg = "Bu email band";
+                    if(error.code === 'auth/network-request-failed') msg = "Internet aloqasi yo'q";
                     
-                    this.toast('error', title, msg);
-                    this.submitBtn.classList.remove('loading');
-                    this.submitBtn.disabled = false;
+                    this.showToast('error', msg);
                     this.isSubmitting = false;
+                    this.btn.classList.remove('loading');
+                    this.btn.disabled = false;
                 }
+            }
+
+            shake(id, msg) {
+                const el = document.getElementById(id);
+                el.classList.add('has-error');
+                const input = el.querySelector('input');
+                input.classList.add('invalid');
+                this.showToast('error', msg);
+                setTimeout(() => {
+                    input.classList.remove('invalid');
+                }, 500);
+            }
+
+            showToast(type, msg) {
+                const box = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                const color = type === 'success' ? '#10b981' : (type === 'warning' ? '#f59e0b' : '#ef4444');
+                const icon = type === 'success' ? 'check' : 'triangle-exclamation';
+                
+                toast.style.borderLeft = `4px solid ${color}`;
+                toast.style.background = '#1e293b';
+                toast.style.padding = '16px';
+                toast.style.borderRadius = '8px';
+                toast.style.color = 'white';
+                toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
+                toast.style.display = 'flex';
+                toast.style.gap = '12px';
+                toast.style.alignItems = 'center';
+                toast.style.animation = 'fadeInUp 0.3s forwards';
+                toast.style.minWidth = '300px';
+                toast.style.marginBottom = '10px';
+
+                toast.innerHTML = `
+                    <i class="fa-solid fa-${icon}" style="font-size:1.2rem; color:${color}"></i>
+                    <div><div style="font-weight:700; font-size:0.9rem;">${type.toUpperCase()}</div><div style="color:#94a3b8; font-size:0.8rem;">${msg}</div></div>
+                `;
+                
+                box.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
             }
         }
 
-        // Init
-        window.app = new RegistrationEngine();
+        // Global Init
+        window.App = new RegistrationSystem();
     </script>
 </body>
 </html>

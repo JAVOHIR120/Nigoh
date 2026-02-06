@@ -1,672 +1,619 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#4f46e5">
-    <meta name="description" content="Nigoh tizimida ro'yxatdan o'tish va jamoatchilik nazoratida ishtirok etish.">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
     <title>Nigoh | Yangi Hisob Yaratish</title>
+    <meta name="description" content="Nigoh platformasida ro'yxatdan o'ting. Jamoatchilik nazoratida ishtirok eting.">
+    <meta name="theme-color" content="#0f172a">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* * ==========================================================================
-         * 1. MODULE-SPECIFIC DESIGN SYSTEM (SCPED)
-         * ==========================================================================
-         */
+        /* 1. MODULE VARIABLES */
         :root {
-            --auth-bg: #0f172a;
-            --auth-card: #1e293b;
-            --auth-border: rgba(255, 255, 255, 0.08);
-            --auth-primary: #4f46e5;
-            --auth-primary-hover: #4338ca;
-            --auth-success: #10b981;
-            --auth-warning: #f59e0b;
-            --auth-danger: #ef4444;
-            --auth-text-main: #f8fafc;
-            --auth-text-sub: #94a3b8;
-            --auth-input-bg: #334155;
+            /* Layout */
+            --split-width: 45%;
             
-            --transition-fast: 0.2s ease;
-            --transition-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.15);
+            /* Inputs */
+            --input-height: 56px;
+            --input-bg: #1e293b;
+            --input-border: rgba(148, 163, 184, 0.1);
+            --input-focus: #3b82f6;
+            
+            /* Status Colors */
+            --st-success: #10b981;
+            --st-error: #ef4444;
+            --st-warn: #f59e0b;
+            --st-weak: #ef4444;
+            --st-fair: #f59e0b;
+            --st-good: #3b82f6;
+            --st-strong: #10b981;
         }
 
-        /* * ==========================================================================
-         * 2. LAYOUT & ANIMATION
-         * ==========================================================================
-         */
+        /* 2. PAGE LAYOUT */
         body {
-            background-color: var(--auth-bg);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
+            background-color: #020617;
             overflow-x: hidden;
-            position: relative;
+            padding: 20px;
         }
 
-        /* Animated Background Mesh */
-        .background-fx {
-            position: fixed; inset: 0; z-index: -1; pointer-events: none;
+        /* Background FX */
+        .auth-bg {
+            position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
         }
-        .fx-blob {
-            position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.4;
-            animation: float 12s infinite alternate ease-in-out;
+        .bg-gradient {
+            position: absolute; width: 100%; height: 100%;
+            background: radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 40%);
         }
-        .fx-1 { width: 600px; height: 600px; background: #312e81; top: -10%; left: -10%; }
-        .fx-2 { width: 500px; height: 500px; background: #4c1d95; bottom: -10%; right: -10%; animation-delay: -5s; }
-        .fx-3 { width: 300px; height: 300px; background: #06b6d4; top: 40%; left: 40%; opacity: 0.2; animation-delay: -8s; }
+        .floating-shape {
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4;
+            animation: float 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .shape-1 { width: 600px; height: 600px; background: #1d4ed8; top: -10%; left: -10%; }
+        .shape-2 { width: 500px; height: 500px; background: #7c3aed; bottom: -10%; right: -10%; animation-delay: -5s; }
+        
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, 30px); } }
 
-        @keyframes float { 
-            0% { transform: translate(0, 0) rotate(0deg); } 
-            100% { transform: translate(40px, 30px) rotate(10deg); } 
-        }
-
-        /* * ==========================================================================
-         * 3. AUTH CARD CONTAINER
-         * ==========================================================================
-         */
+        /* 3. AUTH CARD CONTAINER */
         .auth-container {
-            width: 100%; max-width: 1100px; min-height: 750px;
-            background: var(--auth-card);
-            border: 1px solid var(--auth-border);
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            display: grid; grid-template-columns: 45% 55%;
-            overflow: hidden; margin: 20px;
-            position: relative; z-index: 10;
-            animation: slideUp 0.6s var(--transition-smooth);
+            width: 100%; max-width: 1100px; min-height: 800px;
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 32px;
+            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
+            display: grid; grid-template-columns: var(--split-width) 1fr;
+            overflow: hidden;
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        @keyframes slideUp {
+        @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(40px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* * ==========================================================================
-         * 4. LEFT SIDE: VISUAL & BRANDING
-         * ==========================================================================
-         */
-        .auth-visual {
-            background: linear-gradient(150deg, #1e1b4b 0%, #312e81 100%);
-            position: relative; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; padding: 60px;
-            overflow: hidden; text-align: center;
+        /* 4. LEFT PANEL (VISUAL) */
+        .visual-side {
+            background: linear-gradient(145deg, #0f172a 0%, #1e1b4b 100%);
+            padding: 60px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            position: relative;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
         
-        .auth-visual::after {
-            content: ''; position: absolute; inset: 0;
-            background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
-            background-size: 30px 30px; opacity: 0.3;
+        .visual-pattern {
+            position: absolute; inset: 0; opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
-        .brand-icon {
-            width: 100px; height: 100px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 24px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 3rem; color: white; margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 40px rgba(79, 70, 229, 0.3);
-            position: relative; z-index: 2;
+        .brand-logo {
+            display: flex; align-items: center; gap: 15px; position: relative; z-index: 2;
         }
+        .logo-icon {
+            width: 50px; height: 50px; background: rgba(255,255,255,0.1);
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+        }
+        .logo-text { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: white; }
 
-        .visual-head {
-            font-size: 2.2rem; font-weight: 800; color: white; margin-bottom: 15px;
-            line-height: 1.2; letter-spacing: -0.5px; position: relative; z-index: 2;
-        }
-        .visual-text {
-            color: #c7d2fe; font-size: 1.1rem; line-height: 1.6;
-            max-width: 320px; position: relative; z-index: 2;
-        }
+        .visual-content { position: relative; z-index: 2; margin-top: auto; margin-bottom: auto; }
+        .visual-title { font-size: 2.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 20px; color: white; }
+        .visual-desc { color: #94a3b8; font-size: 1.1rem; line-height: 1.6; max-width: 350px; }
 
-        /* User Reviews / Social Proof (Static) */
-        .social-proof {
-            margin-top: 40px; display: flex; align-items: center; gap: -10px;
-            position: relative; z-index: 2;
+        .visual-footer { position: relative; z-index: 2; }
+        .quote-card {
+            background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
         }
-        .proof-avatar {
-            width: 40px; height: 40px; border-radius: 50%;
-            border: 2px solid #312e81; background: #6366f1;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.8rem; font-weight: 700; color: white; margin-left: -10px;
-        }
-        .proof-avatar:first-child { margin-left: 0; }
-        .proof-text { margin-left: 15px; color: #a5b4fc; font-size: 0.9rem; }
-        .proof-text b { color: white; }
+        .quote-text { color: #cbd5e1; font-style: italic; font-size: 0.9rem; margin-bottom: 10px; }
+        .quote-author { display: flex; align-items: center; gap: 10px; }
+        .author-avatar { width: 30px; height: 30px; border-radius: 50%; background: #3b82f6; }
+        .author-name { font-size: 0.85rem; font-weight: 600; color: white; }
 
-        /* * ==========================================================================
-         * 5. RIGHT SIDE: FORM AREA
-         * ==========================================================================
-         */
-        .auth-form-side {
-            padding: 50px 60px; overflow-y: auto;
+        /* 5. RIGHT PANEL (FORM) */
+        .form-side {
+            padding: 60px;
             display: flex; flex-direction: column; justify-content: center;
-            background: var(--auth-card);
+            background: #0f172a;
+            overflow-y: auto;
         }
 
-        .form-header { margin-bottom: 35px; }
-        .form-title { font-size: 1.8rem; font-weight: 700; color: var(--auth-text-main); margin-bottom: 8px; }
-        .form-desc { color: var(--auth-text-sub); font-size: 0.95rem; }
+        .form-header { margin-bottom: 40px; text-align: left; }
+        .form-title { font-size: 2rem; font-weight: 700; color: white; margin-bottom: 10px; }
+        .form-sub { color: #64748b; font-size: 1rem; }
+        .link-login { color: #3b82f6; font-weight: 600; text-decoration: none; transition: 0.2s; }
+        .link-login:hover { color: #60a5fa; text-decoration: underline; }
 
-        /* * ==========================================================================
-         * 6. INPUT COMPONENTS
-         * ==========================================================================
-         */
-        .input-wrapper { margin-bottom: 24px; position: relative; }
+        /* 6. INPUT SYSTEM */
+        .form-grid { display: grid; gap: 24px; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        .input-group { position: relative; }
         
-        .label-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .form-label { color: var(--auth-text-sub); font-size: 0.85rem; font-weight: 500; }
-        .label-hint { color: var(--auth-text-sub); font-size: 0.75rem; opacity: 0.7; }
+        .input-label {
+            display: block; margin-bottom: 8px; color: #94a3b8;
+            font-size: 0.85rem; font-weight: 500; letter-spacing: 0.02em;
+        }
 
-        .input-container { position: relative; }
+        .input-wrapper { position: relative; }
         
         .form-input {
-            width: 100%; padding: 14px 16px 14px 48px;
-            background: var(--auth-input-bg);
-            border: 1px solid var(--auth-border);
+            width: 100%; height: var(--input-height);
+            padding: 0 20px 0 48px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
             border-radius: 12px;
             color: white; font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-            transition: all var(--transition-fast);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .form-input:focus {
+            border-color: var(--input-focus);
             background: #1e293b;
-            border-color: var(--auth-primary);
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
         
-        .form-input::placeholder { color: rgba(148, 163, 184, 0.5); }
-        
-        /* Valid/Invalid States */
-        .form-input.valid { border-color: var(--auth-success); padding-right: 40px; }
-        .form-input.invalid { border-color: var(--auth-danger); padding-right: 40px; }
+        .form-input::placeholder { color: #475569; }
 
+        /* Input Icons */
         .input-icon {
             position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-            color: var(--auth-text-sub); font-size: 1.1rem; pointer-events: none;
-            transition: var(--transition-fast);
+            width: 20px; height: 20px; color: #64748b; transition: 0.3s;
+            pointer-events: none;
         }
-        .form-input:focus + .input-icon { color: var(--auth-primary); }
+        .form-input:focus + .input-icon { color: var(--input-focus); }
 
-        .status-icon {
-            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-            font-size: 1rem; display: none;
-        }
-        .form-input.valid ~ .status-icon.check { display: block; color: var(--auth-success); }
-        .form-input.invalid ~ .status-icon.cross { display: block; color: var(--auth-danger); }
-
-        /* Error Message */
-        .error-msg {
-            color: var(--auth-danger); font-size: 0.8rem; margin-top: 6px;
-            display: flex; align-items: center; gap: 5px; opacity: 0;
-            transform: translateY(-5px); transition: var(--transition-fast);
-            height: 0; overflow: hidden;
-        }
-        .error-msg.visible { opacity: 1; transform: translateY(0); height: auto; padding-top: 4px; }
-
-        /* * ==========================================================================
-         * 7. ADVANCED PASSWORD STRENGTH METER
-         * ==========================================================================
-         */
-        .password-meta { margin-top: 10px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; display: none; }
-        .password-meta.active { display: block; animation: fadeIn 0.3s; }
-
-        .strength-progress {
-            display: flex; gap: 4px; height: 4px; margin-bottom: 8px;
-        }
-        .s-bar { flex: 1; background: #334155; border-radius: 2px; transition: 0.3s; }
+        /* Validation States */
+        .form-input.valid { border-color: var(--st-success); padding-right: 45px; }
+        .form-input.invalid { border-color: var(--st-error); animation: shake 0.4s ease-in-out; }
         
-        .req-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        .req-item { font-size: 0.75rem; color: #64748b; display: flex; align-items: center; gap: 6px; }
-        .req-item i { font-size: 0.6rem; }
-        .req-item.met { color: var(--auth-success); }
-        .req-item.met i { opacity: 1; }
-
-        /* Strength Colors */
-        .strength-1 .s-bar:nth-child(1) { background: var(--auth-danger); }
-        .strength-2 .s-bar:nth-child(1), .strength-2 .s-bar:nth-child(2) { background: var(--auth-warning); }
-        .strength-3 .s-bar:nth-child(1), .strength-3 .s-bar:nth-child(2), .strength-3 .s-bar:nth-child(3) { background: #38bdf8; }
-        .strength-4 .s-bar { background: var(--auth-success); }
-
-        /* * ==========================================================================
-         * 8. ACTIONS & TERMS
-         * ==========================================================================
-         */
-        .terms-wrapper {
-            display: flex; align-items: flex-start; gap: 12px; margin-bottom: 30px;
-            padding: 15px; border-radius: 12px; background: rgba(255,255,255,0.02);
-            border: 1px solid transparent; transition: 0.2s;
+        .status-icon {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%) scale(0);
+            width: 20px; height: 20px; transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .terms-wrapper:hover { border-color: rgba(255,255,255,0.05); }
+        .form-input.valid ~ .status-icon.check { transform: translateY(-50%) scale(1); color: var(--st-success); }
+        .form-input.invalid ~ .status-icon.alert { transform: translateY(-50%) scale(1); color: var(--st-error); }
 
-        .custom-check {
-            width: 22px; height: 22px; min-width: 22px;
-            background: var(--auth-input-bg); border: 1px solid #475569;
-            border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        /* Error Text */
+        .error-message {
+            color: var(--st-error); font-size: 0.8rem; margin-top: 6px;
+            display: flex; align-items: center; gap: 6px;
+            opacity: 0; transform: translateY(-5px); transition: 0.3s; height: 0; overflow: hidden;
+        }
+        .input-group.has-error .error-message { opacity: 1; transform: translateY(0); height: auto; margin-top: 6px; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* 7. PASSWORD STRENGTH METER */
+        .password-strength {
+            margin-top: 12px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05); display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .password-strength.active { display: block; }
+
+        .strength-header { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 8px; }
+        .strength-label { color: #94a3b8; }
+        .strength-val { font-weight: 700; color: #64748b; }
+
+        .strength-bars { display: flex; gap: 4px; height: 4px; border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+        .s-bar { flex: 1; background: #334155; transition: 0.3s; }
+
+        /* Dynamic Levels */
+        .level-0 .strength-val { color: var(--st-error); content: "Juda Kuchsiz"; }
+        .level-1 .s-bar:nth-child(1) { background: var(--st-weak); } 
+        .level-2 .s-bar:nth-child(1), .level-2 .s-bar:nth-child(2) { background: var(--st-fair); }
+        .level-3 .s-bar:nth-child(1), .level-3 .s-bar:nth-child(2), .level-3 .s-bar:nth-child(3) { background: var(--st-good); }
+        .level-4 .s-bar { background: var(--st-strong); }
+
+        .requirements-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .req-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #64748b; transition: 0.3s; }
+        .req-item svg { width: 12px; height: 12px; opacity: 0.5; }
+        .req-item.met { color: var(--st-success); }
+        .req-item.met svg { opacity: 1; fill: var(--st-success); }
+
+        /* 8. TERMS & SUBMIT */
+        .terms-box {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 16px; background: rgba(255,255,255,0.02);
+            border-radius: 12px; border: 1px solid transparent;
+            transition: 0.3s; cursor: pointer;
+        }
+        .terms-box:hover { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+        .terms-box.error { border-color: var(--st-error); }
+
+        .checkbox-ui {
+            width: 20px; height: 20px; min-width: 20px;
+            background: #334155; border: 1px solid #475569;
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
             transition: 0.2s; position: relative;
         }
-        .custom-check input { opacity: 0; position: absolute; inset: 0; cursor: pointer; }
-        .custom-check i { color: white; font-size: 0.8rem; transform: scale(0); transition: 0.2s; }
-        .custom-check.checked { background: var(--auth-primary); border-color: var(--auth-primary); }
-        .custom-check.checked i { transform: scale(1); }
+        .checkbox-ui svg { width: 12px; height: 12px; fill: white; transform: scale(0); transition: 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        
+        .terms-box.checked .checkbox-ui { background: var(--st-success); border-color: var(--st-success); }
+        .terms-box.checked .checkbox-ui svg { transform: scale(1); }
 
-        .terms-label { font-size: 0.9rem; color: var(--auth-text-sub); line-height: 1.5; }
-        .link { color: var(--auth-primary); text-decoration: none; font-weight: 600; cursor: pointer; }
-        .link:hover { text-decoration: underline; color: #818cf8; }
+        .terms-text { font-size: 0.9rem; color: #94a3b8; line-height: 1.5; }
+        .terms-link { color: #3b82f6; text-decoration: none; font-weight: 600; position: relative; z-index: 2; }
+        .terms-link:hover { text-decoration: underline; }
 
-        .submit-btn {
-            width: 100%; padding: 16px; border-radius: 12px; border: none;
-            background: linear-gradient(135deg, var(--auth-primary), #4338ca);
-            color: white; font-size: 1rem; font-weight: 600; letter-spacing: 0.5px;
-            cursor: pointer; transition: all 0.3s;
-            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+        .btn-submit {
+            width: 100%; height: 56px; border: none; border-radius: 14px;
+            background: var(--st-good); color: white; font-size: 1rem; font-weight: 700;
+            cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
             display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
         }
-        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6); }
-        .submit-btn:active { transform: scale(0.98); }
-        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59, 130, 246, 0.6); background: #2563eb; }
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-        /* Spinner for Loading */
-        .spinner {
-            width: 20px; height: 20px; border: 2.5px solid rgba(255,255,255,0.3);
-            border-top-color: white; border-radius: 50%;
-            animation: spin 0.8s linear infinite; display: none;
-        }
-        .submit-btn.loading .spinner { display: block; }
-        .submit-btn.loading span, .submit-btn.loading i { display: none; }
+        /* Loading Spinner */
+        .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+        .btn-submit.loading .spinner { display: block; }
+        .btn-submit.loading span, .btn-submit.loading svg { display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* * ==========================================================================
-         * 9. MODAL COMPONENT (Terms of Service)
-         * ==========================================================================
-         */
-        .modal-backdrop {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px); z-index: 2000;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: 0.3s;
+        /* 9. MODAL (TERMS) */
+        .modal-wrap {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: 0.3s;
         }
-        .modal-backdrop.active { opacity: 1; pointer-events: auto; }
-
+        .modal-wrap.active { display: flex; opacity: 1; }
         .modal-content {
-            background: var(--auth-card); width: 90%; max-width: 600px;
-            border-radius: 20px; border: 1px solid var(--auth-border);
-            display: flex; flex-direction: column; max-height: 80vh;
-            transform: scale(0.95); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            background: #1e293b; width: 90%; max-width: 600px; max-height: 80vh;
+            border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column; transform: scale(0.95); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
         }
-        .modal-backdrop.active .modal-content { transform: scale(1); }
+        .modal-wrap.active .modal-content { transform: scale(1); }
+        .modal-header { padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 30px; overflow-y: auto; font-size: 0.95rem; color: #94a3b8; line-height: 1.7; }
+        .modal-footer { padding: 20px 24px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; gap: 15px; }
 
-        .modal-header { padding: 25px; border-bottom: 1px solid var(--auth-border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 25px; overflow-y: auto; color: var(--auth-text-sub); line-height: 1.7; font-size: 0.95rem; }
-        .modal-body h4 { color: white; margin-top: 20px; margin-bottom: 10px; }
-        .modal-footer { padding: 20px 25px; border-top: 1px solid var(--auth-border); display: flex; justify-content: flex-end; gap: 15px; }
-
-        .btn-secondary { background: transparent; border: 1px solid var(--auth-border); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
-
-        /* * ==========================================================================
-         * 10. TOAST NOTIFICATIONS
-         * ==========================================================================
-         */
-        .toast-wrapper { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 12px; }
-        .toast {
-            min-width: 350px; background: #1e293b; border-left: 4px solid;
-            padding: 16px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            display: flex; align-items: flex-start; gap: 15px;
-            animation: toastIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        /* Mobile Responsive */
-        @media (max-width: 900px) {
-            .auth-container { grid-template-columns: 1fr; margin: 0; min-height: 100vh; border-radius: 0; }
-            .auth-visual { display: none; }
-            .auth-form-side { padding: 40px 20px; }
+        /* 10. RESPONSIVE */
+        @media (max-width: 960px) {
+            .auth-container { grid-template-columns: 1fr; min-height: auto; margin: 0; border-radius: 0; }
+            .visual-side { display: none; }
+            .form-side { padding: 40px 20px; }
+            .input-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div class="background-fx">
-        <div class="fx-blob fx-1"></div>
-        <div class="fx-blob fx-2"></div>
-        <div class="fx-blob fx-3"></div>
+    <div class="auth-bg">
+        <div class="bg-gradient"></div>
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
     </div>
 
-    <div class="toast-wrapper" id="toastContainer"></div>
+    <div class="toast-container" id="toastContainer"></div>
 
     <div class="auth-container">
         
-        <div class="auth-visual">
-            <div class="brand-icon">
-                <i class="fa-solid fa-fingerprint"></i>
+        <div class="visual-side">
+            <div class="visual-pattern"></div>
+            
+            <div class="brand-logo">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+                <span class="logo-text">NIGOH</span>
             </div>
-            <h1 class="visual-head">Jamoatchilik<br>Nazorati Tizimi</h1>
-            <p class="visual-text">
-                O'z hududingizdagi muammolarni hal qilishda faol ishtirok eting. 
-                Sizning ovozingiz — o'zgarishlar kalitidir.
-            </p>
 
-            <div class="social-proof">
-                <div class="proof-avatar">A</div>
-                <div class="proof-avatar">B</div>
-                <div class="proof-avatar">D</div>
-                <div class="proof-text"><b>2,500+</b> faol fuqarolar</div>
+            <div class="visual-content">
+                <h1 class="visual-title">Xavfsiz Jamiyat <br> Sari Qadam</h1>
+                <p class="visual-desc">
+                    Minglab faol fuqarolar safiga qo'shiling. Sizning murojaatingiz shaffoflikni ta'minlashga xizmat qiladi.
+                </p>
+            </div>
+
+            <div class="visual-footer">
+                <div class="quote-card">
+                    <p class="quote-text">"Jamoatchilik nazorati — bu adolatning eng kuchli quroli."</p>
+                    <div class="quote-author">
+                        <div class="author-avatar"></div>
+                        <span class="author-name">Nigoh Jamoasi</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="auth-form-side">
+        <div class="form-side">
             <div class="form-header">
-                <h2 class="form-title">Ro'yxatdan o'tish</h2>
-                <p class="form-desc">Nigoh platformasining to'liq imkoniyatlaridan foydalanish uchun hisob yarating.</p>
+                <h2 class="form-title">Ro'yxatdan O'tish</h2>
+                <p class="form-sub">Allaqachon hisobingiz bormi? <a href="login.html" class="link-login">Kirish</a></p>
             </div>
 
-            <form id="registerForm" autocomplete="off" novalidate>
+            <form id="signupForm" autocomplete="off" novalidate>
                 
-                <div class="input-wrapper">
-                    <div class="label-row">
-                        <label class="form-label" for="fullName">To'liq Ism (F.I.O)</label>
-                    </div>
-                    <div class="input-container">
-                        <input type="text" id="fullName" class="form-input" placeholder="Abdullayev Anvar" required>
-                        <i class="fa-regular fa-user input-icon"></i>
-                        <i class="fa-solid fa-check status-icon check"></i>
-                        <i class="fa-solid fa-exclamation status-icon cross"></i>
-                    </div>
-                    <div class="error-msg" id="err-fullName"><i class="fa-solid fa-circle-info"></i> Ism kamida 3 harf bo'lishi kerak</div>
-                </div>
-
-                <div class="input-wrapper">
-                    <div class="label-row">
-                        <label class="form-label" for="phone">Telefon Raqam</label>
-                        <span class="label-hint">SMS tasdiqlash uchun</span>
-                    </div>
-                    <div class="input-container">
-                        <input type="tel" id="phone" class="form-input" placeholder="+998 (__) ___-__-__" value="+998 ">
-                        <i class="fa-solid fa-phone input-icon"></i>
-                        <i class="fa-solid fa-check status-icon check"></i>
-                    </div>
-                </div>
-
-                <div class="input-wrapper">
-                    <div class="label-row">
-                        <label class="form-label" for="email">Email Manzil</label>
-                    </div>
-                    <div class="input-container">
-                        <input type="email" id="email" class="form-input" placeholder="name@domain.uz" required>
-                        <i class="fa-regular fa-envelope input-icon"></i>
-                        <i class="fa-solid fa-check status-icon check"></i>
-                        <i class="fa-solid fa-exclamation status-icon cross"></i>
-                    </div>
-                    <div class="error-msg" id="err-email"><i class="fa-solid fa-circle-info"></i> Email noto'g'ri formatda</div>
-                </div>
-
-                <div class="input-wrapper">
-                    <div class="label-row">
-                        <label class="form-label" for="password">Parol</label>
-                    </div>
-                    <div class="input-container">
-                        <input type="password" id="password" class="form-input" placeholder="••••••••" required>
-                        <i class="fa-solid fa-lock input-icon"></i>
-                        <button type="button" class="eye-btn" onclick="app.togglePass('password')" style="position:absolute; right:16px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer;">
-                            <i class="fa-regular fa-eye" id="eye-icon"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="password-meta" id="passMeta">
-                        <div class="strength-progress">
-                            <div class="s-bar"></div><div class="s-bar"></div><div class="s-bar"></div><div class="s-bar"></div>
+                <div class="form-grid">
+                    <div class="input-group" id="group-name">
+                        <label class="input-label" for="fullName">To'liq Ism (F.I.O)</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="fullName" class="form-input" placeholder="Abdullayev Anvar" required minlength="3">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <svg class="status-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                            <svg class="status-icon alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                         </div>
-                        <div class="req-list">
-                            <div class="req-item" id="req-len"><i class="fa-solid fa-circle"></i> 8+ belgi</div>
-                            <div class="req-item" id="req-num"><i class="fa-solid fa-circle"></i> Raqamlar</div>
-                            <div class="req-item" id="req-cap"><i class="fa-solid fa-circle"></i> Katta harf</div>
-                            <div class="req-item" id="req-sym"><i class="fa-solid fa-circle"></i> Maxsus belgi</div>
+                        <div class="error-message">Ism kamida 3 ta harfdan iborat bo'lishi kerak.</div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group" id="group-email">
+                            <label class="input-label" for="email">Email Manzil</label>
+                            <div class="input-wrapper">
+                                <input type="email" id="email" class="form-input" placeholder="name@domain.uz" required>
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                <svg class="status-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                            </div>
+                            <div class="error-message">Noto'g'ri email formati.</div>
+                        </div>
+
+                        <div class="input-group" id="group-phone">
+                            <label class="input-label" for="phone">Telefon Raqam</label>
+                            <div class="input-wrapper">
+                                <input type="tel" id="phone" class="form-input" placeholder="+998 (__) ___-__-__" value="+998 ">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                <svg class="status-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="input-group" id="group-pass">
+                        <label class="input-label" for="password">Parol</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <button type="button" class="field-toggle" onclick="app.togglePass('password')" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748b; cursor:pointer;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        
+                        <div class="password-strength" id="passStrength">
+                            <div class="strength-header">
+                                <span class="strength-label">Ishonchlilik darajasi</span>
+                                <span class="strength-val" id="strengthText">Tekshirilmoqda...</span>
+                            </div>
+                            <div class="strength-bars">
+                                <div class="s-bar"></div><div class="s-bar"></div><div class="s-bar"></div><div class="s-bar"></div>
+                            </div>
+                            <div class="requirements-list">
+                                <div class="req-item" id="req-len"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg> 8+ belgi</div>
+                                <div class="req-item" id="req-num"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg> Raqamlar</div>
+                                <div class="req-item" id="req-cap"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg> Katta harf</div>
+                                <div class="req-item" id="req-sym"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg> Maxsus belgi</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group" id="group-cpass">
+                        <label class="input-label" for="cPassword">Parolni Tasdiqlang</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="cPassword" class="form-input" placeholder="••••••••" required>
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                            <svg class="status-icon check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                        </div>
+                        <div class="error-message">Parollar mos kelmayapti.</div>
+                    </div>
+
+                    <div class="terms-box" id="termsBox">
+                        <div class="checkbox-ui">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <input type="checkbox" id="termsInput" hidden>
+                        <div class="terms-text">
+                            Men <a href="#" class="terms-link" onclick="app.openModal('terms', event)">Foydalanish Shartlari</a> va 
+                            <a href="#" class="terms-link" onclick="app.openModal('privacy', event)">Maxfiylik Siyosati</a> bilan tanishdim va qabul qilaman.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <span class="spinner"></span>
+                        <span class="btn-text">Hisob Yaratish</span>
+                        <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
+
                 </div>
-
-                <div class="input-wrapper">
-                    <div class="label-row">
-                        <label class="form-label" for="cPassword">Parolni Tasdiqlash</label>
-                    </div>
-                    <div class="input-container">
-                        <input type="password" id="cPassword" class="form-input" placeholder="••••••••" required>
-                        <i class="fa-solid fa-shield-halved input-icon"></i>
-                        <i class="fa-solid fa-check status-icon check"></i>
-                        <i class="fa-solid fa-exclamation status-icon cross"></i>
-                    </div>
-                    <div class="error-msg" id="err-cPassword"><i class="fa-solid fa-circle-info"></i> Parollar mos kelmadi</div>
-                </div>
-
-                <div class="terms-wrapper">
-                    <div class="custom-check" id="termsBox">
-                        <input type="checkbox" id="termsInput">
-                        <i class="fa-solid fa-check"></i>
-                    </div>
-                    <div class="terms-label">
-                        Men <span class="link" onclick="app.openModal('terms')">Foydalanish Shartlari</span> va 
-                        <span class="link" onclick="app.openModal('privacy')">Maxfiylik Siyosati</span> bilan tanishdim va roziman.
-                    </div>
-                </div>
-
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    <span class="spinner"></span>
-                    <span class="btn-text">Ro'yxatdan O'tish <i class="fa-solid fa-arrow-right"></i></span>
-                </button>
-
-                <p style="text-align: center; margin-top: 25px; color: var(--auth-text-sub); font-size: 0.9rem;">
-                    Hisobingiz bormi? <a href="login.html" class="link">Tizimga kirish</a>
-                </p>
-
             </form>
         </div>
     </div>
 
-    <div class="modal-backdrop" id="legalModal">
+    <div class="modal-wrap" id="legalModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 style="color:white; margin:0;">Foydalanish Shartlari</h3>
-                <button onclick="app.closeModal()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+                <h3 style="color:white;margin:0;font-size:1.2rem;">Hujjatlar</h3>
+                <button onclick="app.closeModal()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.5rem;">×</button>
             </div>
-            <div class="modal-body" id="legalContent">
+            <div class="modal-body" id="legalText">
                 </div>
             <div class="modal-footer">
-                <button class="btn-secondary" onclick="app.closeModal()">Yopish</button>
-                <button class="submit-btn" style="width:auto; padding:10px 25px;" onclick="app.acceptTerms()">Qabul Qilaman</button>
+                <button class="btn-submit" style="width:auto; height:40px; padding:0 20px; background:#334155;" onclick="app.closeModal()">Yopish</button>
+                <button class="btn-submit" style="width:auto; height:40px; padding:0 20px;" onclick="app.acceptTerms()">Roziman</button>
             </div>
         </div>
     </div>
 
     <script type="module">
-        import { auth, db, createUserWithEmailAndPassword, updateProfile, setDoc, doc, serverTimestamp } from './firebase-config.js';
+        import { auth, db, createUserWithEmailAndPassword, updateProfile, setDoc, doc, serverTimestamp } from './config.js';
 
-        // --- ENTERPRISE SIGNUP MANAGER ---
-        class SignupManager {
+        // --- ENTERPRISE SIGNUP ENGINE ---
+        class SignupApp {
             constructor() {
-                // Elements
-                this.form = document.getElementById('registerForm');
+                // DOM Elements
+                this.form = document.getElementById('signupForm');
                 this.btn = document.getElementById('submitBtn');
                 this.termsBox = document.getElementById('termsBox');
                 this.termsInput = document.getElementById('termsInput');
                 
                 // State
                 this.isSubmitting = false;
-                this.validationState = {
-                    fullName: false,
+                this.validity = {
+                    name: false,
                     email: false,
-                    password: false,
-                    cPassword: false
+                    pass: false,
+                    cpass: false
                 };
 
-                this.initListeners();
+                this.init();
             }
 
-            initListeners() {
-                // Input Real-time Validation
+            init() {
+                // 1. Real-time Validation Listeners
                 document.getElementById('fullName').addEventListener('input', (e) => this.validateName(e.target));
                 document.getElementById('email').addEventListener('input', (e) => this.validateEmail(e.target));
                 document.getElementById('phone').addEventListener('input', (e) => this.maskPhone(e.target));
                 
-                // Password Logic
+                // 2. Password Logic
                 const passInput = document.getElementById('password');
                 passInput.addEventListener('input', (e) => {
-                    this.checkEntropy(e.target.value);
-                    this.validateMatch();
+                    this.calculateEntropy(e.target.value);
+                    this.checkMatch();
                 });
-                
-                document.getElementById('cPassword').addEventListener('input', () => this.validateMatch());
+                document.getElementById('cPassword').addEventListener('input', () => this.checkMatch());
 
-                // Terms Logic
-                this.termsBox.addEventListener('click', () => this.toggleTerms());
+                // 3. Terms Interaction
+                this.termsBox.addEventListener('click', (e) => {
+                    if(e.target.tagName !== 'A') this.toggleTerms();
+                });
 
-                // Form Submit
+                // 4. Form Submission
                 this.form.addEventListener('submit', (e) => this.handleSubmit(e));
             }
 
-            // --- 1. VALIDATION HELPERS ---
-            setValid(input, isValid) {
+            // --- VALIDATION MODULES ---
+            setStatus(input, isValid, groupID) {
+                const group = document.getElementById(groupID);
                 if (isValid) {
                     input.classList.remove('invalid');
                     input.classList.add('valid');
-                    this.validationState[input.id] = true;
-                    // Hide Error
-                    const err = document.getElementById(`err-${input.id}`);
-                    if(err) err.classList.remove('visible');
+                    group.classList.remove('has-error');
                 } else {
                     input.classList.remove('valid');
-                    input.classList.add('invalid');
-                    this.validationState[input.id] = false;
-                    // Show Error
-                    const err = document.getElementById(`err-${input.id}`);
-                    if(err) err.classList.add('visible');
+                    if(input.value.length > 0) {
+                        input.classList.add('invalid');
+                        group.classList.add('has-error');
+                    }
                 }
+                return isValid;
             }
 
-            validateName(input) {
+            validateName(el) {
                 const regex = /^[a-zA-Z\u0400-\u04FF\s]{3,50}$/;
-                this.setValid(input, regex.test(input.value.trim()));
+                this.validity.name = this.setStatus(el, regex.test(el.value.trim()), 'group-name');
             }
 
-            validateEmail(input) {
+            validateEmail(el) {
                 const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                this.setValid(input, regex.test(input.value));
+                this.validity.email = this.setStatus(el, regex.test(el.value), 'group-email');
             }
 
-            maskPhone(input) {
-                let x = input.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
-                input.value = !x[2] ? x[1] : '+' + x[1] + ' (' + x[2] + ') ' + x[3] + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '');
+            maskPhone(el) {
+                let x = el.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})(\d{0,2})/);
+                el.value = !x[2] ? x[1] : '+' + x[1] + ' (' + x[2] + ') ' + x[3] + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '');
             }
 
-            // --- 2. PASSWORD ENTROPY & MATCHING ---
-            checkEntropy(password) {
-                const meta = document.getElementById('passMeta');
+            // --- PASSWORD ENTROPY ENGINE ---
+            calculateEntropy(val) {
+                const meter = document.getElementById('passStrength');
+                const text = document.getElementById('strengthText');
                 
-                if (password.length > 0) meta.classList.add('active');
-                else meta.classList.remove('active');
+                if (val.length > 0) meter.classList.add('active');
+                else meter.classList.remove('active');
 
-                // Requirements Check
-                const hasLen = password.length >= 8;
-                const hasNum = /\d/.test(password);
-                const hasCap = /[A-Z]/.test(password);
-                const hasSym = /[^A-Za-z0-9]/.test(password);
+                // Checks
+                const hasLen = val.length >= 8;
+                const hasNum = /\d/.test(val);
+                const hasCap = /[A-Z]/.test(val);
+                const hasSym = /[^A-Za-z0-9]/.test(val);
 
-                this.updateReq('req-len', hasLen);
-                this.updateReq('req-num', hasNum);
-                this.updateReq('req-cap', hasCap);
-                this.updateReq('req-sym', hasSym);
+                // UI Update
+                this.toggleReq('req-len', hasLen);
+                this.toggleReq('req-num', hasNum);
+                this.toggleReq('req-cap', hasCap);
+                this.toggleReq('req-sym', hasSym);
 
-                // Calculate Strength Score (0-4)
+                // Score (0-4)
                 let score = 0;
-                if (hasLen) score++;
-                if (hasNum) score++;
-                if (hasCap) score++;
-                if (hasSym) score++;
+                if(hasLen) score++;
+                if(hasNum) score++;
+                if(hasCap) score++;
+                if(hasSym) score++;
 
-                const container = document.getElementById('passMeta');
-                container.className = `password-meta active strength-${score}`;
+                // Level Classes
+                meter.className = `password-strength active level-${score}`;
+                
+                const labels = ["Juda Kuchsiz", "Kuchsiz", "O'rtacha", "Yaxshi", "Mukammal"];
+                text.innerText = labels[score];
 
-                this.validationState.password = score >= 3; // Kamida 3 ta talab bajarilishi kerak
+                this.validity.pass = score >= 3; // Minimum score requirement
+                this.setStatus(document.getElementById('password'), this.validity.pass, 'group-pass');
             }
 
-            updateReq(id, met) {
+            toggleReq(id, met) {
                 const el = document.getElementById(id);
-                if (met) {
-                    el.classList.add('met');
-                    el.querySelector('i').className = 'fa-solid fa-check';
-                } else {
-                    el.classList.remove('met');
-                    el.querySelector('i').className = 'fa-solid fa-circle';
-                }
+                if(met) el.classList.add('met');
+                else el.classList.remove('met');
             }
 
-            validateMatch() {
+            checkMatch() {
                 const p1 = document.getElementById('password').value;
                 const p2 = document.getElementById('cPassword');
-                
-                if (p2.value.length > 0) {
-                    this.setValid(p2, p1 === p2.value);
-                }
+                const match = p1 === p2.value && p1.length > 0;
+                this.validity.cpass = this.setStatus(p2, match, 'group-cpass');
             }
 
             togglePass(id) {
-                const input = document.getElementById(id);
-                const icon = document.getElementById('eye-icon');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.className = 'fa-regular fa-eye-slash';
-                } else {
-                    input.type = 'password';
-                    icon.className = 'fa-regular fa-eye';
-                }
+                const el = document.getElementById(id);
+                el.type = el.type === 'password' ? 'text' : 'password';
             }
 
-            // --- 3. TERMS & MODAL ---
+            // --- LEGAL MODULE ---
             toggleTerms() {
-                if (this.termsInput.checked) {
-                    this.termsInput.checked = false;
-                    this.termsBox.classList.remove('checked');
-                } else {
-                    this.termsInput.checked = true;
-                    this.termsBox.classList.add('checked');
-                }
+                this.termsInput.checked = !this.termsInput.checked;
+                if(this.termsInput.checked) this.termsBox.classList.add('checked');
+                else this.termsBox.classList.remove('checked');
+                this.termsBox.classList.remove('error');
             }
 
-            openModal(type) {
+            openModal(type, e) {
+                e.preventDefault();
+                e.stopPropagation();
                 const modal = document.getElementById('legalModal');
-                const content = document.getElementById('legalContent');
+                const content = document.getElementById('legalText');
                 
-                let text = '';
                 if(type === 'terms') {
-                    text = `
-                        <h4>1. Umumiy Qoidalar</h4>
-                        <p>Nigoh platformasidan foydalanish orqali siz O'zbekiston Respublikasi qonunchiligiga rioya qilishga majbursiz. Yolg'on ma'lumot tarqatish, tuhmat qilish yoki haqoratli so'zlar ishlatish qat'iyan man etiladi.</p>
-                        <h4>2. Foydalanuvchi Majburiyatlari</h4>
-                        <p>Siz o'z hisobingiz xavfsizligi uchun javobgarsiz. Parolingizni uchinchi shaxslarga bermang. Har bir yuborilgan murojaat haqqoniyligi uchun siz mas'ulsiz.</p>
-                        <h4>3. Ma'lumotlardan Foydalanish</h4>
-                        <p>Platforma ma'muriyati sizning murojaatlaringizni tegishli davlat organlariga anonim yoki ochiq tarzda (sozlamalarga qarab) yuborish huquqiga ega.</p>
+                    content.innerHTML = `
+                        <h4 style="color:white; margin-bottom:10px;">1. Umumiy Qoidalar</h4>
+                        <p>Nigoh platformasidan foydalanish orqali siz O'zbekiston Respublikasi qonunlariga rioya qilishga majbursiz. Yolg'on, tuhmat va haqoratli so'zlar ishlatish taqiqlanadi.</p>
+                        <h4 style="color:white; margin:15px 0 10px;">2. Javobgarlik</h4>
+                        <p>Foydalanuvchi o'zi kiritgan ma'lumotlarning haqqoniyligi uchun to'liq javobgardir.</p>
                     `;
                 } else {
-                    text = `
-                        <h4>Maxfiylik Siyosati</h4>
-                        <p>Biz sizning shaxsiy ma'lumotlaringizni (Ism, Email, Telefon) qat'iy himoya qilamiz. Ma'lumotlar shifrlangan holda saqlanadi va faqat qonuniy talab bo'lganda huquqni muhofaza qilish organlariga taqdim etilishi mumkin.</p>
+                    content.innerHTML = `
+                        <h4 style="color:white; margin-bottom:10px;">Maxfiylik Siyosati</h4>
+                        <p>Biz sizning shaxsiy ma'lumotlaringizni (Ism, Email, Telefon) uchinchi shaxslarga bermaslik majburiyatini olamiz. Ma'lumotlar shifrlangan holda saqlanadi.</p>
                     `;
                 }
-                
-                content.innerHTML = text;
                 modal.classList.add('active');
             }
 
@@ -679,73 +626,53 @@
                 this.closeModal();
             }
 
-            // --- 4. TOAST NOTIFICATION ---
-            showToast(type, title, msg) {
-                const wrapper = document.getElementById('toastContainer');
-                const toast = document.createElement('div');
-                toast.className = 'toast';
-                
-                const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b' };
-                const icons = { success: 'circle-check', error: 'circle-exclamation', warning: 'triangle-exclamation' };
-                
-                toast.style.borderLeftColor = colors[type];
-                toast.innerHTML = `
-                    <i class="fa-solid fa-${icons[type]}" style="color:${colors[type]}; font-size:1.5rem;"></i>
-                    <div>
-                        <h4 style="margin:0; color:white; font-size:0.95rem;">${title}</h4>
-                        <p style="margin:2px 0 0; color:#94a3b8; font-size:0.85rem;">${msg}</p>
-                    </div>
-                `;
-                
-                wrapper.appendChild(toast);
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateX(100%)';
-                    setTimeout(() => toast.remove(), 300);
-                }, 4000);
-            }
-
-            // --- 5. MAIN SUBMIT HANDLER ---
+            // --- SUBMISSION HANDLER ---
             async handleSubmit(e) {
                 e.preventDefault();
                 if(this.isSubmitting) return;
 
-                // 1. Check Validation
-                const name = document.getElementById('fullName').value;
-                const email = document.getElementById('email').value;
-                const pass = document.getElementById('password').value;
-                const phone = document.getElementById('phone').value;
-
-                if (!this.validationState.fullName) return this.showToast('error', 'Ism Xato', 'Ismingizni to\'liq kiriting (kamida 3 harf).');
-                if (!this.validationState.email) return this.showToast('error', 'Email Xato', 'Email manzilingiz noto\'g\'ri.');
-                if (!this.validationState.password) return this.showToast('error', 'Parol Kuchli Emas', 'Parol talablarga javob bermaydi.');
-                if (!this.validationState.cPassword) return this.showToast('error', 'Moslik Xatosi', 'Parollar bir xil emas.');
-                if (!this.termsInput.checked) return this.showToast('warning', 'Shartlar', 'Davom etish uchun shartlarga rozi bo\'ling.');
+                // 1. Final Validation Check
+                if(!this.validity.name) return this.shakeForm('group-name', 'Ismingizni to\'g\'ri kiriting');
+                if(!this.validity.email) return this.shakeForm('group-email', 'Email noto\'g\'ri');
+                if(!this.validity.pass) return this.shakeForm('group-pass', 'Parol yetarlicha kuchli emas');
+                if(!this.validity.cpass) return this.shakeForm('group-cpass', 'Parollar mos kelmadi');
+                if(!this.termsInput.checked) {
+                    this.termsBox.classList.add('error');
+                    this.showToast('error', 'Diqqat', 'Davom etish uchun shartlarga rozilik bildiring.');
+                    return;
+                }
 
                 // 2. Start Loading
                 this.isSubmitting = true;
                 this.btn.classList.add('loading');
                 this.btn.disabled = true;
 
+                const name = document.getElementById('fullName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const pass = document.getElementById('password').value;
+                const phone = document.getElementById('phone').value;
+
                 try {
-                    // A. Create User in Auth
+                    // A. Firebase Auth Create
                     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
                     const user = userCredential.user;
 
                     // B. Update Profile
                     await updateProfile(user, { displayName: name });
 
-                    // C. Seed Firestore User (CRITICAL FOR ADMIN PANEL)
+                    // C. Firestore Seeding (CRITICAL)
+                    // Bu yerda Admin panel uchun kerakli barcha ma'lumotlar yoziladi
                     await setDoc(doc(db, "users", user.uid), {
                         uid: user.uid,
                         displayName: name,
                         email: email,
                         phoneNumber: phone,
-                        role: "user", // Default Role
+                        role: "user", // Default role
+                        status: "active",
                         createdAt: new Date().toISOString(),
                         lastLogin: new Date().toISOString(),
-                        status: "active",
-                        device: navigator.userAgent
+                        deviceInfo: navigator.userAgent,
+                        platform: navigator.platform
                     });
 
                     // D. Success
@@ -758,26 +685,64 @@
                 } catch (error) {
                     console.error("Signup Error:", error);
                     let title = "Xatolik";
-                    let msg = "Tizimda xatolik yuz berdi.";
+                    let msg = error.message;
 
-                    if (error.code === 'auth/email-already-in-use') {
-                        title = "Email Band"; msg = "Bu email bilan allaqachon hisob ochilgan.";
+                    if(error.code === 'auth/email-already-in-use') {
+                        title = "Email Band"; msg = "Bu email allaqachon ro'yxatdan o'tgan.";
                     } else if (error.code === 'auth/network-request-failed') {
-                        title = "Internet Yo'q"; msg = "Serverga ulanib bo'lmadi. Internetni tekshiring.";
+                        title = "Internet"; msg = "Aloqa yo'q. Internetni tekshiring.";
                     }
 
                     this.showToast('error', title, msg);
-                    
-                    // Reset Loading
                     this.isSubmitting = false;
                     this.btn.classList.remove('loading');
                     this.btn.disabled = false;
                 }
             }
+
+            // --- UTILS ---
+            shakeForm(id, msg) {
+                const el = document.getElementById(id);
+                el.classList.add('invalid'); // Triggers shake animation in CSS
+                this.showToast('error', 'Xato', msg);
+                setTimeout(() => el.classList.remove('invalid'), 500);
+            }
+
+            showToast(type, title, msg) {
+                const box = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                
+                const colors = { success: '#10b981', error: '#ef4444' };
+                const icons = { success: '<path d="M20 6L9 17l-5-5"/>', error: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' };
+                
+                toast.style.borderLeft = `4px solid ${colors[type]}`;
+                toast.style.background = '#1e293b';
+                toast.style.padding = '16px';
+                toast.style.borderRadius = '8px';
+                toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
+                toast.style.color = 'white';
+                toast.style.display = 'flex';
+                toast.style.gap = '12px';
+                toast.style.marginBottom = '10px';
+                toast.style.minWidth = '300px';
+                toast.style.animation = 'fadeInUp 0.3s forwards';
+
+                toast.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${colors[type]}" stroke-width="2">${icons[type]}</svg>
+                    <div><div style="font-weight:700;font-size:0.95rem;">${title}</div><div style="color:#94a3b8;font-size:0.85rem;">${msg}</div></div>
+                `;
+                
+                box.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
         }
 
-        // Initialize Application
-        window.app = new SignupManager();
+        // INIT
+        window.app = new SignupApp();
     </script>
 </body>
 </html>

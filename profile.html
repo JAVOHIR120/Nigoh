@@ -1,522 +1,592 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
     <title>Nigoh | Shaxsiy Kabinet</title>
+    <meta name="description" content="Foydalanuvchi boshqaruv paneli. Murojaatlar holati va statistikasi.">
+    <meta name="theme-color" content="#0f172a">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/uz-latn.min.js"></script>
-    
+
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* * ==========================================================================
-         * 1. PROFILE SYSTEM VARIABLES
-         * ==========================================================================
-         */
+        /* 1. LAYOUT VARIABLES */
         :root {
-            /* Palette */
-            --prof-bg: #0f172a;
-            --prof-card: #1e293b;
-            --prof-border: rgba(255, 255, 255, 0.08);
-            --prof-input: #334155;
-            
-            /* Accents */
-            --prof-primary: #6366f1;
-            --prof-success: #10b981;
-            --prof-warning: #f59e0b;
-            --prof-danger: #ef4444;
-            --prof-info: #3b82f6;
-            
-            /* Text */
-            --t-main: #f8fafc;
-            --t-muted: #94a3b8;
-            --t-dim: #64748b;
-            
-            /* Dimensions */
             --sidebar-w: 280px;
-            --header-h: 70px;
-            --banner-h: 200px;
+            --header-h: 80px;
+            --panel-bg: #111827;
+            --card-bg: #1f2937;
+            --border: rgba(255,255,255,0.08);
+            --active-item: rgba(59, 130, 246, 0.15);
         }
 
-        /* * ==========================================================================
-         * 2. LAYOUT ARCHITECTURE
-         * ==========================================================================
-         */
         body {
-            background-color: var(--prof-bg);
-            font-family: 'Inter', sans-serif;
-            color: var(--t-main);
-            overflow: hidden;
-            height: 100vh;
+            background-color: #0b1120;
             display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* Scrollbars */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--prof-bg); }
-        ::-webkit-scrollbar-thumb { background: var(--t-dim); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--prof-primary); }
+        /* 2. SIDEBAR NAVIGATION */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            position: relative;
+        }
 
-        /* Sidebar (Inherited style logic) */
-        .app-sidebar {
-            width: var(--sidebar-w); background: #111827; border-right: 1px solid var(--prof-border);
-            display: flex; flex-direction: column; z-index: 50; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .sidebar-header {
+            height: var(--header-h);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
         }
-        .brand-box {
-            height: var(--header-h); display: flex; align-items: center; padding: 0 24px;
-            border-bottom: 1px solid var(--prof-border); gap: 12px;
-        }
+
         .brand-icon {
-            width: 36px; height: 36px; border-radius: 8px;
-            background: linear-gradient(135deg, var(--prof-primary), #4f46e5);
-            display: flex; align-items: center; justify-content: center; color: white;
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
         }
-        
-        .nav-list { flex: 1; padding: 24px 16px; overflow-y: auto; }
+
+        .brand-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 24px 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
         .nav-item {
-            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-            border-radius: 10px; color: var(--t-muted); font-weight: 500; cursor: pointer;
-            transition: 0.2s; margin-bottom: 4px;
-        }
-        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
-        .nav-item.active { background: rgba(99, 102, 241, 0.15); color: var(--prof-primary); font-weight: 600; }
-
-        /* Main Content */
-        .main-viewport { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        
-        .content-body {
-            flex: 1; overflow-y: auto; padding: 0; position: relative;
-            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #9ca3af;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
         }
 
-        /* * ==========================================================================
-         * 3. PROFILE HEADER & BANNER
-         * ==========================================================================
-         */
-        .profile-banner {
-            height: var(--banner-h);
-            background: linear-gradient(120deg, #1e1b4b, #312e81, #4338ca);
-            position: relative; overflow: hidden;
-        }
-        .banner-pattern {
-            position: absolute; inset: 0; opacity: 0.2;
-            background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;
-        }
-        
-        .profile-container {
-            max-width: 1200px; margin: 0 auto; padding: 0 30px;
-            position: relative; top: -60px; display: grid;
-            grid-template-columns: 350px 1fr; gap: 30px;
+        .nav-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
         }
 
-        /* Profile Card (Left) */
-        .user-card {
-            background: var(--prof-card); border: 1px solid var(--prof-border);
-            border-radius: 20px; padding: 30px; text-align: center;
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); position: relative;
+        .nav-item.active {
+            background: var(--active-item);
+            color: #60a5fa;
+            font-weight: 600;
         }
 
-        .avatar-wrapper {
-            position: relative; width: 120px; height: 120px; margin: 0 auto 20px;
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
         }
-        .user-avatar {
-            width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
-            border: 4px solid var(--prof-card); box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
-            background: var(--prof-input);
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
         }
-        .avatar-edit-btn {
-            position: absolute; bottom: 5px; right: 5px;
-            width: 32px; height: 32px; border-radius: 50%;
-            background: var(--prof-primary); color: white; border: 2px solid var(--prof-card);
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+
+        .user-mini-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            border: 1px solid transparent;
             transition: 0.2s;
         }
-        .avatar-edit-btn:hover { transform: scale(1.1); }
+        .user-mini-profile:hover {
+            border-color: var(--border);
+            background: rgba(255,255,255,0.05);
+        }
 
-        .user-name { font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 5px; }
-        .user-email { color: var(--t-muted); font-size: 0.9rem; margin-bottom: 20px; }
+        .mini-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3b82f6;
+        }
+
+        .mini-info h4 { margin: 0; font-size: 0.9rem; color: white; }
+        .mini-info p { margin: 0; font-size: 0.75rem; color: #6b7280; }
+
+        /* 3. MAIN CONTENT AREA */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: radial-gradient(circle at top right, #1e1b4b 0%, #0b1120 40%);
+            position: relative;
+        }
+
+        .top-bar {
+            height: var(--header-h);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            background: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            z-index: 40;
+        }
+
+        .page-title h1 { margin: 0; font-size: 1.5rem; color: white; }
+        .page-title p { margin: 0; font-size: 0.85rem; color: #9ca3af; margin-top: 4px; }
+
+        .top-actions { display: flex; gap: 16px; align-items: center; }
+
+        .btn-action {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: #9ca3af;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+        .btn-action:hover { border-color: #3b82f6; color: white; }
         
-        .user-meta {
-            display: flex; justify-content: center; gap: 15px; margin-bottom: 25px;
-            padding-bottom: 25px; border-bottom: 1px solid var(--prof-border);
-        }
-        .meta-badge {
-            background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 20px;
-            font-size: 0.75rem; color: var(--t-dim); border: 1px solid var(--prof-border);
-        }
-
-        .stat-row { display: flex; justify-content: space-around; text-align: center; }
-        .stat-item h4 { font-size: 1.2rem; color: white; font-weight: 700; margin-bottom: 4px; }
-        .stat-item p { font-size: 0.75rem; color: var(--t-muted); text-transform: uppercase; }
-
-        /* * ==========================================================================
-         * 4. TABS & CONTENT AREA
-         * ==========================================================================
-         */
-        .content-tabs {
-            margin-top: 60px; /* Compensate for negative margin */
+        .notification-dot {
+            position: absolute; top: 10px; right: 10px;
+            width: 8px; height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid var(--card-bg);
         }
 
-        .tab-nav {
-            display: flex; gap: 30px; border-bottom: 1px solid var(--prof-border);
-            margin-bottom: 30px; overflow-x: auto;
-        }
-        .tab-btn {
-            background: none; border: none; padding: 15px 0;
-            color: var(--t-muted); font-size: 1rem; font-weight: 500;
-            cursor: pointer; position: relative; transition: 0.3s;
-            white-space: nowrap;
-        }
-        .tab-btn:hover { color: white; }
-        .tab-btn.active { color: var(--prof-primary); font-weight: 600; }
-        .tab-btn.active::after {
-            content: ''; position: absolute; bottom: -1px; left: 0; width: 100%;
-            height: 3px; background: var(--prof-primary); border-radius: 3px 3px 0 0;
+        /* 4. CONTENT SCROLL & GRID */
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
         }
 
-        .tab-pane { display: none; animation: fadeIn 0.4s ease; }
-        .tab-pane.active { display: block; }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 5. CARDS & STATS */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-3px); border-color: #3b82f6; }
+
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-info h3 { margin: 0; font-size: 1.8rem; color: white; font-weight: 700; }
+        .stat-info p { margin: 0; font-size: 0.85rem; color: #9ca3af; }
+
+        /* 6. TABLE STYLES */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .custom-table th {
+            text-align: left;
+            padding: 16px 24px;
+            background: rgba(0,0,0,0.2);
+            color: #9ca3af;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .custom-table td {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .bg-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .bg-yellow { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .bg-red { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        /* 7. SETTINGS FORMS */
+        .form-section {
+            max-width: 600px;
+        }
+        
+        .avatar-upload {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .avatar-preview {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--panel-bg);
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+
+        .btn-upload {
+            padding: 10px 20px;
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .btn-upload:hover { background: rgba(59, 130, 246, 0.2); }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .input-box { margin-bottom: 20px; }
+        .input-box label { display: block; margin-bottom: 8px; color: #9ca3af; font-size: 0.9rem; }
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            background: #111827;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .input-field:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+
+        .btn-save {
+            padding: 12px 30px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-save:hover { background: #2563eb; transform: translateY(-2px); }
+
+        /* 8. TAB SYSTEM */
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* * ==========================================================================
-         * 5. DASHBOARD CARDS (Overview)
-         * ==========================================================================
-         */
-        .dash-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px; margin-bottom: 30px;
-        }
-        .dash-card {
-            background: var(--prof-card); border: 1px solid var(--prof-border);
-            padding: 20px; border-radius: 16px; display: flex; align-items: center; gap: 15px;
-            transition: transform 0.3s;
-        }
-        .dash-card:hover { transform: translateY(-5px); border-color: var(--prof-primary); }
-        
-        .d-icon {
-            width: 50px; height: 50px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-        }
-        .d-info h3 { font-size: 1.5rem; color: white; margin: 0; }
-        .d-info p { font-size: 0.85rem; color: var(--t-muted); margin: 0; }
-
-        .chart-box {
-            background: var(--prof-card); border: 1px solid var(--prof-border);
-            border-radius: 16px; padding: 25px; height: 350px; position: relative;
-        }
-
-        /* * ==========================================================================
-         * 6. REPORTS TABLE
-         * ==========================================================================
-         */
-        .table-container {
-            background: var(--prof-card); border: 1px solid var(--prof-border);
-            border-radius: 16px; overflow: hidden;
-        }
-        .table-header {
-            padding: 20px; border-bottom: 1px solid var(--prof-border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .search-box input {
-            background: var(--prof-bg); border: 1px solid var(--prof-border);
-            padding: 10px 15px; border-radius: 8px; color: white; width: 250px;
-        }
-
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th, .data-table td {
-            padding: 15px 20px; text-align: left; border-bottom: 1px solid var(--prof-border);
-            color: var(--t-muted); font-size: 0.9rem;
-        }
-        .data-table th { background: rgba(0,0,0,0.2); color: white; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
-        
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
-        .badge-new { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .badge-solved { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-        .badge-rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-
-        /* * ==========================================================================
-         * 7. SETTINGS & SECURITY FORMS
-         * ==========================================================================
-         */
-        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        
-        .form-section { margin-bottom: 30px; }
-        .section-title { font-size: 1.1rem; color: white; margin-bottom: 20px; font-weight: 600; padding-bottom: 10px; border-bottom: 1px solid var(--prof-border); }
-        
-        .form-group { margin-bottom: 20px; }
-        .form-label { display: block; margin-bottom: 8px; color: var(--t-muted); font-size: 0.9rem; }
-        .form-input {
-            width: 100%; padding: 12px 15px; background: var(--prof-input);
-            border: 1px solid var(--prof-border); border-radius: 10px; color: white; transition: 0.2s;
-        }
-        .form-input:focus { border-color: var(--prof-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
-
-        .btn { padding: 12px 24px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: var(--prof-primary); color: white; }
-        .btn-primary:hover { background: #4f46e5; box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3); }
-        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--prof-danger); border: 1px solid rgba(239, 68, 68, 0.2); }
-        .btn-danger:hover { background: var(--prof-danger); color: white; }
-
-        /* Device List (Security) */
-        .device-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 15px; background: var(--prof-bg); border-radius: 10px;
-            margin-bottom: 10px; border: 1px solid var(--prof-border);
-        }
-        .device-info { display: flex; align-items: center; gap: 15px; }
-        .device-icon { font-size: 1.5rem; color: var(--t-dim); }
-
-        /* * ==========================================================================
-         * 8. UTILITIES & RESPONSIVE
-         * ==========================================================================
-         */
-        .toast-box { position: fixed; top: 20px; right: 20px; z-index: 3000; }
-        .toast {
-            min-width: 300px; padding: 16px; border-radius: 8px; background: var(--prof-card);
-            border-left: 4px solid; box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: white;
-            margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
-            animation: slideIn 0.3s;
-        }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-
+        /* 9. RESPONSIVE */
         @media (max-width: 1024px) {
-            .profile-container { grid-template-columns: 1fr; top: 0; padding-top: 30px; }
-            .user-card { margin-bottom: 30px; }
-            .content-tabs { margin-top: 0; }
-            .settings-grid { grid-template-columns: 1fr; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
-            .app-sidebar { position: fixed; transform: translateX(-100%); height: 100%; box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
-            .app-sidebar.active { transform: translateX(0); }
-            .profile-banner { height: 150px; }
+            .sidebar { position: fixed; transform: translateX(-100%); height: 100%; }
+            .sidebar.active { transform: translateX(0); }
+            .mobile-toggle { display: block !important; }
+            .page-title h1 { font-size: 1.2rem; }
         }
+        .mobile-toggle { display: none; font-size: 1.5rem; color: white; cursor: pointer; background: none; border: none; }
     </style>
 </head>
 <body>
 
-    <div class="toast-box" id="toastContainer"></div>
+    <div class="toast-container" id="toastContainer"></div>
 
-    <aside class="app-sidebar" id="sidebar">
-        <div class="brand-box">
-            <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
-            <h3 style="color:white; margin:0;">NIGOH</h3>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <span class="brand-title">NIGOH</span>
         </div>
-        <nav class="nav-list">
-            <div class="nav-item" onclick="location.href='index.html'">
-                <i class="fa-solid fa-arrow-left"></i> Asosiy Sahifa
-            </div>
-            <div class="nav-item active">
-                <i class="fa-solid fa-user"></i> Profil
-            </div>
-            <div class="nav-item" style="color:var(--prof-danger); margin-top:20px;" onclick="UserApp.logout()">
-                <i class="fa-solid fa-right-from-bracket"></i> Chiqish
-            </div>
+
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active" onclick="Profile.switchTab('overview', this)">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Umumiy Ko'rinish
+            </a>
+            <a href="#" class="nav-item" onclick="Profile.switchTab('reports', this)">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Mening Murojaatlarim
+            </a>
+            <a href="#" class="nav-item" onclick="Profile.switchTab('settings', this)">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Sozlamalar
+            </a>
+            <div style="flex:1"></div>
+            <a href="index.html" class="nav-item">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Asosiy Sahifa
+            </a>
+            <a href="#" class="nav-item" style="color:#ef4444;" onclick="Profile.logout()">
+                <svg viewBox="0 0 24 24" style="stroke:#ef4444;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Chiqish
+            </a>
         </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-mini-profile">
+                <img src="logo.png" id="miniAvatar" class="mini-avatar">
+                <div class="mini-info">
+                    <h4 id="miniName">Foydalanuvchi</h4>
+                    <p id="miniEmail">Yuklanmoqda...</p>
+                </div>
+            </div>
+        </div>
     </aside>
 
-    <main class="main-viewport">
-        
-        <div style="position:fixed; top:20px; left:20px; z-index:100; display:none;" class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')">
-            <button class="btn-primary" style="padding:10px;"><i class="fa-solid fa-bars"></i></button>
-        </div>
-
-        <div class="content-body">
-            
-            <div class="profile-banner">
-                <div class="banner-pattern"></div>
-            </div>
-
-            <div class="profile-container">
-                
-                <div class="user-card">
-                    <div class="avatar-wrapper">
-                        <img src="https://ui-avatars.com/api/?name=User&background=334155&color=fff" id="displayAvatar" class="user-avatar">
-                        <label class="avatar-edit-btn" title="Rasm yuklash">
-                            <i class="fa-solid fa-camera"></i>
-                            <input type="file" id="avatarInput" accept="image/*" hidden onchange="UserApp.handleAvatarChange(this)">
-                        </label>
-                    </div>
-                    
-                    <h2 class="user-name" id="displayName">Yuklanmoqda...</h2>
-                    <p class="user-email" id="displayEmail">...</p>
-                    
-                    <div class="user-meta">
-                        <span class="meta-badge" id="joinDate"><i class="fa-solid fa-calendar"></i> ...</span>
-                        <span class="meta-badge" style="color:var(--prof-success)">Faol</span>
-                    </div>
-
-                    <div class="stat-row">
-                        <div class="stat-item">
-                            <h4 id="miniTotal">0</h4>
-                            <p>Murojaat</p>
-                        </div>
-                        <div class="stat-item">
-                            <h4 id="miniSolved" style="color:var(--prof-success)">0</h4>
-                            <p>Yechim</p>
-                        </div>
-                    </div>
+    <main class="main-content">
+        <header class="top-bar">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    <h1 id="pageHeading">Dashboard</h1>
+                    <p id="currentDate">...</p>
                 </div>
+            </div>
+            
+            <div class="top-actions">
+                <div class="btn-action">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </div>
+                <div class="btn-action" onclick="Profile.refreshData()">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </div>
+            </div>
+        </header>
 
-                <div class="content-tabs">
-                    <div class="tab-nav">
-                        <button class="tab-btn active" onclick="UserApp.switchTab('overview', this)">Umumiy Ko'rinish</button>
-                        <button class="tab-btn" onclick="UserApp.switchTab('reports', this)">Murojaatlarim</button>
-                        <button class="tab-btn" onclick="UserApp.switchTab('settings', this)">Sozlamalar</button>
-                        <button class="tab-btn" onclick="UserApp.switchTab('security', this)">Xavfsizlik</button>
-                    </div>
-
-                    <div id="overviewTab" class="tab-pane active">
-                        <div class="dash-grid">
-                            <div class="dash-card">
-                                <div class="d-icon" style="background:rgba(59,130,246,0.1); color:var(--prof-info);">
+        <div class="content-scroll">
+            
+            <div id="overviewTab" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div style="display:flex; flex-direction:column; gap:24px;">
+                        
+                        <div class="stats-row">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background:rgba(59,130,246,0.1); color:#3b82f6;">
                                     <i class="fa-solid fa-layer-group"></i>
                                 </div>
-                                <div class="d-info">
-                                    <h3 id="statTotal">0</h3>
-                                    <p>Jami Yuborilgan</p>
+                                <div class="stat-info">
+                                    <h3 id="countTotal">0</h3>
+                                    <p>Jami</p>
                                 </div>
                             </div>
-                            <div class="dash-card">
-                                <div class="d-icon" style="background:rgba(16,185,129,0.1); color:var(--prof-success);">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">
                                     <i class="fa-solid fa-circle-check"></i>
                                 </div>
-                                <div class="d-info">
-                                    <h3 id="statSolved">0</h3>
-                                    <p>Muvaffaqiyatli</p>
+                                <div class="stat-info">
+                                    <h3 id="countSolved">0</h3>
+                                    <p>Hal Etildi</p>
                                 </div>
                             </div>
-                            <div class="dash-card">
-                                <div class="d-icon" style="background:rgba(245,158,11,0.1); color:var(--prof-warning);">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:#f59e0b;">
                                     <i class="fa-solid fa-clock"></i>
                                 </div>
-                                <div class="d-info">
-                                    <h3 id="statPending">0</h3>
-                                    <p>Ko'rib Chiqilmoqda</p>
+                                <div class="stat-info">
+                                    <h3 id="countPending">0</h3>
+                                    <p>Jarayonda</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="chart-box">
-                            <h3 style="color:white; margin-bottom:20px;">Faollik Statistikasi</h3>
-                            <canvas id="activityChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div id="reportsTab" class="tab-pane">
-                        <div class="table-container">
-                            <div class="table-header">
-                                <h3 style="color:white; margin:0;">Murojaatlar Tarixi</h3>
-                                <div class="search-box">
-                                    <input type="text" id="reportSearch" placeholder="Qidirish..." onkeyup="UserApp.filterReports(this.value)">
-                                </div>
-                            </div>
-                            <div style="overflow-x:auto;">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Sana</th>
-                                            <th>Turi</th>
-                                            <th>Manzil</th>
-                                            <th>Status</th>
-                                            <th>ID</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="reportsTableBody">
-                                        </tbody>
-                                </table>
-                            </div>
+                        <div class="card" style="flex:1;">
+                            <h3 style="color:white; margin-bottom:20px; font-family:'Space Grotesk'">Murojaatlar Dinamikasi</h3>
+                            <canvas id="activityChart" style="width:100%; height:300px;"></canvas>
                         </div>
                     </div>
 
-                    <div id="settingsTab" class="tab-pane">
-                        <div class="user-card" style="text-align:left; max-width:none;">
-                            <div class="settings-grid">
-                                <div>
-                                    <h3 class="section-title">Shaxsiy Ma'lumotlar</h3>
-                                    <form onsubmit="UserApp.updateProfileInfo(event)">
-                                        <div class="form-group">
-                                            <label class="form-label">To'liq Ism</label>
-                                            <input type="text" id="editName" class="form-input" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Telefon Raqam</label>
-                                            <input type="tel" id="editPhone" class="form-input" placeholder="+998">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Bio (Qisqacha)</label>
-                                            <input type="text" id="editBio" class="form-input" placeholder="O'zingiz haqida...">
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Saqlash</button>
-                                    </form>
-                                </div>
-                                <div>
-                                    <h3 class="section-title">Bildirishnomalar</h3>
-                                    <div class="device-item">
-                                        <span>Email xabarnomalar</span>
-                                        <input type="checkbox" checked>
-                                    </div>
-                                    <div class="device-item">
-                                        <span>SMS xabarnomalar</span>
-                                        <input type="checkbox">
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="card">
+                        <h3 style="color:white; margin-bottom:20px;">So'nggi Harakatlar</h3>
+                        <div id="activityFeed" style="display:flex; flex-direction:column; gap:15px;">
+                            <div style="text-align:center; color:#6b7280; margin-top:20px;">Hozircha harakatlar yo'q</div>
                         </div>
                     </div>
-
-                    <div id="securityTab" class="tab-pane">
-                        <div class="user-card" style="text-align:left; max-width:none;">
-                            <h3 class="section-title">Parolni O'zgartirish</h3>
-                            <form onsubmit="UserApp.updatePassword(event)" style="max-width:400px; margin-bottom:40px;">
-                                <div class="form-group">
-                                    <label class="form-label">Yangi Parol</label>
-                                    <input type="password" id="newPass" class="form-input" placeholder="Kamida 6 ta belgi">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Parolni Tasdiqlash</label>
-                                    <input type="password" id="confirmPass" class="form-input">
-                                </div>
-                                <button type="submit" class="btn btn-primary">Yangilash</button>
-                            </form>
-
-                            <h3 class="section-title">Faol Sessiyalar</h3>
-                            <div class="device-item">
-                                <div class="device-info">
-                                    <i class="fa-solid fa-desktop device-icon"></i>
-                                    <div>
-                                        <div style="color:white; font-weight:600;">Windows PC - Chrome</div>
-                                        <div style="font-size:0.8rem; color:var(--t-muted);">Toshkent, UZ • Hozir online</div>
-                                    </div>
-                                </div>
-                                <span class="badge badge-solved">Current</span>
-                            </div>
-
-                            <div style="margin-top:40px; border-top:1px solid var(--prof-danger); padding-top:20px;">
-                                <h3 style="color:var(--prof-danger); margin-bottom:10px;">Xavfli Hudud</h3>
-                                <p style="color:var(--t-muted); margin-bottom:15px; font-size:0.9rem;">Hisobingizni o'chirsangiz, barcha ma'lumotlar qayta tiklanmaydi.</p>
-                                <button class="btn btn-danger" onclick="UserApp.deleteAccount()">Hisobni O'chirish</button>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
+
+            <div id="reportsTab" class="tab-content">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                        <h2 style="color:white; margin:0;">Mening Murojaatlarim</h2>
+                        <input type="text" id="searchInput" placeholder="Qidirish..." style="background:#111827; border:1px solid var(--border); padding:10px 15px; border-radius:10px; color:white; width:250px;">
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Sana</th>
+                                    <th>Muammo Turi</th>
+                                    <th>Manzil</th>
+                                    <th>Status</th>
+                                    <th>ID</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsTableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settingsTab" class="tab-content">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h2 style="color:white; margin-bottom:30px;">Profilni Tahrirlash</h2>
+                        <form id="profileForm">
+                            <div class="avatar-upload">
+                                <img src="logo.png" id="editAvatar" class="avatar-preview">
+                                <div>
+                                    <h4 style="color:white; margin:0 0 5px 0;">Profil Rasmi</h4>
+                                    <p style="color:#9ca3af; font-size:0.8rem; margin-bottom:10px;">JPG, PNG yoki GIF (Max. 2MB)</p>
+                                    <label class="btn-upload">
+                                        Rasm Yuklash
+                                        <input type="file" id="fileInput" hidden accept="image/*">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="input-box">
+                                    <label>To'liq Ism</label>
+                                    <input type="text" id="inputName" class="input-field">
+                                </div>
+                                <div class="input-box">
+                                    <label>Email (O'zgarmas)</label>
+                                    <input type="email" id="inputEmail" class="input-field" disabled style="opacity:0.6; cursor:not-allowed;">
+                                </div>
+                            </div>
+                            
+                            <div class="input-box">
+                                <label>Telefon Raqam</label>
+                                <input type="tel" id="inputPhone" class="input-field" placeholder="+998">
+                            </div>
+
+                            <button type="submit" class="btn-save">O'zgarishlarni Saqlash</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2 style="color:white; margin-bottom:30px;">Xavfsizlik</h2>
+                        <form id="passwordForm">
+                            <div class="input-box">
+                                <label>Yangi Parol</label>
+                                <input type="password" id="newPass" class="input-field" placeholder="******">
+                            </div>
+                            <div class="input-box">
+                                <label>Parolni Tasdiqlash</label>
+                                <input type="password" id="confirmPass" class="input-field" placeholder="******">
+                            </div>
+                            <button type="submit" class="btn-save" style="background:#ef4444;">Parolni Yangilash</button>
+                        </form>
+
+                        <div style="margin-top:40px; padding-top:20px; border-top:1px solid var(--border);">
+                            <h4 style="color:#ef4444; margin-bottom:10px;">Hisobni O'chirish</h4>
+                            <p style="font-size:0.85rem; margin-bottom:15px;">Barcha ma'lumotlaringiz tiklab bo'lmas darajada o'chiriladi.</p>
+                            <button onclick="Profile.deleteAccount()" style="color:#ef4444; font-weight:600; font-size:0.9rem; text-decoration:underline;">Hisobni o'chirish</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
     <script type="module">
-        import { auth, db, collection, getDocs, doc, getDoc, updateDoc, query, where, onAuthStateChanged, signOut, updateProfile, updatePassword, deleteUser } from './firebase-config.js';
+        import { 
+            auth, db, storage, 
+            collection, getDocs, doc, getDoc, updateDoc, query, where, orderBy, 
+            ref, uploadBytes, getDownloadURL, 
+            onAuthStateChanged, signOut, updateProfile, updatePassword, deleteUser 
+        } from './config.js';
 
-        // --- USER APPLICATION ENGINE ---
         class ProfileManager {
             constructor() {
                 this.user = null;
@@ -526,106 +596,118 @@
             }
 
             init() {
+                // Set Date
+                const dateOpts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('currentDate').innerText = new Date().toLocaleDateString('uz-UZ', dateOpts);
+
+                // Auth Listener
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         this.user = user;
-                        this.loadUserData();
-                        this.loadUserReports();
+                        this.loadProfile();
+                        this.loadReports();
                     } else {
                         window.location.href = 'login.html';
                     }
                 });
+
+                // Listeners
+                document.getElementById('fileInput').addEventListener('change', (e) => this.handleAvatar(e));
+                document.getElementById('profileForm').addEventListener('submit', (e) => this.updateInfo(e));
+                document.getElementById('passwordForm').addEventListener('submit', (e) => this.updatePass(e));
+                document.getElementById('searchInput').addEventListener('input', (e) => this.filterReports(e.target.value));
             }
 
-            // --- 1. DATA LOADING ---
-            async loadUserData() {
-                // Auth Profile
-                document.getElementById('displayName').innerText = this.user.displayName || "Foydalanuvchi";
-                document.getElementById('displayEmail').innerText = this.user.email;
-                document.getElementById('editName').value = this.user.displayName || "";
-                document.getElementById('joinDate').innerHTML = `<i class="fa-solid fa-calendar"></i> ${new Date(this.user.metadata.creationTime).toLocaleDateString()}`;
+            // --- DATA LOADING ---
+            async loadProfile() {
+                // UI Updates
+                document.getElementById('miniName').innerText = this.user.displayName || "Foydalanuvchi";
+                document.getElementById('miniEmail').innerText = this.user.email;
+                document.getElementById('inputName').value = this.user.displayName || "";
+                document.getElementById('inputEmail').value = this.user.email;
                 
-                if(this.user.photoURL) {
-                    document.getElementById('displayAvatar').src = this.user.photoURL;
+                if (this.user.photoURL) {
+                    document.getElementById('miniAvatar').src = this.user.photoURL;
+                    document.getElementById('editAvatar').src = this.user.photoURL;
+                } else {
+                    const fallback = `https://ui-avatars.com/api/?name=${this.user.email}&background=random`;
+                    document.getElementById('miniAvatar').src = fallback;
+                    document.getElementById('editAvatar').src = fallback;
                 }
 
-                // Firestore Extra Data
+                // Get Extra Data (Phone)
                 try {
-                    const docSnap = await getDoc(doc(db, "users", this.user.uid));
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if(data.phoneNumber) document.getElementById('editPhone').value = data.phoneNumber;
-                        if(data.bio) document.getElementById('editBio').value = data.bio;
+                    const userSnap = await getDoc(doc(db, "users", this.user.uid));
+                    if(userSnap.exists()) {
+                        const d = userSnap.data();
+                        document.getElementById('inputPhone').value = d.phoneNumber || "";
                     }
-                } catch(e) { console.error("Profile load error", e); }
+                } catch(e) { console.error(e); }
             }
 
-            async loadUserReports() {
+            async loadReports() {
                 try {
-                    const q = query(collection(db, "reports"), where("uid", "==", this.user.uid));
-                    const snapshot = await getDocs(q);
+                    const q = query(
+                        collection(db, "reports"), 
+                        where("uid", "==", this.user.uid), 
+                        orderBy("timestamp", "desc")
+                    );
+                    const snap = await getDocs(q);
                     
                     this.reports = [];
-                    snapshot.forEach(doc => this.reports.push({ id: doc.id, ...doc.data() }));
-                    
-                    // Sort descending
-                    this.reports.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    snap.forEach(d => this.reports.push({ id: d.id, ...d.data() }));
 
                     this.renderStats();
                     this.renderTable(this.reports);
                     this.renderChart();
+                    this.renderActivity();
 
-                } catch (error) {
-                    console.error("Reports Error:", error);
-                    this.showToast("Xatolik", "Ma'lumotlarni yuklashda xato", "error");
+                } catch(e) {
+                    console.error("Data Error:", e);
+                    this.toast('error', "Ma'lumotlarni yuklashda xatolik");
                 }
             }
 
-            // --- 2. RENDERING ---
+            // --- RENDERING ---
             renderStats() {
                 const total = this.reports.length;
                 const solved = this.reports.filter(r => r.status === 'Hal etildi').length;
-                const pending = this.reports.filter(r => r.status === 'Yangi').length;
+                const pending = this.reports.filter(r => r.status === 'Yangi' || r.status === 'Jarayonda').length;
 
-                // Main Stats
-                document.getElementById('statTotal').innerText = total;
-                document.getElementById('statSolved').innerText = solved;
-                document.getElementById('statPending').innerText = pending;
-
-                // Mini Stats (Sidebar)
-                document.getElementById('miniTotal').innerText = total;
-                document.getElementById('miniSolved').innerText = solved;
+                this.animateNum('countTotal', total);
+                this.animateNum('countSolved', solved);
+                this.animateNum('countPending', pending);
             }
 
             renderTable(data) {
                 const tbody = document.getElementById('reportsTableBody');
-                if(data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px;">Hali murojaatlar yo'q</td></tr>`;
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#6b7280;">Hali murojaatlar mavjud emas.</td></tr>`;
                     return;
                 }
 
                 tbody.innerHTML = data.map(r => {
-                    let badge = 'badge-new';
-                    if(r.status === 'Hal etildi') badge = 'badge-solved';
-                    if(r.status === 'Rad etildi') badge = 'badge-rejected';
+                    let badge = 'bg-red';
+                    if (r.status === 'Hal etildi') badge = 'bg-green';
+                    if (r.status === 'Jarayonda') badge = 'bg-yellow';
 
                     return `
                     <tr>
                         <td>${r.date.split(',')[0]}</td>
-                        <td><b>${r.type}</b></td>
-                        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.address}</td>
-                        <td><span class="badge ${badge}">${r.status}</span></td>
-                        <td style="font-family:monospace; color:var(--prof-primary);">#${r.id.slice(0,6)}</td>
+                        <td style="font-weight:600; color:white;">${r.type}</td>
+                        <td style="color:#9ca3af; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.address}</td>
+                        <td><span class="status-badge ${badge}">${r.status}</span></td>
+                        <td style="font-family:monospace; color:#3b82f6;">#${r.id.substring(0,6)}</td>
                     </tr>
                     `;
                 }).join('');
             }
 
             renderChart() {
-                const ctx = document.getElementById('activityChart');
+                const ctx = document.getElementById('activityChart').getContext('2d');
                 
-                // Group by Status
-                const stats = { 'Yangi': 0, 'Hal etildi': 0, 'Rad etildi': 0 };
+                // Group by status
+                const stats = { 'Yangi': 0, 'Jarayonda': 0, 'Hal etildi': 0, 'Rad etildi': 0 };
                 this.reports.forEach(r => { if(stats[r.status] !== undefined) stats[r.status]++; });
 
                 if(this.chart) this.chart.destroy();
@@ -637,83 +719,99 @@
                         datasets: [{
                             label: 'Murojaatlar Soni',
                             data: Object.values(stats),
-                            backgroundColor: ['#f59e0b', '#10b981', '#ef4444'],
-                            borderRadius: 8,
+                            backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#6b7280'],
+                            borderRadius: 6,
                             barThickness: 40
                         }]
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
                         scales: {
-                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                            x: { grid: { display: false } }
                         }
                     }
                 });
             }
 
-            // --- 3. ACTIONS ---
-            async updateProfileInfo(e) {
-                e.preventDefault();
-                const name = document.getElementById('editName').value;
-                const phone = document.getElementById('editPhone').value;
-                const bio = document.getElementById('editBio').value;
+            renderActivity() {
+                const feed = document.getElementById('activityFeed');
+                if(this.reports.length === 0) return;
+
+                feed.innerHTML = this.reports.slice(0, 5).map(r => `
+                    <div style="display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--border);">
+                        <div style="width:36px; height:36px; background:rgba(59,130,246,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#3b82f6;">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+                        <div>
+                            <div style="color:white; font-size:0.9rem;">Yangi murojaat: <b>${r.type}</b></div>
+                            <div style="color:#6b7280; font-size:0.75rem;">${r.date}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // --- ACTIONS ---
+            async handleAvatar(e) {
+                const file = e.target.files[0];
+                if(!file) return;
 
                 try {
-                    // Update Auth
-                    await updateProfile(this.user, { displayName: name });
-                    
-                    // Update Firestore
-                    await updateDoc(doc(db, "users", this.user.uid), {
-                        displayName: name,
-                        phoneNumber: phone,
-                        bio: bio
-                    });
+                    const storageRef = ref(storage, `avatars/${this.user.uid}_${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    const url = await getDownloadURL(storageRef);
 
-                    this.showToast("Saqlandi", "Profil ma'lumotlari yangilandi", "success");
-                    document.getElementById('displayName').innerText = name;
+                    await updateProfile(this.user, { photoURL: url });
+                    this.toast('success', 'Rasm yangilandi!');
+                    this.loadProfile();
                 } catch(err) {
-                    this.showToast("Xato", err.message, "error");
+                    console.error(err);
+                    this.toast('error', 'Rasmni yuklashda xatolik');
                 }
             }
 
-            async updatePassword(e) {
+            async updateInfo(e) {
+                e.preventDefault();
+                const name = document.getElementById('inputName').value;
+                const phone = document.getElementById('inputPhone').value;
+
+                try {
+                    await updateProfile(this.user, { displayName: name });
+                    await updateDoc(doc(db, "users", this.user.uid), {
+                        displayName: name,
+                        phoneNumber: phone
+                    });
+                    this.toast('success', "Profil ma'lumotlari saqlandi");
+                    this.loadProfile();
+                } catch(err) {
+                    this.toast('error', err.message);
+                }
+            }
+
+            async updatePass(e) {
                 e.preventDefault();
                 const p1 = document.getElementById('newPass').value;
                 const p2 = document.getElementById('confirmPass').value;
 
-                if(p1.length < 6) return this.showToast("Xato", "Parol kamida 6 ta belgi bo'lishi kerak", "error");
-                if(p1 !== p2) return this.showToast("Xato", "Parollar mos kelmadi", "error");
+                if(p1.length < 6) return this.toast('error', "Parol kamida 6 ta belgi bo'lishi kerak");
+                if(p1 !== p2) return this.toast('error', "Parollar mos kelmadi");
 
                 try {
                     await updatePassword(this.user, p1);
-                    this.showToast("Muvaffaqiyatli", "Parol o'zgardi. Qayta kiring.", "success");
+                    this.toast('success', "Parol yangilandi. Qayta kiring.");
                     setTimeout(() => this.logout(), 2000);
                 } catch(err) {
-                    this.showToast("Xavfsizlik", "Iltimos, avval tizimdan chiqib, qayta kiring.", "error");
-                }
-            }
-
-            handleAvatarChange(input) {
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        document.getElementById('displayAvatar').src = e.target.result;
-                        // Real app would upload to Firebase Storage here
-                        this.showToast("Rasm", "Avatar yangilandi (Local Preview)", "success");
-                    };
-                    reader.readAsDataURL(input.files[0]);
+                    this.toast('error', "Xatolik: Iltimos, qaytadan tizimga kiring");
                 }
             }
 
             filterReports(term) {
-                const lower = term.toLowerCase();
+                term = term.toLowerCase();
                 const filtered = this.reports.filter(r => 
-                    r.address.toLowerCase().includes(lower) || 
-                    r.type.toLowerCase().includes(lower) ||
-                    r.status.toLowerCase().includes(lower)
+                    r.address.toLowerCase().includes(term) ||
+                    r.type.toLowerCase().includes(term) ||
+                    r.status.toLowerCase().includes(term)
                 );
                 this.renderTable(filtered);
             }
@@ -721,46 +819,71 @@
             async deleteAccount() {
                 if(!confirm("Haqiqatan ham hisobingizni o'chirmoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi!")) return;
                 try {
-                    // Delete from Firestore logic here (optional)
                     await deleteUser(this.user);
                     alert("Hisob o'chirildi.");
-                    window.location.href = "signup.html";
+                    window.location.href = "login.html";
                 } catch(err) {
-                    this.showToast("Xato", "Qayta login qilib urinib ko'ring.", "error");
+                    this.toast('error', "Xatolik: Qayta login qiling");
                 }
             }
 
-            // --- 4. UTILS ---
-            switchTab(tabName, btn) {
-                document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-                document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-                
-                document.getElementById(tabName + 'Tab').classList.add('active');
-                btn.classList.add('active');
+            // --- UTILS ---
+            switchTab(id, el) {
+                document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(d => d.classList.remove('active'));
+                document.getElementById(id+'Tab').classList.add('active');
+                el.classList.add('active');
+                document.getElementById('pageHeading').innerText = el.innerText.trim();
             }
 
-            logout() {
-                signOut(auth).then(() => location.href = "login.html");
+            logout() { signOut(auth).then(() => location.href = 'login.html'); }
+            refreshData() { this.loadReports(); this.toast('success', 'Ma\'lumotlar yangilandi'); }
+
+            animateNum(id, end) {
+                const el = document.getElementById(id);
+                let start = 0;
+                if(end === 0) { el.innerText = 0; return; }
+                const dur = 1000;
+                const step = ts => {
+                    if(!this.startTs) this.startTs = ts;
+                    const prog = Math.min((ts - this.startTs) / dur, 1);
+                    el.innerText = Math.floor(prog * end);
+                    if(prog < 1) requestAnimationFrame(step);
+                    else this.startTs = null;
+                };
+                requestAnimationFrame(step);
             }
 
-            showToast(title, msg, type) {
+            toast(type, msg) {
                 const box = document.getElementById('toastContainer');
                 const t = document.createElement('div');
-                const color = type === 'success' ? '#10b981' : '#ef4444';
-                const icon = type === 'success' ? 'check' : 'triangle-exclamation';
-                
                 t.className = 'toast';
-                t.style.borderLeftColor = color;
+                const color = type === 'success' ? '#10b981' : '#ef4444';
+                t.style.borderLeft = `4px solid ${color}`;
+                t.style.background = '#1f2937';
+                t.style.padding = '16px';
+                t.style.borderRadius = '8px';
+                t.style.color = 'white';
+                t.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
+                t.style.marginBottom = '10px';
+                t.style.display = 'flex';
+                t.style.gap = '10px';
+                t.style.minWidth = '300px';
+                t.style.animation = 'fadeIn 0.3s forwards';
+                
                 t.innerHTML = `
-                    <i class="fa-solid fa-${icon}" style="font-size:1.2rem; color:${color}"></i>
-                    <div><h4 style="margin:0;font-size:0.95rem;">${title}</h4><p style="margin:0;font-size:0.8rem;color:#94a3b8">${msg}</p></div>
+                    <i class="fa-solid fa-${type==='success'?'check':'circle-exclamation'}" style="color:${color};font-size:1.2rem;"></i>
+                    <div><b>${type.toUpperCase()}</b><br><small style="color:#9ca3af">${msg}</small></div>
                 `;
+                
                 box.appendChild(t);
                 setTimeout(() => t.remove(), 3000);
             }
         }
 
-        window.UserApp = new ProfileManager();
+        window.Profile = new ProfileManager();
     </script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </body>
 </html>

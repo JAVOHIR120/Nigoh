@@ -1,356 +1,387 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Nigoh - Jamoatchilik nazorati va shaffoflik platformasi. Muammolarni xabar bering va yechimini kuzating.">
-    <meta name="theme-color" content="#0f172a">
-    <title>Nigoh | Jamoatchilik Nazorati Platformasi</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
+    <title>Nigoh | Jamoatchilik Nazorati Platformasi</title>
+    <meta name="description" content="Korrupsiya va muammolarni anonim xabar qiling. Nigoh - xavfsiz va shaffof jamiyat uchun.">
+    <meta name="keywords" content="nigoh, murojaat, prezidentga murojaat, korrupsiya, yo'l, svet, gaz, muammo">
+    <meta name="author" content="Nigoh Team">
+    <meta name="theme-color" content="#0f172a">
+
+    <meta property="og:title" content="Nigoh - Jamoatchilik Nazorati">
+    <meta property="og:description" content="Muammolarni hal qilishda ishtirok eting. Sizning ovozingiz muhim!">
+    <meta property="og:image" content="https://nigoh.uz/assets/og-image.jpg">
+    <meta property="og:type" content="website">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    
-    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
     <style>
-        /* * ==========================================================================
-         * 1. CORE LANDING VARIABLES
-         * ==========================================================================
-         */
+        /* 1. DESIGN TOKENS */
         :root {
-            /* Landing Palette */
-            --land-bg: #020617;
-            --land-card: rgba(30, 41, 59, 0.7);
-            --land-border: rgba(255, 255, 255, 0.08);
+            /* Core Colors */
+            --bg-body: #020617;
+            --bg-surface: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
             
-            /* Accents */
-            --accent-main: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.4);
-            --accent-secondary: #8b5cf6;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-glow: rgba(59, 130, 246, 0.5);
             
-            /* Status Indicators */
-            --st-success: #10b981;
-            --st-warn: #f59e0b;
-            --st-err: #ef4444;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
             
-            /* Z-Index Layers */
-            --z-back: -1;
-            --z-map: 10;
-            --z-nav: 100;
-            --z-modal: 1000;
-            --z-toast: 2000;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            /* Spacing & Radius */
+            --header-h: 80px;
+            --radius-md: 12px;
+            --radius-lg: 24px;
+            --radius-full: 999px;
+            
+            /* Effects */
+            --glass-bg: rgba(15, 23, 42, 0.85);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+            --glass-blur: blur(12px);
+            --shadow-lg: 0 10px 40px -10px rgba(0,0,0,0.5);
+            
+            /* Animation */
+            --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* * ==========================================================================
-         * 2. LAYOUT & TYPOGRAPHY OVERRIDES
-         * ==========================================================================
-         */
+        /* 2. RESET */
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        html { scroll-behavior: smooth; font-size: 16px; }
         body {
-            background-color: var(--land-bg);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
             overflow-x: hidden;
-            scroll-behavior: smooth;
+            line-height: 1.6;
         }
+        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; color: white; line-height: 1.1; }
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        img { max-width: 100%; display: block; }
+        ul { list-style: none; }
 
-        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-        /* Animated Background */
-        .bg-canvas { position: fixed; inset: 0; z-index: var(--z-back); pointer-events: none; overflow: hidden; }
-        .bg-blob {
-            position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.3;
-            animation: pulseBlob 10s infinite alternate;
+        /* 3. PRELOADER */
+        #preloader {
+            position: fixed; inset: 0; background: var(--bg-body); z-index: 9999;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            transition: opacity 0.5s ease, visibility 0.5s;
         }
-        .blob-1 { width: 800px; height: 800px; background: var(--accent-main); top: -20%; left: -10%; }
-        .blob-2 { width: 600px; height: 600px; background: var(--accent-secondary); bottom: -10%; right: -10%; animation-delay: -5s; }
-        @keyframes pulseBlob { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+        .loader-logo { width: 80px; height: 80px; margin-bottom: 20px; animation: pulse 2s infinite; }
+        .loader-bar { width: 200px; height: 4px; background: #1e293b; border-radius: 4px; overflow: hidden; }
+        .loader-progress { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s; animation: load 2s ease forwards; }
+        
+        @keyframes load { 0% { width: 0%; } 100% { width: 100%; } }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* * ==========================================================================
-         * 3. NAVIGATION BAR (Dynamic)
-         * ==========================================================================
-         */
+        /* 4. BACKGROUND FX */
+        .ambient-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.2; animation: float 20s infinite alternate; }
+        .orb-1 { width: 600px; height: 600px; background: var(--primary); top: -10%; left: -10%; }
+        .orb-2 { width: 500px; height: 500px; background: var(--accent); bottom: -10%; right: -10%; animation-delay: -5s; }
+        @keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(50px, 30px); } }
+
+        /* 5. NAVBAR */
         .navbar {
-            position: fixed; top: 0; left: 0; width: 100%; z-index: var(--z-nav);
-            padding: 20px 0; transition: all 0.3s ease;
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            padding: 20px 0; transition: all 0.3s;
             border-bottom: 1px solid transparent;
         }
         .navbar.scrolled {
-            background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px);
-            padding: 15px 0; border-bottom-color: var(--land-border);
+            background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(16px);
+            padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-
-        .nav-container {
-            max-width: 1280px; margin: 0 auto; padding: 0 24px;
+        .nav-inner {
+            max-width: 1300px; margin: 0 auto; padding: 0 24px;
             display: flex; justify-content: space-between; align-items: center;
         }
 
-        .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-        .brand-logo {
-            width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent-main), var(--accent-secondary));
-            border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 1.2rem; box-shadow: 0 0 15px var(--accent-glow);
+        /* Logo Component */
+        .logo-box { display: flex; align-items: center; gap: 12px; }
+        .logo-img {
+            width: 45px; height: 45px; object-fit: cover; border-radius: 50%;
+            border: 2px solid var(--primary); background: #1e293b;
+            box-shadow: 0 0 15px rgba(59,130,246,0.3);
         }
-        .brand-text { font-size: 1.5rem; font-weight: 700; color: white; }
+        .logo-text {
+            font-size: 1.5rem; font-weight: 700; letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
 
-        .nav-menu { display: flex; align-items: center; gap: 30px; }
+        /* Nav Links */
+        .nav-menu { display: flex; gap: 30px; align-items: center; }
         .nav-link {
             color: var(--text-muted); font-weight: 500; font-size: 0.95rem;
-            transition: 0.2s; position: relative;
+            position: relative; padding: 5px 0;
         }
         .nav-link:hover { color: white; }
         .nav-link::after {
-            content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px;
-            background: var(--accent-main); transition: 0.3s;
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+            background: var(--primary); transition: 0.3s;
         }
         .nav-link:hover::after { width: 100%; }
 
         /* Auth Buttons */
-        .auth-actions { display: flex; align-items: center; gap: 15px; }
-        
-        .btn-login {
-            padding: 10px 24px; border-radius: 50px; font-weight: 600; font-size: 0.9rem;
-            border: 1px solid var(--land-border); background: rgba(255,255,255,0.05);
-            color: white; transition: 0.2s;
+        .btn {
+            padding: 12px 28px; border-radius: 12px; font-weight: 600; cursor: pointer;
+            border: none; display: inline-flex; align-items: center; gap: 8px;
+            transition: all 0.3s var(--ease-smooth); font-size: 1rem;
         }
-        .btn-login:hover { background: white; color: var(--land-bg); }
-
-        .user-dropdown { position: relative; display: none; }
-        .user-dropdown.active { display: block; }
+        .btn-primary {
+            background: var(--primary); color: white;
+            box-shadow: 0 4px 20px rgba(59,130,246,0.4);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,130,246,0.6); background: var(--primary-hover); }
         
-        .user-toggle {
+        .btn-glass {
+            background: rgba(255,255,255,0.05); border: var(--glass-border); color: white;
+        }
+        .btn-glass:hover { background: rgba(255,255,255,0.1); border-color: white; }
+
+        .btn-outline {
+            background: transparent; border: 1px solid var(--primary); color: var(--primary);
+        }
+        .btn-outline:hover { background: rgba(59,130,246,0.1); }
+
+        /* User Profile Widget */
+        .user-widget {
             display: flex; align-items: center; gap: 10px; cursor: pointer;
-            padding: 5px 12px 5px 5px; background: rgba(255,255,255,0.05);
-            border-radius: 50px; border: 1px solid var(--land-border); transition: 0.2s;
+            padding: 6px 16px 6px 6px; background: rgba(255,255,255,0.05);
+            border-radius: 50px; border: var(--glass-border); transition: 0.3s;
         }
-        .user-toggle:hover { background: rgba(255,255,255,0.1); }
+        .user-widget:hover { background: rgba(255,255,255,0.1); border-color: white; }
         .user-avatar {
-            width: 32px; height: 32px; border-radius: 50%; background: var(--accent-main);
-            display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;
+            width: 32px; height: 32px; border-radius: 50%; background: var(--primary);
+            color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;
         }
-        .user-name { font-size: 0.9rem; font-weight: 600; color: white; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-name { font-size: 0.9rem; color: white; font-weight: 600; }
 
-        /* * ==========================================================================
-         * 4. HERO SECTION (Main Visual)
-         * ==========================================================================
-         */
+        /* 6. HERO SECTION */
         .hero {
-            position: relative; padding-top: 140px; padding-bottom: 80px;
-            min-height: 85vh; display: flex; align-items: center;
+            padding-top: 160px; padding-bottom: 100px; position: relative;
+        }
+        .hero-grid {
+            max-width: 1300px; margin: 0 auto; padding: 0 24px;
+            display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 60px; align-items: center;
         }
         
-        .hero-grid {
-            display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 60px;
-            align-items: center; max-width: 1280px; margin: 0 auto; padding: 0 24px;
-        }
-
-        .hero-badge {
+        .badge {
             display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px;
-            background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 20px; color: var(--accent-main); font-size: 0.85rem; font-weight: 600;
+            background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+            color: var(--primary); border-radius: 100px; font-size: 0.85rem; font-weight: 600;
             margin-bottom: 24px;
         }
         
         .hero-title {
-            font-size: 3.5rem; line-height: 1.1; font-weight: 800; color: white; margin-bottom: 24px;
+            font-size: 4rem; margin-bottom: 24px; font-weight: 800;
         }
         .text-gradient {
-            background: linear-gradient(to right, #fff, #94a3b8);
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         
         .hero-desc {
-            font-size: 1.1rem; color: var(--text-muted); line-height: 1.6;
-            margin-bottom: 40px; max-width: 550px;
+            font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px;
+            max-width: 600px; line-height: 1.7;
         }
 
-        .hero-btns { display: flex; gap: 16px; }
-        
-        .btn-primary {
-            padding: 14px 32px; background: var(--accent-main); color: white;
-            border-radius: 12px; font-weight: 600; font-size: 1rem; border: none;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px var(--accent-glow);
-            display: inline-flex; align-items: center; gap: 8px;
-        }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px var(--accent-glow); }
-        
-        .btn-outline {
-            padding: 14px 32px; background: transparent; color: white;
-            border: 1px solid var(--land-border); border-radius: 12px;
-            font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.3s;
-            display: inline-flex; align-items: center; gap: 8px;
-        }
-        .btn-outline:hover { background: rgba(255,255,255,0.05); border-color: white; }
+        .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
 
-        /* Hero Stats Visual */
-        .hero-visual { position: relative; perspective: 1000px; }
-        .glass-card {
-            background: var(--land-card); backdrop-filter: blur(20px);
-            border: 1px solid var(--land-border); border-radius: 24px; padding: 30px;
-            transform: rotateY(-10deg) rotateX(5deg); transition: 0.5s;
+        /* 3D Glass Card */
+        .visual-card {
+            background: var(--bg-card); backdrop-filter: blur(20px);
+            border: var(--glass-border); border-radius: 24px; padding: 40px;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            transform: perspective(1000px) rotateY(-10deg) rotateX(5deg);
+            transition: transform 0.5s ease;
         }
-        .glass-card:hover { transform: rotateY(0) rotateX(0); }
+        .visual-card:hover { transform: perspective(1000px) rotateY(0) rotateX(0); }
 
         .stat-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 0; border-bottom: 1px solid var(--land-border);
+            padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         .stat-row:last-child { border-bottom: none; }
-        
-        .stat-info h3 { font-size: 1.5rem; color: white; margin: 0; }
-        .stat-info p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
-        .stat-icon { font-size: 1.5rem; width: 50px; height: 50px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 12px; }
-
-        /* * ==========================================================================
-         * 5. MAP SECTION (Interactive GIS)
-         * ==========================================================================
-         */
-        .map-section { position: relative; padding: 60px 24px; background: #0b1120; border-top: 1px solid var(--land-border); }
-        
-        .section-header { text-align: center; margin-bottom: 40px; }
-        .section-title { font-size: 2.2rem; color: white; margin-bottom: 10px; }
-        .section-sub { color: var(--text-muted); }
-
-        .map-wrapper {
-            max-width: 1280px; margin: 0 auto; height: 600px;
-            border-radius: 24px; overflow: hidden; border: 1px solid var(--land-border);
-            position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        .stat-val { font-size: 1.8rem; font-weight: 700; color: white; }
+        .stat-label { font-size: 0.9rem; color: var(--text-muted); }
+        .stat-icon {
+            width: 50px; height: 50px; background: rgba(255,255,255,0.05);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
         }
-        
-        #mainMap { width: 100%; height: 100%; background: #1e293b; z-index: 1; }
 
-        /* Custom Map Controls */
-        .map-overlay-stats {
+        /* 7. FEATURES GRID */
+        .features { padding: 100px 24px; background: #0b1120; border-top: var(--glass-border); }
+        .sec-header { text-align: center; max-width: 700px; margin: 0 auto 60px; }
+        .sec-title { font-size: 2.5rem; margin-bottom: 15px; }
+        
+        .feat-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px; max-width: 1300px; margin: 0 auto;
+        }
+        .feat-card {
+            background: #1e293b; padding: 30px; border-radius: 20px;
+            border: var(--glass-border); transition: 0.3s;
+        }
+        .feat-card:hover { transform: translateY(-10px); border-color: var(--primary); }
+        .feat-icon {
+            width: 60px; height: 60px; background: rgba(59,130,246,0.1);
+            border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px; color: var(--primary);
+        }
+
+        /* 8. MAP SECTION */
+        .map-sec { padding: 80px 24px; position: relative; }
+        .map-box {
+            max-width: 1300px; margin: 0 auto; height: 600px;
+            border-radius: 24px; overflow: hidden; border: var(--glass-border);
+            position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        #map { width: 100%; height: 100%; background: #1e293b; z-index: 1; }
+        
+        /* Map Legend */
+        .map-legend {
             position: absolute; top: 20px; right: 20px; z-index: 400;
             background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px);
-            padding: 15px; border-radius: 12px; border: 1px solid var(--land-border);
-            min-width: 200px;
+            padding: 15px; border-radius: 12px; border: var(--glass-border);
         }
-        .overlay-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; color: white; font-size: 0.9rem; }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; color: white; font-size: 0.85rem; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
-        .dot.red { background: var(--st-err); box-shadow: 0 0 8px var(--st-err); }
-        .dot.green { background: var(--st-success); box-shadow: 0 0 8px var(--st-success); }
-        .dot.yellow { background: var(--st-warn); box-shadow: 0 0 8px var(--st-warn); }
 
-        /* * ==========================================================================
-         * 6. MODAL: REPORT FORM (Complex)
-         * ==========================================================================
-         */
-        .modal-overlay {
+        /* 9. MODALS & FORMS */
+        .modal-wrap {
             position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
-            z-index: var(--z-modal); display: none; align-items: center; justify-content: center;
+            z-index: 2000; display: none; align-items: center; justify-content: center;
             opacity: 0; transition: 0.3s;
         }
-        .modal-overlay.active { display: flex; opacity: 1; }
-
+        .modal-wrap.active { opacity: 1; display: flex; }
+        
         .modal-card {
-            background: #1e293b; width: 90%; max-width: 600px; max-height: 90vh;
-            border-radius: 24px; border: 1px solid var(--land-border);
-            display: flex; flex-direction: column; transform: scale(0.95); transition: 0.3s;
+            background: #1e293b; width: 95%; max-width: 550px; border-radius: 24px;
+            border: var(--glass-border); display: flex; flex-direction: column;
+            max-height: 90vh; transform: scale(0.95); transition: 0.3s;
             box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);
         }
-        .modal-overlay.active .modal-card { transform: scale(1); }
+        .modal-wrap.active .modal-card { transform: scale(1); }
 
         .modal-header {
-            padding: 24px; border-bottom: 1px solid var(--land-border);
+            padding: 24px; border-bottom: var(--glass-border); background: rgba(255,255,255,0.02);
             display: flex; justify-content: space-between; align-items: center;
         }
-        .modal-title { font-size: 1.2rem; font-weight: 700; color: white; margin: 0; }
-        
-        .modal-body { padding: 30px; overflow-y: auto; }
+        .modal-body { padding: 24px; overflow-y: auto; }
 
-        /* Form Elements */
         .form-group { margin-bottom: 20px; }
         .form-label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
         .form-input, .form-select, .form-textarea {
-            width: 100%; padding: 12px 16px; background: #334155;
-            border: 1px solid var(--land-border); border-radius: 10px;
-            color: white; font-size: 1rem; transition: 0.2s;
+            width: 100%; padding: 14px; background: #334155; border: var(--glass-border);
+            border-radius: 12px; color: white; font-size: 1rem; transition: 0.2s;
         }
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            border-color: var(--accent-main); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); outline: none;
-        }
+        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59,130,246,0.15); }
 
         .geo-btn {
-            width: 100%; padding: 12px; background: rgba(59, 130, 246, 0.1);
-            border: 1px dashed var(--accent-main); border-radius: 10px;
-            color: var(--accent-main); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: 0.2s; margin-top: 5px;
+            width: 100%; padding: 12px; border: 1px dashed var(--success); color: var(--success);
+            background: rgba(16,185,129,0.1); border-radius: 12px; cursor: pointer; margin-top: 5px;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
         }
-        .geo-btn:hover { background: rgba(59, 130, 246, 0.2); }
-        .geo-status { font-size: 0.8rem; margin-top: 5px; display: none; }
-        .geo-status.success { color: var(--st-success); display: block; }
+        .geo-btn:hover { background: rgba(16,185,129,0.2); }
 
-        .file-drop {
-            border: 2px dashed var(--land-border); padding: 20px; text-align: center;
-            border-radius: 10px; cursor: pointer; transition: 0.2s;
+        .file-upload {
+            border: 2px dashed var(--glass-border); padding: 20px; border-radius: 12px;
+            text-align: center; cursor: pointer; transition: 0.2s;
         }
-        .file-drop:hover { border-color: var(--accent-main); background: rgba(255,255,255,0.02); }
-        .file-text { color: var(--text-muted); font-size: 0.9rem; }
+        .file-upload:hover { border-color: var(--primary); background: rgba(255,255,255,0.02); }
 
-        /* * ==========================================================================
-         * 7. FOOTER & UTILS
-         * ==========================================================================
-         */
-        .footer { padding: 40px 24px; background: #020617; border-top: 1px solid var(--land-border); text-align: center; }
-        .footer-text { color: var(--text-muted); font-size: 0.9rem; }
-
-        /* Toast */
-        .toast-box { position: fixed; top: 20px; right: 20px; z-index: var(--z-toast); display: flex; flex-direction: column; gap: 10px; }
+        /* 10. TOAST NOTIFICATION */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
         .toast {
-            min-width: 300px; padding: 16px; background: #1e293b; border-left: 4px solid;
-            border-radius: 8px; color: white; display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideIn 0.3s;
+            min-width: 320px; padding: 16px; background: #1e293b; border-left: 4px solid;
+            border-radius: 8px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s;
         }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        /* Spinner */
+        /* 11. FOOTER */
+        .footer {
+            background: #020617; padding: 60px 24px 30px; border-top: var(--glass-border); text-align: center;
+        }
+        .footer-logo { font-size: 2rem; font-weight: 700; color: white; margin-bottom: 20px; display: block; }
+        .footer-links { display: flex; justify-content: center; gap: 30px; margin-bottom: 40px; }
+        .footer-copy { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* 12. RESPONSIVE */
+        @media (max-width: 900px) {
+            .hero-grid { grid-template-columns: 1fr; text-align: center; padding-top: 100px; }
+            .hero-actions { justify-content: center; }
+            .visual-card { display: none; }
+            .nav-menu { display: none; }
+            .hero-title { font-size: 2.8rem; }
+        }
+
+        /* SVG Icons */
+        .icon { width: 24px; height: 24px; fill: currentColor; }
         .spinner {
             width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white; border-radius: 50%;
-            animation: spin 0.8s linear infinite; display: none;
+            border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: none;
         }
-        .btn-primary.loading .spinner { display: block; }
-        .btn-primary.loading span, .btn-primary.loading i { display: none; }
+        .btn.loading .spinner { display: block; }
+        .btn.loading span { display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Mobile */
-        @media (max-width: 900px) {
-            .hero-grid { grid-template-columns: 1fr; padding-top: 100px; }
-            .hero-visual { display: none; } /* Hide 3D card on mobile for performance */
-            .nav-menu { display: none; } /* Simplified Nav */
-            .hero-title { font-size: 2.5rem; }
-        }
     </style>
 </head>
 <body>
 
-    <div class="bg-canvas">
-        <div class="bg-blob blob-1"></div>
-        <div class="bg-blob blob-2"></div>
+    <div id="preloader">
+        <div class="loader-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:100%;height:100%;">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </div>
+        <div class="loader-bar"><div class="loader-progress"></div></div>
     </div>
 
-    <div class="toast-box" id="toastContainer"></div>
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="toast-container" id="toastBox"></div>
 
     <nav class="navbar" id="navbar">
-        <div class="nav-container">
-            <a href="#" class="nav-brand">
-                <div class="brand-logo"><i class="fa-solid fa-shield-halved"></i></div>
-                <span class="brand-text">NIGOH</span>
+        <div class="nav-inner">
+            <a href="#" class="logo-box">
+                <img src="logo.png" alt="Nigoh" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display:none; width:45px; height:45px; background:var(--primary); border-radius:50%; text-align:center; line-height:45px; font-weight:bold; color:white;">N</div>
+                <span class="logo-text">NIGOH</span>
             </a>
 
             <div class="nav-menu">
                 <a href="#" class="nav-link">Asosiy</a>
                 <a href="#features" class="nav-link">Imkoniyatlar</a>
                 <a href="#mapSection" class="nav-link">Xarita</a>
-                <a href="#" class="nav-link">Qo'llanma</a>
             </div>
 
-            <div class="auth-actions" id="authBox">
-                <a href="login.html" class="btn-login">Kirish</a>
+            <div id="authBox">
+                <a href="login.html" class="btn btn-glass">Kirish</a>
             </div>
         </div>
     </nav>
@@ -358,132 +389,160 @@
     <section class="hero">
         <div class="hero-grid">
             <div class="hero-content">
-                <div class="hero-badge">
-                    <i class="fa-solid fa-bolt"></i> Jamoatchilik nazorati 2.0
+                <div class="badge">
+                    <svg class="icon" style="width:16px;height:16px;margin-right:5px;" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 6c1.4 0 2.8 1.1 2.8 2.5V11c.6 0 1.2.6 1.2 1.2v3.5c0 .7-.6 1.3-1.2 1.3H9.2c-.6 0-1.2-.6-1.2-1.2v-3.5c0-.7.6-1.2 1.2-1.2V9.5C9.2 8.1 10.6 7 12 7zm0 1c-.8 0-1.5.7-1.5 1.5V11h3V9.5c0-.8-.7-1.5-1.5-1.5z"/></svg>
+                    Xavfsiz & Anonim
                 </div>
                 <h1 class="hero-title">
                     Muammolarga <br>
                     <span class="text-gradient">Tik Boqing</span>
                 </h1>
                 <p class="hero-desc">
-                    Korrupsiya, infratuzilma va qonunbuzarlik holatlarini anonim tarzda xabar bering. 
-                    Biz sizning ovozingizni tegishli joyga yetkazamiz va nazorat qilamiz.
+                    Nigoh — bu jamoatchilik nazoratining yangi bosqichi. Korrupsiya, kommunal va yo'l infratuzilmasidagi muammolarni xabar qiling. Biz har bir murojaatni nazoratga olamiz.
                 </p>
-                <div class="hero-btns">
-                    <button class="btn-primary" onclick="App.openReportModal()">
-                        <i class="fa-solid fa-paper-plane"></i> Xabar Berish
+                <div class="hero-actions">
+                    <button class="btn btn-primary" onclick="App.openModal()">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        Murojaat Yuborish
                     </button>
-                    <button class="btn-outline" onclick="document.getElementById('mapSection').scrollIntoView()">
-                        <i class="fa-solid fa-map"></i> Xaritani Ko'rish
+                    <button class="btn btn-outline" onclick="document.getElementById('mapSection').scrollIntoView()">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+                        Xaritada Ko'rish
                     </button>
                 </div>
             </div>
 
-            <div class="hero-visual">
-                <div class="glass-card">
-                    <div class="stat-row">
-                        <div class="stat-info">
-                            <h3 id="liveTotal">0+</h3>
-                            <p>Jami Murojaatlar</p>
-                        </div>
-                        <div class="stat-icon" style="color:#3b82f6"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="visual-card">
+                <div class="stat-row">
+                    <div>
+                        <h3 class="stat-val" id="liveTotal">0</h3>
+                        <p class="stat-label">Jami Murojaatlar</p>
                     </div>
-                    <div class="stat-row">
-                        <div class="stat-info">
-                            <h3 id="liveSolved" style="color:#10b981">0%</h3>
-                            <p>Hal Etilgan</p>
-                        </div>
-                        <div class="stat-icon" style="color:#10b981"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="stat-icon" style="background:rgba(59,130,246,0.2); color:#3b82f6;">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
                     </div>
-                    <div class="stat-row">
-                        <div class="stat-info">
-                            <h3>24/7</h3>
-                            <p>Monitoring Tizimi</p>
-                        </div>
-                        <div class="stat-icon" style="color:#f59e0b"><i class="fa-solid fa-video"></i></div>
+                </div>
+                <div class="stat-row">
+                    <div>
+                        <h3 class="stat-val" id="liveSolved" style="color:#10b981">0%</h3>
+                        <p class="stat-label">Hal Etilgan</p>
+                    </div>
+                    <div class="stat-icon" style="background:rgba(16,185,129,0.2); color:#10b981;">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    </div>
+                </div>
+                <div class="stat-row">
+                    <div>
+                        <h3 class="stat-val">24/7</h3>
+                        <p class="stat-label">Monitoring Tizimi</p>
+                    </div>
+                    <div class="stat-icon" style="background:rgba(245,158,11,0.2); color:#f59e0b;">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="map-section" id="mapSection">
-        <div class="section-header">
-            <h2 class="section-title">Muammolar Xaritasi</h2>
-            <p class="section-sub">Real vaqt rejimida kelib tushayotgan murojaatlar va ularning holati</p>
+    <section class="features" id="features">
+        <div class="sec-header">
+            <h2 class="sec-title">Imkoniyatlar</h2>
+            <p style="color:#94a3b8;">Nega aynan Nigoh platformasidan foydalanish kerak?</p>
         </div>
+        <div class="feat-grid">
+            <div class="feat-card">
+                <div class="feat-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div>
+                <h3>To'liq Anonimlik</h3>
+                <p>Sizning shaxsingiz sir saqlanadi. Ma'lumotlaringiz shifrlangan holda uzatiladi.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon" style="color:#f59e0b; background:rgba(245,158,11,0.1);"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.2 14.2L11 13V7h1.5v5.2l4.5 2.7-.8 1.3z"/></svg></div>
+                <h3>Tezkor Reaksiya</h3>
+                <p>Murojaatlar avtomatik tarzda tegishli tashkilotlarga va nazorat organlariga yuboriladi.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon" style="color:#10b981; background:rgba(16,185,129,0.1);"><svg class="icon" viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg></div>
+                <h3>Xarita Nazorati</h3>
+                <p>Barcha muammolar yagona interaktiv xaritada aks ettiriladi va ochiq ko'rinadi.</p>
+            </div>
+        </div>
+    </section>
 
-        <div class="map-wrapper">
-            <div id="mainMap"></div>
+    <section class="map-sec" id="mapSection">
+        <div class="sec-header">
+            <h2 class="sec-title">Muammolar Xaritasi</h2>
+            <p style="color:#94a3b8;">Respublika bo'ylab real vaqt rejimidagi holat</p>
+        </div>
+        
+        <div class="map-box">
+            <div id="map"></div>
             
-            <div class="map-overlay-stats">
-                <div class="overlay-item">
-                    <div class="dot red"></div> <span>Yangi / Muammo</span>
-                </div>
-                <div class="overlay-item">
-                    <div class="dot yellow"></div> <span>Jarayonda</span>
-                </div>
-                <div class="overlay-item">
-                    <div class="dot green"></div> <span>Hal Etilgan</span>
-                </div>
+            <div class="map-legend">
+                <div class="legend-item"><span class="dot" style="background:#ef4444;"></span> Yangi</div>
+                <div class="legend-item"><span class="dot" style="background:#f59e0b;"></span> Jarayonda</div>
+                <div class="legend-item"><span class="dot" style="background:#10b981;"></span> Hal Etilgan</div>
             </div>
         </div>
     </section>
 
     <footer class="footer">
-        <p class="footer-text">&copy; 2026 Nigoh Loyihasi. Barcha huquqlar himoyalangan.</p>
+        <a href="#" class="footer-logo">NIGOH</a>
+        <div class="footer-links">
+            <a href="#">Loyiha haqida</a>
+            <a href="#">Maxfiylik siyosati</a>
+            <a href="#">Aloqa</a>
+        </div>
+        <p class="footer-copy">&copy; 2026 Nigoh Loyihasi. Barcha huquqlar himoyalangan.</p>
     </footer>
 
-    <div class="modal-overlay" id="reportModal">
+    <div class="modal-wrap" id="reportModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3 class="modal-title">Murojaat Yuborish</h3>
-                <button onclick="App.closeReportModal()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+                <h3>Murojaat Yuborish</h3>
+                <button onclick="App.closeModal()" style="font-size:1.5rem; color:#94a3b8;">&times;</button>
             </div>
-            
             <div class="modal-body">
                 <form id="reportForm">
                     <div class="form-group">
                         <label class="form-label">Muammo Turi</label>
                         <select id="rType" class="form-select" required>
                             <option value="" disabled selected>Tanlang...</option>
-                            <option value="Infratuzilma">🏗️ Yo'l va Infratuzilma</option>
-                            <option value="Kommunal">💡 Gaz, Svet, Suv</option>
-                            <option value="Korrupsiya">💰 Korrupsiya holati</option>
-                            <option value="Ekologiya">🌳 Ekologiya buzilishi</option>
-                            <option value="Boshqa">📝 Boshqa</option>
+                            <option value="Yo'l">Yo'l va Infratuzilma</option>
+                            <option value="Kommunal">Elektr / Gaz / Suv</option>
+                            <option value="Korrupsiya">Korrupsiya va Pora</option>
+                            <option value="Ekologiya">Ekologiya va Chiqindi</option>
+                            <option value="Boshqa">Boshqa</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Tavsif (Batafsil)</label>
+                        <label class="form-label">Manzil</label>
+                        <input type="text" id="rAddress" class="form-input" placeholder="Aniq manzil yoki mo'ljal" required>
+                        <div class="geo-btn" onclick="App.getGeoLocation()">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+                            GPS Orqali Aniqlash
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Batafsil Tavsif</label>
                         <textarea id="rDesc" class="form-textarea" rows="4" placeholder="Muammo haqida to'liq yozing..." required></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Manzil</label>
-                        <input type="text" id="rAddress" class="form-input" placeholder="Mo'ljal yoki aniq manzil" required>
-                        
-                        <div class="geo-btn" onclick="App.getGeoLocation()">
-                            <i class="fa-solid fa-location-crosshairs"></i> GPS orqali aniqlash
-                        </div>
-                        <div class="geo-status" id="geoStatus"><i class="fa-solid fa-check"></i> Joylashuv aniqlandi!</div>
-                        <input type="hidden" id="rLat">
-                        <input type="hidden" id="rLng">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Fayl yuklash (Rasm/Video)</label>
-                        <label class="file-drop">
-                            <input type="file" id="rFile" hidden accept="image/*,video/*">
-                            <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem; color:var(--accent-main); margin-bottom:10px;"></i>
-                            <div class="file-text" id="fileName">Faylni tanlash (Ixtiyoriy)</div>
+                        <label class="form-label">Fayl Yuklash (Ixtiyoriy)</label>
+                        <label class="file-upload">
+                            <input type="file" id="rFile" accept="image/*" hidden>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+                                <svg class="icon" style="width:32px; height:32px; color:var(--primary);" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                                <span id="fileName" style="color:var(--text-muted); font-size:0.9rem;">Rasm yuklash uchun bosing</span>
+                            </div>
                         </label>
                     </div>
 
-                    <button type="submit" class="btn-primary" style="width:100%; justify-content:center;" id="submitBtn">
+                    <button type="submit" id="submitBtn" class="btn btn-primary" style="width:100%;">
                         <span class="spinner"></span>
-                        <span><i class="fa-solid fa-paper-plane"></i> Yuborish</span>
+                        <span>Yuborish</span>
                     </button>
                 </form>
             </div>
@@ -491,250 +550,202 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script> <script type="module">
-        import { auth, db, collection, addDoc, getDocs, onAuthStateChanged, signOut, query, orderBy } from './firebase-config.js';
+    <script type="module">
+        import { auth, db, storage, collection, addDoc, getDocs, query, orderBy, onAuthStateChanged, ref, uploadBytes, getDownloadURL, sendTelegramNotification } from './config.js';
 
-        // --- ENTERPRISE APP ENGINE ---
+        // --- CORE APPLICATION ENGINE ---
         class NigohApp {
             constructor() {
                 this.user = null;
                 this.map = null;
-                this.markers = [];
-                this.reports = [];
-                
+                this.isAdmin = false;
                 this.init();
             }
 
             init() {
-                // 1. Navbar Scroll Effect
+                // Preloader off
+                window.onload = () => document.getElementById('preloader').style.opacity = '0';
+                setTimeout(() => document.getElementById('preloader').style.display='none', 500);
+
+                // Navbar Scroll
                 window.addEventListener('scroll', () => {
                     const nav = document.getElementById('navbar');
                     if(window.scrollY > 50) nav.classList.add('scrolled');
                     else nav.classList.remove('scrolled');
                 });
 
-                // 2. Auth Listener
+                // Auth Listener
                 onAuthStateChanged(auth, (user) => {
                     this.user = user;
-                    this.updateAuthUI();
+                    this.isAdmin = (user?.email === "islomovjavohir939@gmail.com");
+                    this.updateUI();
                 });
 
-                // 3. Initialize Map
+                // Map & Data
                 this.initMap();
+                this.loadData();
 
-                // 4. Load Data
-                this.loadReports();
-
-                // 5. Form Handler
-                document.getElementById('reportForm').addEventListener('submit', (e) => this.handleReportSubmit(e));
+                // Events
+                document.getElementById('reportForm').addEventListener('submit', (e) => this.submitReport(e));
+                document.getElementById('rFile').addEventListener('change', (e) => {
+                    if(e.target.files[0]) document.getElementById('fileName').innerText = e.target.files[0].name;
+                });
             }
 
-            updateAuthUI() {
+            updateUI() {
                 const box = document.getElementById('authBox');
                 if (this.user) {
+                    const adminBtn = this.isAdmin ? 
+                        `<a href="admin.html" class="btn btn-primary" style="background:#f59e0b; margin-right:10px;">Admin</a>` : '';
+                    
                     box.innerHTML = `
-                        <div class="user-dropdown active">
-                            <div class="user-toggle" onclick="location.href='profile.html'">
-                                <div class="user-avatar">${(this.user.displayName||'U').charAt(0).toUpperCase()}</div>
-                                <span class="user-name">${this.user.displayName || 'Foydalanuvchi'}</span>
-                            </div>
+                        ${adminBtn}
+                        <div class="user-widget" onclick="location.href='profile.html'">
+                            <div class="user-avatar">${this.user.email[0].toUpperCase()}</div>
+                            <span class="user-name">Profil</span>
                         </div>
                     `;
                 } else {
-                    box.innerHTML = `<a href="login.html" class="btn-login">Kirish</a>`;
+                    box.innerHTML = `<a href="login.html" class="btn btn-glass">Kirish</a>`;
                 }
             }
 
-            // --- MAP SYSTEM ---
             initMap() {
-                // Default: Tashkent Center (Fallback)
-                this.map = L.map('mainMap').setView([41.311, 69.240], 12);
-                
-                // Dark Theme Tiles
+                this.map = L.map('map').setView([41.311, 69.240], 12);
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; OpenStreetMap & CARTO',
-                    maxZoom: 19
+                    attribution: '© OpenStreetMap & CARTO'
                 }).addTo(this.map);
             }
 
-            async loadReports() {
+            async loadData() {
                 try {
-                    const q = query(collection(db, "reports")); // Real app would use limits
+                    const q = query(collection(db, "reports"), orderBy("timestamp", "desc"));
                     const snapshot = await getDocs(q);
-                    
-                    this.reports = [];
-                    let solvedCount = 0;
+                    let total = 0;
+                    let solved = 0;
 
                     snapshot.forEach(doc => {
-                        const data = doc.data();
-                        this.reports.push(data);
-                        if(data.status === 'Hal etildi') solvedCount++;
-                        
-                        // Add Marker
-                        if(data.latitude && data.longitude) {
-                            this.addMarker(data);
-                        }
+                        const d = doc.data();
+                        total++;
+                        if(d.status === 'Hal etildi') solved++;
+                        if(d.latitude && d.longitude) this.addMarker(d);
                     });
 
                     // Update Stats
-                    this.animateStats(this.reports.length, solvedCount);
+                    document.getElementById('liveTotal').innerText = total + "+";
+                    document.getElementById('liveSolved').innerText = total > 0 ? Math.round((solved/total)*100) + "%" : "0%";
 
-                } catch (e) {
-                    console.error("Map Data Error:", e);
-                }
+                } catch(e) { console.error("Data Load Error:", e); }
             }
 
-            addMarker(data) {
-                let color = '#ef4444'; // Red
-                if(data.status === 'Hal etildi') color = '#10b981'; // Green
-                if(data.status === 'Jarayonda') color = '#f59e0b'; // Yellow
+            addMarker(d) {
+                let color = '#ef4444';
+                if(d.status === 'Jarayonda') color = '#f59e0b';
+                if(d.status === 'Hal etildi') color = '#10b981';
 
-                // Custom Pulse Icon
-                const customIcon = L.divIcon({
-                    className: 'custom-map-icon',
-                    html: `<div style="
-                        width: 12px; height: 12px; background: ${color}; 
-                        border-radius: 50%; box-shadow: 0 0 10px ${color};
-                        border: 2px solid white;"></div>`,
-                    iconSize: [12, 12]
+                const icon = L.divIcon({
+                    className: 'custom-pin',
+                    html: `<div style="width:14px;height:14px;background:${color};border-radius:50%;border:2px solid white;box-shadow:0 0 10px ${color}"></div>`,
+                    iconSize: [14, 14]
                 });
 
-                const marker = L.marker([data.latitude, data.longitude], {icon: customIcon}).addTo(this.map);
-                
-                marker.bindPopup(`
-                    <div style="font-family:'Inter'; min-width:200px;">
-                        <b style="color:${color}; text-transform:uppercase; font-size:0.8rem;">${data.type}</b>
-                        <p style="margin:5px 0; font-size:0.9rem; color:#333;">${data.description.substring(0,80)}...</p>
-                        <small style="color:#666;">${data.date?.split(',')[0] || ''}</small>
-                    </div>
-                `);
-            }
-
-            // --- REPORT SUBMISSION ---
-            openReportModal() {
-                if(!this.user) {
-                    this.showToast('warning', 'Diqqat', 'Xabar yuborish uchun tizimga kiring!');
-                    setTimeout(() => location.href = 'login.html', 1500);
-                    return;
-                }
-                document.getElementById('reportModal').classList.add('active');
-            }
-
-            closeReportModal() {
-                document.getElementById('reportModal').classList.remove('active');
+                L.marker([d.latitude, d.longitude], {icon: icon})
+                 .addTo(this.map)
+                 .bindPopup(`<b style="color:#0f172a">${d.type}</b><br>${d.description.substring(0,50)}...`);
             }
 
             getGeoLocation() {
-                const btn = document.querySelector('.geo-btn');
-                const status = document.getElementById('geoStatus');
-                
-                if (navigator.geolocation) {
-                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Aniqlanmoqda...';
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                            const { latitude, longitude } = pos.coords;
-                            document.getElementById('rLat').value = latitude;
-                            document.getElementById('rLng').value = longitude;
-                            document.getElementById('rAddress').value = `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-                            
-                            btn.innerHTML = '<i class="fa-solid fa-check"></i> Qayta aniqlash';
-                            status.classList.add('success');
-                            this.showToast('success', 'Joylashuv', 'Koordinatalar aniqlandi!');
-                        },
-                        (err) => {
-                            btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Xatolik';
-                            this.showToast('error', 'Xatolik', 'GPS ruxsati berilmadi.');
-                        }
-                    );
-                } else {
-                    this.showToast('error', 'Xato', 'Brauzer GPS ni qo\'llamaydi.');
-                }
+                if(navigator.geolocation) {
+                    const btn = document.querySelector('.geo-btn');
+                    btn.innerHTML = 'Aniqlanmoqda...';
+                    navigator.geolocation.getCurrentPosition((pos) => {
+                        const {latitude, longitude} = pos.coords;
+                        document.getElementById('rAddress').value = `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                        btn.innerHTML = '✅ Joylashuv Aniqlandi';
+                        this.toast('success', 'Koordinatalar olindi');
+                    }, () => {
+                        btn.innerHTML = 'Xatolik';
+                        this.toast('error', 'GPS ruxsati berilmadi');
+                    });
+                } else { alert("GPS qo'llab quvvatlanmaydi"); }
             }
 
-            async handleReportSubmit(e) {
+            async submitReport(e) {
                 e.preventDefault();
+                if(!this.user) {
+                    this.toast('warning', 'Iltimos, avval tizimga kiring');
+                    setTimeout(() => location.href='login.html', 1500);
+                    return;
+                }
+
                 const btn = document.getElementById('submitBtn');
-                
-                // Form Data
-                const type = document.getElementById('rType').value;
-                const desc = document.getElementById('rDesc').value;
-                const addr = document.getElementById('rAddress').value;
-                const lat = document.getElementById('rLat').value;
-                const lng = document.getElementById('rLng').value;
-
-                if(!type || !desc || !addr) return this.showToast('warning', 'Xato', 'Barcha maydonlarni to\'ldiring');
-
-                // Loading
                 btn.classList.add('loading');
                 btn.disabled = true;
 
+                const type = document.getElementById('rType').value;
+                const address = document.getElementById('rAddress').value;
+                const desc = document.getElementById('rDesc').value;
+                const fileInput = document.getElementById('rFile');
+                
                 try {
-                    await addDoc(collection(db, "reports"), {
+                    let imageUrl = null;
+                    if(fileInput.files[0]) {
+                        const file = fileInput.files[0];
+                        const sRef = ref(storage, `reports/${Date.now()}_${file.name}`);
+                        await uploadBytes(sRef, file);
+                        imageUrl = await getDownloadURL(sRef);
+                    }
+
+                    const reportData = {
                         uid: this.user.uid,
                         email: this.user.email,
-                        type: type,
-                        description: desc,
-                        address: addr,
-                        latitude: lat ? parseFloat(lat) : null,
-                        longitude: lng ? parseFloat(lng) : null,
+                        type, address, description: desc,
+                        imageUrl,
                         status: "Yangi",
                         date: new Date().toLocaleString('uz-UZ'),
-                        timestamp: new Date()
+                        timestamp: new Date(),
+                        latitude: address.includes('GPS') ? parseFloat(address.split(':')[1].split(',')[0]) : 41.311,
+                        longitude: address.includes('GPS') ? parseFloat(address.split(',')[1]) : 69.240
+                    };
+
+                    await addDoc(collection(db, "reports"), reportData);
+
+                    // TELEGRAM NOTIFICATION
+                    await sendTelegramNotification({
+                        ...reportData,
+                        userEmail: this.user.email,
+                        mapLink: `https://www.google.com/maps?q=${reportData.latitude},${reportData.longitude}`,
+                        imageFile: fileInput.files[0]
                     });
 
-                    this.showToast('success', 'Muvaffaqiyatli', 'Murojaatingiz qabul qilindi!');
+                    this.toast('success', 'Murojaat Yuborildi!');
+                    this.closeModal();
                     document.getElementById('reportForm').reset();
-                    this.closeReportModal();
-                    
-                    // Refresh Map
-                    this.loadReports();
+                    this.loadData();
 
-                } catch (error) {
-                    console.error(error);
-                    this.showToast('error', 'Xatolik', 'Serverga ulanishda xato.');
+                } catch(err) {
+                    console.error(err);
+                    this.toast('error', 'Xatolik yuz berdi');
                 } finally {
                     btn.classList.remove('loading');
                     btn.disabled = false;
                 }
             }
 
-            // --- UTILS ---
-            animateStats(total, solved) {
-                const percent = total > 0 ? Math.round((solved / total) * 100) : 0;
-                
-                // Simple Counter Animation
-                const tEl = document.getElementById('liveTotal');
-                const sEl = document.getElementById('liveSolved');
-                tEl.innerText = total + "+";
-                sEl.innerText = percent + "%";
-            }
+            openModal() { document.getElementById('reportModal').style.display = 'flex'; }
+            closeModal() { document.getElementById('reportModal').style.display = 'none'; }
 
-            showToast(type, title, msg) {
-                const box = document.getElementById('toastContainer');
+            toast(type, msg) {
+                const box = document.getElementById('toastBox');
                 const t = document.createElement('div');
                 t.className = 'toast';
-                const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b' };
-                const icons = { success: 'check', error: 'circle-xmark', warning: 'triangle-exclamation' };
-                
-                t.style.borderLeftColor = colors[type];
-                t.innerHTML = `
-                    <i class="fa-solid fa-${icons[type]}" style="color:${colors[type]}; font-size:1.2rem;"></i>
-                    <div><h4 style="margin:0;font-size:0.9rem;">${title}</h4><p style="margin:0;font-size:0.8rem;opacity:0.8">${msg}</p></div>
-                `;
+                t.style.borderLeftColor = type === 'success' ? '#10b981' : (type === 'warning' ? '#f59e0b' : '#ef4444');
+                t.innerHTML = `<span>${msg}</span>`;
                 box.appendChild(t);
-                setTimeout(() => t.remove(), 3000);
+                setTimeout(() => t.remove(), 4000);
             }
         }
 
-        // File Input Change
-        document.getElementById('rFile').addEventListener('change', function() {
-            if(this.files.length > 0) {
-                document.getElementById('fileName').innerText = this.files[0].name;
-                document.querySelector('.file-drop').style.borderColor = '#3b82f6';
-            }
-        });
-
-        // Initialize Global App
         window.App = new NigohApp();
     </script>
 </body>
