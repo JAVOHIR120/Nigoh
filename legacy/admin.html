@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nigoh | Admin Boshqaruv Markazi</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        :root {
+            --adm-sidebar-w: 280px;
+            --adm-bg: #0b1120;
+            --adm-panel: #1f2937;
+            --adm-border: rgba(255, 255, 255, 0.08);
+            --adm-primary: #6366f1;
+        }
+
+        body {
+            background-color: var(--adm-bg);
+            overflow: hidden; /* Scroll faqat content qismida bo'ladi */
+            display: flex;
+            height: 100vh;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--adm-sidebar-w);
+            background: #111827;
+            border-right: 1px solid var(--adm-border);
+            display: flex; flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50; position: relative;
+        }
+
+        .sidebar-brand {
+            height: 80px; display: flex; align-items: center; padding: 0 24px;
+            border-bottom: 1px solid var(--adm-border); gap: 12px;
+        }
+        .brand-logo {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--adm-primary), #4338ca);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: white; box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+        .brand-name h3 { margin: 0; font-size: 1.2rem; color: white; }
+        .brand-name p { margin: 0; font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; }
+
+        .nav-menu { flex: 1; padding: 24px 16px; overflow-y: auto; }
+        .nav-group { margin-bottom: 20px; }
+        .nav-label { font-size: 0.75rem; text-transform: uppercase; color: #6b7280; font-weight: 700; margin-bottom: 10px; padding-left: 12px; }
+        
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; border-radius: 12px;
+            color: #9ca3af; font-weight: 500; cursor: pointer;
+            transition: 0.2s; margin-bottom: 4px;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(99, 102, 241, 0.15); color: var(--adm-primary); font-weight: 600; }
+        .nav-item i { width: 20px; text-align: center; }
+
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--adm-border); }
+        .admin-profile { display: flex; align-items: center; gap: 12px; }
+        .admin-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--adm-panel); border: 2px solid var(--adm-primary); }
+        .admin-info h4 { margin: 0; font-size: 0.9rem; color: white; }
+        .admin-info p { margin: 0; font-size: 0.75rem; color: #9ca3af; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1; display: flex; flex-direction: column;
+            overflow: hidden; background: radial-gradient(circle at top right, #1e1b4b 0%, var(--adm-bg) 40%);
+        }
+
+        .top-header {
+            height: 80px; border-bottom: 1px solid var(--adm-border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; background: rgba(11, 17, 32, 0.8); backdrop-filter: blur(12px);
+        }
+        .page-title h1 { margin: 0; font-size: 1.5rem; }
+        .page-title p { margin: 0; font-size: 0.85rem; color: #9ca3af; }
+
+        .header-actions { display: flex; align-items: center; gap: 16px; }
+        .action-btn {
+            width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--adm-border);
+            background: var(--adm-panel); color: #9ca3af; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; position: relative;
+        }
+        .action-btn:hover { border-color: var(--adm-primary); color: white; }
+        .badge-dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
+
+        .logout-btn {
+            padding: 8px 16px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .logout-btn:hover { background: #ef4444; color: white; }
+
+        /* --- SCROLL AREA --- */
+        .content-scroll { flex: 1; overflow-y: auto; padding: 32px; }
+        
+        .view-section { display: none; animation: fadeIn 0.4s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- DASHBOARD CARDS --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 30px; }
+        .stat-card {
+            background: var(--adm-panel); border: 1px solid var(--adm-border);
+            border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--adm-primary); }
+        
+        .stat-bg { position: absolute; right: -10px; top: -10px; font-size: 6rem; opacity: 0.05; transform: rotate(15deg); color: white; }
+        .stat-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .stat-value { font-size: 2.2rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 5px; }
+        .stat-label { font-size: 0.9rem; color: #9ca3af; }
+
+        /* --- CHARTS --- */
+        .charts-wrapper { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 30px; }
+        .chart-card {
+            background: var(--adm-panel); border: 1px solid var(--adm-border);
+            border-radius: 16px; padding: 24px; height: 400px; display: flex; flex-direction: column;
+        }
+        .chart-head h3 { margin: 0; font-size: 1.1rem; color: white; }
+
+        /* --- DATATABLE --- */
+        .table-card {
+            background: var(--adm-panel); border: 1px solid var(--adm-border);
+            border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+        }
+        .table-toolbar {
+            padding: 20px 24px; border-bottom: 1px solid var(--adm-border);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+        }
+        
+        .search-box { position: relative; width: 300px; }
+        .search-input {
+            width: 100%; padding: 10px 16px 10px 40px; background: #111827;
+            border: 1px solid var(--adm-border); border-radius: 10px; color: white; transition: 0.2s;
+        }
+        .search-input:focus { border-color: var(--adm-primary); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #6b7280; }
+
+        .filter-group { display: flex; gap: 10px; }
+        .filter-select {
+            padding: 10px; background: #111827; border: 1px solid var(--adm-border);
+            border-radius: 10px; color: white; cursor: pointer;
+        }
+        .btn-export {
+            padding: 10px 20px; background: var(--adm-primary); color: white; border: none;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;
+        }
+
+        .data-table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        .data-table th {
+            text-align: left; padding: 16px 24px; background: rgba(0,0,0,0.2);
+            color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;
+            border-bottom: 1px solid var(--adm-border);
+        }
+        .data-table td {
+            padding: 16px 24px; border-bottom: 1px solid var(--adm-border);
+            color: #f3f4f6; font-size: 0.9rem; vertical-align: middle;
+        }
+        .data-table tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* Badges */
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; border: 1px solid transparent; }
+        .s-new { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.2); }
+        .s-solved { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
+        .s-rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
+
+        /* Actions */
+        .btn-icon {
+            width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--adm-border);
+            background: transparent; color: #9ca3af; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-view:hover { border-color: var(--adm-primary); color: var(--adm-primary); background: rgba(99, 102, 241, 0.1); }
+        .btn-del:hover { border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+        /* --- MODAL (DETAILS) --- */
+        .modal-wrap {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s;
+        }
+        .modal-wrap.active { display: flex; opacity: 1; }
+        
+        .modal-xl {
+            background: var(--adm-panel); width: 90%; max-width: 900px; height: 85vh;
+            border-radius: 20px; border: 1px solid var(--adm-border); display: flex; flex-direction: column;
+            transform: scale(0.95); transition: 0.3s; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        .modal-wrap.active .modal-xl { transform: scale(1); }
+
+        .modal-body { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; }
+        .map-col { background: #111; min-height: 400px; position: relative; }
+        #detailMap { width: 100%; height: 100%; z-index: 1; }
+        
+        .info-col { padding: 30px; display: flex; flex-direction: column; gap: 20px; border-left: 1px solid var(--adm-border); }
+        .info-group label { font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .info-group p { font-size: 1rem; color: white; margin: 0; line-height: 1.5; }
+        .desc-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; border: 1px solid var(--adm-border); }
+
+        .modal-actions { padding: 20px; border-top: 1px solid var(--adm-border); display: flex; justify-content: flex-end; gap: 15px; background: rgba(255,255,255,0.02); }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .charts-wrapper { grid-template-columns: 1fr; }
+            .modal-body { grid-template-columns: 1fr; }
+            .map-col { height: 300px; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; transform: translateX(-100%); height: 100%; }
+            .sidebar.active { transform: translateX(0); }
+            .mobile-toggle { display: block !important; }
+        }
+        .mobile-toggle { display: none; font-size: 1.5rem; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="brand-name">
+                <h3>NIGOH</h3>
+                <p>Admin Panel v5.0</p>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <div class="nav-group">
+                <div class="nav-label">Asosiy</div>
+                <div class="nav-item active" onclick="Admin.switchView('dashboard', this)">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </div>
+            </div>
+            
+            <div class="nav-group">
+                <div class="nav-label">Ma'lumotlar</div>
+                <div class="nav-item" onclick="Admin.switchView('reports', this)">
+                    <i class="fa-solid fa-inbox"></i> Murojaatlar
+                    <span id="badgePending" style="margin-left:auto; background:#f59e0b; color:black; font-size:0.7rem; padding:2px 6px; border-radius:4px; display:none;">0</span>
+                </div>
+                <div class="nav-item" onclick="Admin.switchView('users', this)">
+                    <i class="fa-solid fa-users"></i> Foydalanuvchilar
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label">Tizim</div>
+                <div class="nav-item" onclick="Admin.switchView('settings', this)">
+                    <i class="fa-solid fa-gear"></i> Sozlamalar
+                </div>
+                <a href="index.html" class="nav-item">
+                    <i class="fa-solid fa-globe"></i> Saytga Qaytish
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-profile">
+                <img src="logo.png" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=random'" class="admin-avatar">
+                <div class="admin-info">
+                    <h4 id="adminNameDisplay">Admin</h4>
+                    <p id="adminEmailDisplay">loading...</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+                <div class="page-title">
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <p id="currentDate">Tizim yuklanmoqda...</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="action-btn" title="Yangilash" onclick="Admin.refresh()">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+                <button class="logout-btn" onclick="Admin.logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Chiqish
+                </button>
+            </div>
+        </header>
+
+        <div class="content-scroll">
+            
+            <div id="dashboardView" class="view-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fa-solid fa-layer-group stat-bg"></i>
+                        <div class="stat-header">
+                            <div class="stat-icon" style="background:rgba(99,102,241,0.1); color:#6366f1;">
+                                <i class="fa-solid fa-folder-open"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="countTotal">0</div>
+                        <div class="stat-label">Jami Murojaatlar</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-check-circle stat-bg"></i>
+                        <div class="stat-header">
+                            <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="countSolved">0</div>
+                        <div class="stat-label">Hal Etilgan</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-clock stat-bg"></i>
+                        <div class="stat-header">
+                            <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:#f59e0b;">
+                                <i class="fa-solid fa-hourglass-half"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="countPending">0</div>
+                        <div class="stat-label">Jarayonda</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-users stat-bg"></i>
+                        <div class="stat-header">
+                            <div class="stat-icon" style="background:rgba(59,130,246,0.1); color:#3b82f6;">
+                                <i class="fa-solid fa-user-group"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="countUsers">0</div>
+                        <div class="stat-label">Foydalanuvchilar</div>
+                    </div>
+                </div>
+
+                <div class="charts-wrapper">
+                    <div class="chart-card">
+                        <div class="chart-head"><h3>Murojaat Turlari Bo'yicha</h3></div>
+                        <div style="flex:1; position:relative; margin-top:20px;">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-head"><h3>Statuslar Nisbati</h3></div>
+                        <div style="flex:1; position:relative; margin-top:20px;">
+                            <canvas id="doughnutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reportsView" class="view-section">
+                <div class="table-card">
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" class="search-input" id="reportSearch" placeholder="Qidirish (ID, Manzil)...">
+                        </div>
+                        <div class="filter-group">
+                            <select class="filter-select" id="statusFilter" onchange="Admin.applyFilters()">
+                                <option value="all">Barcha Statuslar</option>
+                                <option value="Yangi">⏳ Yangi</option>
+                                <option value="Hal etildi">✅ Hal etildi</option>
+                                <option value="Rad etildi">🚫 Rad etildi</option>
+                            </select>
+                            <button class="btn-export" onclick="Admin.exportToExcel()">
+                                <i class="fa-solid fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Sana</th>
+                                    <th>Foydalanuvchi</th>
+                                    <th>Muammo Turi</th>
+                                    <th>Manzil</th>
+                                    <th>Status</th>
+                                    <th>Amallar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsTableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div style="padding:20px; border-top:1px solid var(--adm-border); display:flex; justify-content:space-between; color:#9ca3af; font-size:0.85rem;">
+                        <span id="tableInfo">Yuklanmoqda...</span>
+                        <div style="display:flex; gap:10px;">
+                            <button class="action-btn" onclick="Admin.changePage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="action-btn" onclick="Admin.changePage(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="usersView" class="view-section">
+                <div class="table-card">
+                    <div class="table-toolbar">
+                        <h3 style="color:white; margin:0;">Foydalanuvchilar Bazasi</h3>
+                        <div class="search-box">
+                            <input type="text" class="search-input" id="userSearch" placeholder="Ism yoki Email qidirish...">
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Qo'shilgan Sana</th>
+                                    <th>Ism Familiya</th>
+                                    <th>Email / Telefon</th>
+                                    <th>Roli</th>
+                                    <th>ID (UID)</th>
+                                    <th>Platforma</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settingsView" class="view-section">
+                <div style="max-width:600px; background:var(--adm-panel); padding:30px; border-radius:16px; border:1px solid var(--adm-border);">
+                    <h2 style="color:white; margin-bottom:20px;">Admin Profili</h2>
+                    
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; color:#9ca3af; margin-bottom:8px; font-size:0.9rem;">Admin Ismi</label>
+                        <input type="text" id="adminNameInput" class="search-input">
+                    </div>
+                    <button class="btn-export" style="width:100%; justify-content:center;" onclick="Admin.updateProfile()">
+                        <i class="fa-solid fa-floppy-disk"></i> Saqlash
+                    </button>
+
+                    <h2 style="color:white; margin:40px 0 20px;">Xavfsizlik</h2>
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; color:#9ca3af; margin-bottom:8px; font-size:0.9rem;">Yangi Parol</label>
+                        <input type="password" id="adminPassInput" class="search-input" placeholder="******">
+                    </div>
+                    <button class="btn-export" style="width:100%; justify-content:center; background:#ef4444;" onclick="Admin.updatePassword()">
+                        <i class="fa-solid fa-key"></i> Parolni Yangilash
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="modal-wrap" id="detailModal">
+        <div class="modal-xl">
+            <div class="modal-header" style="padding:20px; border-bottom:1px solid var(--adm-border); display:flex; justify-content:space-between;">
+                <h3 style="color:white; margin:0;">Murojaat Tafsilotlari</h3>
+                <button onclick="Admin.closeModal()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="map-col">
+                    <div id="detailMap"></div>
+                </div>
+                <div class="info-col">
+                    <div class="info-group">
+                        <label>Muammo Turi</label>
+                        <p id="mType" style="color:var(--adm-primary); font-weight:700; font-size:1.2rem;">...</p>
+                    </div>
+                    <div class="info-group">
+                        <label>Tavsif</label>
+                        <div class="desc-box" id="mDesc">...</div>
+                    </div>
+                    <div class="info-group">
+                        <label>Manzil</label>
+                        <p id="mAddress"><i class="fa-solid fa-location-dot"></i> <span>...</span></p>
+                    </div>
+                    <div class="info-group">
+                        <label>Yuboruvchi</label>
+                        <p id="mUser" style="color:#9ca3af; font-family:monospace;">...</p>
+                    </div>
+                    <div class="info-group" id="mImageContainer" style="display:none;">
+                        <label>Biriktirilgan Fayl</label>
+                        <a href="#" target="_blank" id="mImageLink" style="color:var(--adm-primary);">Rasmni ko'rish</a>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-export" style="background:#10b981;" onclick="Admin.updateStatus('Hal etildi')">
+                    <i class="fa-solid fa-check"></i> Hal Etildi
+                </button>
+                <button class="btn-export" style="background:#ef4444;" onclick="Admin.updateStatus('Rad etildi')">
+                    <i class="fa-solid fa-xmark"></i> Rad Etish
+                </button>
+                <button class="action-btn" onclick="Admin.deleteReport()">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module">
+        import { auth, db, collection, getDocs, doc, updateDoc, deleteDoc, onAuthStateChanged, signOut, updateProfile, updatePassword } from './config.js';
+
+        const ADMIN_EMAIL = "islomovjavohir939@gmail.com";
+
+        // --- ADMIN SYSTEM ENGINE ---
+        class AdminSystem {
+            constructor() {
+                this.data = {
+                    reports: [],
+                    users: [],
+                    filtered: [],
+                    page: 1,
+                    limit: 10
+                };
+                this.map = null;
+                this.currentId = null;
+                this.charts = { bar: null, doughnut: null };
+                
+                this.init();
+            }
+
+            init() {
+                // Auth Check
+                onAuthStateChanged(auth, (user) => {
+                    if (!user || user.email !== ADMIN_EMAIL) {
+                        window.location.href = 'login.html';
+                    } else {
+                        this.user = user;
+                        this.setupUI();
+                        this.fetchData();
+                        
+                        // Set Date
+                        moment.locale('uz-latn');
+                        document.getElementById('currentDate').innerText = moment().format('D MMMM YYYY, dddd');
+                        
+                        // Search Listeners
+                        document.getElementById('reportSearch').addEventListener('input', (e) => this.filterReports(e.target.value));
+                        document.getElementById('userSearch').addEventListener('input', (e) => this.filterUsers(e.target.value));
+                    }
+                });
+            }
+
+            setupUI() {
+                document.getElementById('adminNameDisplay').innerText = this.user.displayName || "Admin";
+                document.getElementById('adminEmailDisplay').innerText = this.user.email;
+                document.getElementById('adminNameInput').value = this.user.displayName || "";
+            }
+
+            // --- DATA LOADING ---
+            async fetchData() {
+                try {
+                    // Reports
+                    const rSnap = await getDocs(collection(db, "reports"));
+                    this.data.reports = [];
+                    rSnap.forEach(d => this.data.reports.push({ id: d.id, ...d.data() }));
+                    // Sort descending
+                    this.data.reports.sort((a, b) => new Date(b.timestamp?.seconds * 1000 || 0) - new Date(a.timestamp?.seconds * 1000 || 0));
+
+                    // Users
+                    const uSnap = await getDocs(collection(db, "users"));
+                    this.data.users = [];
+                    uSnap.forEach(d => this.data.users.push(d.data()));
+
+                    this.data.filtered = [...this.data.reports];
+                    this.renderAll();
+                    this.toast('success', "Ma'lumotlar yangilandi");
+
+                } catch (e) {
+                    console.error(e);
+                    this.toast('error', "Ma'lumotlarni yuklashda xatolik");
+                }
+            }
+
+            renderAll() {
+                this.renderStats();
+                this.renderCharts();
+                this.renderReportsTable();
+                this.renderUsersTable();
+                
+                // Pending Badge
+                const pending = this.data.reports.filter(r => r.status === 'Yangi').length;
+                const badge = document.getElementById('badgePending');
+                if(pending > 0) { badge.style.display='inline-block'; badge.innerText = pending; }
+                else badge.style.display='none';
+            }
+
+            // --- STATS & CHARTS ---
+            renderStats() {
+                const total = this.data.reports.length;
+                const solved = this.data.reports.filter(r => r.status === 'Hal etildi').length;
+                const pending = this.data.reports.filter(r => r.status === 'Yangi').length;
+
+                this.animateValue("countTotal", total);
+                this.animateValue("countSolved", solved);
+                this.animateValue("countPending", pending);
+                this.animateValue("countUsers", this.data.users.length);
+            }
+
+            animateValue(id, end) {
+                const obj = document.getElementById(id);
+                let start = 0;
+                if(end === 0) { obj.innerText = "0"; return; }
+                const duration = 1000;
+                let startTime = null;
+                const step = (timestamp) => {
+                    if (!startTime) startTime = timestamp;
+                    const progress = Math.min((timestamp - startTime) / duration, 1);
+                    obj.innerText = Math.floor(progress * (end - start) + start);
+                    if (progress < 1) window.requestAnimationFrame(step);
+                };
+                window.requestAnimationFrame(step);
+            }
+
+            renderCharts() {
+                const types = {};
+                this.data.reports.forEach(r => types[r.type] = (types[r.type] || 0) + 1);
+                
+                if(this.charts.bar) this.charts.bar.destroy();
+                this.charts.bar = new Chart(document.getElementById('barChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(types),
+                        datasets: [{ label: 'Soni', data: Object.values(types), backgroundColor: '#6366f1', borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
+                });
+
+                const stats = { 'Yangi': 0, 'Hal etildi': 0, 'Rad etildi': 0 };
+                this.data.reports.forEach(r => { if(stats[r.status] !== undefined) stats[r.status]++; });
+                
+                if(this.charts.doughnut) this.charts.doughnut.destroy();
+                this.charts.doughnut = new Chart(document.getElementById('doughnutChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(stats),
+                        datasets: [{ data: Object.values(stats), backgroundColor: ['#f59e0b', '#10b981', '#ef4444'], borderWidth: 0 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#9ca3af' } } } }
+                });
+            }
+
+            // --- TABLES ---
+            renderReportsTable() {
+                const tbody = document.getElementById('reportsTableBody');
+                const start = (this.data.page - 1) * this.data.limit;
+                const end = start + this.data.limit;
+                const viewData = this.data.filtered.slice(start, end);
+
+                document.getElementById('tableInfo').innerText = `${this.data.filtered.length} tadan ${start+1}-${Math.min(end, this.data.filtered.length)}`;
+
+                tbody.innerHTML = viewData.map(r => {
+                    let badge = 's-new';
+                    if(r.status === 'Hal etildi') badge = 's-solved';
+                    if(r.status === 'Rad etildi') badge = 's-rejected';
+
+                    return `
+                    <tr>
+                        <td><span style="font-family:monospace; color:var(--adm-primary);">#${r.id.slice(0,6)}</span></td>
+                        <td>${r.date.split(',')[0]}</td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:24px;height:24px;background:#1f2937;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;border:1px solid #374151;">${r.email[0].toUpperCase()}</div>
+                                <span>${r.email.split('@')[0]}</span>
+                            </div>
+                        </td>
+                        <td><b>${r.type}</b></td>
+                        <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.address}</td>
+                        <td><span class="status-badge ${badge}">${r.status}</span></td>
+                        <td>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn-icon btn-view" onclick="Admin.openDetails('${r.id}')"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn-icon btn-del" onclick="Admin.deleteReportConfirm('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            }
+
+            renderUsersTable() {
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = this.data.users.map(u => `
+                    <tr>
+                        <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:30px;height:30px;background:#374151;border-radius:50%;display:flex;align-items:center;justify-content:center;">${(u.displayName||'U')[0]}</div>
+                                <b>${u.displayName || 'Ismsiz'}</b>
+                            </div>
+                        </td>
+                        <td>
+                            <div>${u.email}</div>
+                            <small style="color:#6b7280;">${u.phoneNumber || ''}</small>
+                        </td>
+                        <td><span style="background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:4px;font-size:0.8rem;">${u.role || 'User'}</span></td>
+                        <td style="font-family:monospace;color:#6b7280;">${u.uid}</td>
+                        <td style="font-size:0.8rem;color:#6b7280;">${u.deviceInfo ? (u.deviceInfo.includes('Mobile')?'Mobile':'PC') : '-'}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // --- FILTERS & PAGINATION ---
+            filterReports(term) {
+                term = term.toLowerCase();
+                this.data.filtered = this.data.reports.filter(r => 
+                    r.address.toLowerCase().includes(term) ||
+                    r.id.toLowerCase().includes(term) ||
+                    r.description.toLowerCase().includes(term)
+                );
+                this.data.page = 1;
+                this.renderReportsTable();
+            }
+
+            applyFilters() {
+                const status = document.getElementById('statusFilter').value;
+                if(status === 'all') this.data.filtered = [...this.data.reports];
+                else this.data.filtered = this.data.reports.filter(r => r.status === status);
+                this.data.page = 1;
+                this.renderReportsTable();
+            }
+
+            changePage(dir) {
+                const max = Math.ceil(this.data.filtered.length / this.data.limit);
+                const next = this.data.page + dir;
+                if(next > 0 && next <= max) {
+                    this.data.page = next;
+                    this.renderReportsTable();
+                }
+            }
+
+            // --- MODAL & ACTIONS ---
+            openDetails(id) {
+                const r = this.data.reports.find(x => x.id === id);
+                if(!r) return;
+                this.currentId = id;
+
+                document.getElementById('mType').innerText = r.type;
+                document.getElementById('mDesc').innerText = r.description;
+                document.getElementById('mAddress').querySelector('span').innerText = r.address;
+                document.getElementById('mUser').innerText = r.email;
+
+                // Image handling
+                const imgBox = document.getElementById('mImageContainer');
+                if(r.imageUrl) {
+                    imgBox.style.display = 'block';
+                    document.getElementById('mImageLink').href = r.imageUrl;
+                } else {
+                    imgBox.style.display = 'none';
+                }
+
+                const modal = document.getElementById('detailModal');
+                modal.classList.add('active');
+
+                // Map Init
+                if(this.map) { this.map.remove(); this.map = null; }
+                setTimeout(() => {
+                    const lat = r.latitude || 41.311;
+                    const lng = r.longitude || 69.240;
+                    this.map = L.map('detailMap').setView([lat, lng], 13);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(this.map);
+                    if(r.latitude) L.marker([lat, lng]).addTo(this.map);
+                }, 300);
+            }
+
+            closeModal() { document.getElementById('detailModal').classList.remove('active'); }
+
+            async updateStatus(status) {
+                if(!this.currentId) return;
+                try {
+                    await updateDoc(doc(db, "reports", this.currentId), { status: status });
+                    this.toast('success', `Status: ${status}`);
+                    this.closeModal();
+                    this.fetchData();
+                } catch(e) { this.toast('error', e.message); }
+            }
+
+            deleteReportConfirm(id) {
+                if(confirm("Haqiqatan ham o'chirmoqchimisiz?")) {
+                    this.currentId = id;
+                    this.deleteReport();
+                }
+            }
+
+            async deleteReport() {
+                try {
+                    await deleteDoc(doc(db, "reports", this.currentId));
+                    this.toast('success', "Murojaat o'chirildi");
+                    if(document.getElementById('detailModal').classList.contains('active')) this.closeModal();
+                    this.fetchData();
+                } catch(e) { this.toast('error', e.message); }
+            }
+
+            // --- SETTINGS ---
+            async updateProfile() {
+                const name = document.getElementById('adminNameInput').value;
+                if(name) {
+                    await updateProfile(this.user, { displayName: name });
+                    this.toast('success', "Ism yangilandi");
+                    this.setupUI();
+                }
+            }
+
+            async updatePassword() {
+                const p = document.getElementById('adminPassInput').value;
+                if(p.length < 6) return this.toast('error', "Parol juda qisqa");
+                try {
+                    await updatePassword(this.user, p);
+                    this.toast('success', "Parol o'zgardi. Qayta kiring.");
+                    setTimeout(() => this.logout(), 2000);
+                } catch(e) { this.toast('error', "Xatolik: Qayta login qiling"); }
+            }
+
+            // --- UTILS ---
+            refresh() { this.fetchData(); }
+            
+            logout() { signOut(auth).then(() => location.href = "login.html"); }
+
+            switchView(view, el) {
+                document.querySelectorAll('.view-section').forEach(d => d.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(d => d.classList.remove('active'));
+                
+                document.getElementById(view+'View').classList.add('active');
+                if(el) el.classList.add('active');
+                
+                const titles = { dashboard: 'Dashboard', reports: 'Murojaatlar Markazi', users: 'Foydalanuvchilar', settings: 'Tizim Sozlamalari' };
+                document.getElementById('pageTitle').innerText = titles[view];
+                
+                if(window.innerWidth < 768) document.getElementById('sidebar').classList.remove('active');
+            }
+
+            exportToExcel() {
+                const ws = XLSX.utils.json_to_sheet(this.data.reports);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Murojaatlar");
+                XLSX.writeFile(wb, `Nigoh_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+            }
+
+            toast(type, msg) {
+                const box = document.getElementById('toastContainer');
+                const t = document.createElement('div');
+                t.className = 'toast';
+                const color = type === 'success' ? '#10b981' : '#ef4444';
+                t.style.borderLeft = `4px solid ${color}`;
+                t.innerHTML = `<div><strong style="color:${color}">${type.toUpperCase()}</strong><br><small>${msg}</small></div>`;
+                box.appendChild(t);
+                setTimeout(() => t.remove(), 3000);
+            }
+        }
+
+        window.Admin = new AdminSystem();
+    </script>
+</body>
+</html>

@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <title>Nigoh | Tizimga Kirish</title>
+    <meta name="description" content="Nigoh platformasiga xavfsiz kirish. Jamoatchilik nazorati tizimi.">
+    <meta name="theme-color" content="#020617">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* 1. MODULE TOKENS */
+        :root {
+            /* Login Specific Palette */
+            --login-bg-start: #020617;
+            --login-bg-end: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.4);
+            --card-border: 1px solid rgba(255, 255, 255, 0.08);
+            
+            /* Inputs */
+            --input-h: 56px;
+            --input-radius: 14px;
+            
+            /* Animation */
+            --ease-out-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 2. LAYOUT & CANVAS */
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, var(--login-bg-end), var(--login-bg-start));
+            position: relative;
+        }
+
+        #particleCanvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 3. LOGIN CARD CONTAINER */
+        .login-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1100px;
+            min-height: 700px;
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: var(--card-border);
+            border-radius: 32px;
+            box-shadow: 
+                0 50px 100px -20px rgba(0,0,0,0.6),
+                inset 0 0 0 1px rgba(255,255,255,0.05);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+            animation: containerPop 0.8s var(--ease-out-back);
+        }
+
+        @keyframes containerPop {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* 4. LEFT SIDE: BRANDING & ART */
+        .brand-side {
+            background: linear-gradient(160deg, rgba(59,130,246,0.1) 0%, rgba(15,23,42,0.8) 100%);
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            border-right: var(--card-border);
+        }
+
+        .brand-side::after {
+            content: ''; position: absolute; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.5; z-index: 1;
+        }
+
+        .logo-area {
+            position: relative; z-index: 2;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .logo-icon {
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; color: white;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+        }
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem; font-weight: 800; color: white;
+            letter-spacing: -1px;
+        }
+
+        .art-content {
+            position: relative; z-index: 2; margin: auto 0;
+        }
+        .art-title {
+            font-size: 3rem; font-weight: 800; line-height: 1.1;
+            color: white; margin-bottom: 24px;
+        }
+        .art-title span {
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .art-desc {
+            font-size: 1.1rem; color: #94a3b8; line-height: 1.6;
+            max-width: 400px;
+        }
+
+        .system-status {
+            position: relative; z-index: 2;
+            display: flex; gap: 20px;
+            padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .status-item { display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; }
+        .status-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse 2s infinite; }
+        
+        @keyframes pulse { 0% {opacity: 0.5;} 50% {opacity: 1;} 100% {opacity: 0.5;} }
+
+        /* 5. RIGHT SIDE: FORM */
+        .form-side {
+            padding: 60px;
+            background: rgba(15, 23, 42, 0.6);
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative;
+        }
+
+        .form-header { margin-bottom: 40px; }
+        .form-title { font-size: 2rem; color: white; font-weight: 700; margin-bottom: 10px; }
+        .form-sub { color: #64748b; font-size: 1rem; }
+        .link-accent { color: #3b82f6; text-decoration: none; font-weight: 600; transition: 0.2s; }
+        .link-accent:hover { color: #60a5fa; text-decoration: underline; }
+
+        /* Input Groups */
+        .input-group { margin-bottom: 24px; position: relative; }
+        .input-label { display: block; color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px; font-weight: 500; }
+        
+        .input-field {
+            width: 100%; height: var(--input-h);
+            background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--input-radius);
+            padding: 0 20px 0 50px;
+            color: white; font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .input-field:focus {
+            background: #0f172a; border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        .input-icon {
+            position: absolute; left: 18px; top: 48px; /* label + padding approximation */
+            color: #64748b; font-size: 1.2rem; transition: 0.3s;
+        }
+        .input-field:focus + .input-icon { color: #3b82f6; }
+
+        /* Caps Lock Indicator */
+        .caps-warning {
+            display: none; align-items: center; gap: 6px;
+            color: #f59e0b; font-size: 0.8rem; margin-top: 6px;
+            animation: fadeIn 0.3s;
+        }
+        .caps-warning.visible { display: flex; }
+
+        /* Password Toggle */
+        .eye-btn {
+            position: absolute; right: 18px; top: 48px;
+            background: none; border: none; color: #64748b;
+            cursor: pointer; transition: 0.2s;
+        }
+        .eye-btn:hover { color: white; }
+
+        /* Actions Row */
+        .form-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .checkbox-wrapper {
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
+        }
+        .custom-checkbox {
+            width: 20px; height: 20px; border-radius: 6px;
+            background: #334155; border: 1px solid #475569;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .custom-checkbox i { transform: scale(0); transition: 0.2s; font-size: 0.7rem; color: white; }
+        
+        input[type="checkbox"]:checked + .custom-checkbox { background: #3b82f6; border-color: #3b82f6; }
+        input[type="checkbox"]:checked + .custom-checkbox i { transform: scale(1); }
+        .checkbox-label { color: #94a3b8; font-size: 0.9rem; }
+
+        /* Buttons */
+        .btn-login {
+            width: 100%; height: 56px; border-radius: var(--input-radius);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white; font-size: 1.1rem; font-weight: 700;
+            border: none; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+        .btn-login:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(59, 130, 246, 0.5); }
+        .btn-login:active { transform: scale(0.98); }
+        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .divider {
+            display: flex; align-items: center; gap: 15px; margin: 30px 0;
+            color: #64748b; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1);
+        }
+
+        .btn-google {
+            width: 100%; height: 56px; border-radius: var(--input-radius);
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            transition: 0.3s;
+        }
+        .btn-google:hover { background: rgba(255,255,255,0.1); border-color: white; }
+
+        /* Loading Spinner */
+        .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+        .btn-login.loading .spinner { display: block; }
+        .btn-login.loading span, .btn-login.loading i { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* 6. MODALS (FORGOT PASSWORD) */
+        .modal-wrap {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: 0.3s;
+        }
+        .modal-wrap.active { display: flex; opacity: 1; }
+        
+        .modal-card {
+            background: #1e293b; width: 90%; max-width: 450px;
+            border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
+            padding: 30px; text-align: center;
+            transform: scale(0.9); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
+        }
+        .modal-wrap.active .modal-card { transform: scale(1); }
+
+        .modal-icon {
+            width: 60px; height: 60px; background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin: 0 auto 20px;
+        }
+
+        /* 7. RESPONSIVE */
+        @media (max-width: 900px) {
+            .login-wrapper { grid-template-columns: 1fr; margin: 0; min-height: 100vh; border-radius: 0; }
+            .brand-side { display: none; }
+            .form-side { padding: 40px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="login-wrapper">
+        
+        <div class="brand-side">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-fingerprint"></i>
+                </div>
+                <span class="logo-text">NIGOH</span>
+            </div>
+
+            <div class="art-content">
+                <h1 class="art-title">Xavfsiz. <br> <span>Shaffof.</span> <br> Ishonchli.</h1>
+                <p class="art-desc">
+                    Tizimga kirish orqali siz jamoatchilik nazorati va adolatni ta'minlashga o'z hissangizni qo'shasiz.
+                </p>
+            </div>
+
+            <div class="system-status">
+                <div class="status-item"><div class="status-dot"></div> Tizim Online</div>
+                <div class="status-item"><i class="fa-solid fa-shield-halved"></i> SSL Secured</div>
+                <div class="status-item"><i class="fa-solid fa-users"></i> 10k+ Foydalanuvchi</div>
+            </div>
+        </div>
+
+        <div class="form-side">
+            <div class="form-header">
+                <h2 class="form-title">Xush Kelibsiz!</h2>
+                <p class="form-sub">Hisobingizga kiring yoki <a href="signup.html" class="link-accent">ro'yxatdan o'ting</a></p>
+            </div>
+
+            <form id="loginForm">
+                
+                <div class="input-group">
+                    <label class="input-label" for="email">Email</label>
+                    <input type="email" id="email" class="input-field" placeholder="name@example.com" required>
+                    <i class="fa-regular fa-envelope input-icon"></i>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="password">Parol</label>
+                    <input type="password" id="password" class="input-field" placeholder="••••••••" required>
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    
+                    <button type="button" class="eye-btn" onclick="Login.togglePass()">
+                        <i class="fa-regular fa-eye" id="eyeIcon"></i>
+                    </button>
+
+                    <div class="caps-warning" id="capsWarning">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Caps Lock yoqilgan
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="rememberMe" hidden>
+                        <div class="custom-checkbox"><i class="fa-solid fa-check"></i></div>
+                        <span class="checkbox-label">Meni eslab qol</span>
+                    </label>
+                    <a href="#" class="link-accent" style="font-size:0.9rem;" onclick="Login.openForgotModal()">Parolni unutdingizmi?</a>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-login">
+                    <span class="spinner"></span>
+                    <span>Tizimga Kirish <i class="fa-solid fa-arrow-right-to-bracket"></i></span>
+                </button>
+
+                <div class="divider">Yoki</div>
+
+                <button type="button" class="btn-google" onclick="Login.googleLogin()">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="24" alt="Google">
+                    Google orqali davom etish
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-wrap" id="forgotModal">
+        <div class="modal-card">
+            <div class="modal-icon"><i class="fa-solid fa-key"></i></div>
+            <h3 style="color:white; font-size:1.5rem; margin-bottom:10px;">Parolni Tiklash</h3>
+            <p style="color:#94a3b8; font-size:0.95rem; margin-bottom:25px;">
+                Emailingizni kiriting. Biz sizga parolni o'zgartirish uchun havola yuboramiz.
+            </p>
+            
+            <div class="input-group" style="text-align:left;">
+                <input type="email" id="resetEmail" class="input-field" placeholder="Email...">
+                <i class="fa-regular fa-envelope input-icon"></i>
+            </div>
+
+            <button class="btn-login" id="resetBtn" onclick="Login.resetPassword()">
+                <span class="spinner"></span>
+                <span>Yuborish</span>
+            </button>
+            <button class="btn-google" style="margin-top:10px; border:none;" onclick="Login.closeForgotModal()">Bekor qilish</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, doc, getDoc, setDoc, onAuthStateChanged } from './config.js';
+
+        const ADMIN_EMAILS = ["islomovjavohir939@gmail.com"]; // Admin list
+
+        // --- CANVAS ANIMATION ENGINE ---
+        class ParticleNetwork {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                this.init();
+                this.animate();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            init() {
+                const count = Math.min(window.innerWidth / 10, 100);
+                for(let i=0; i<count; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        size: Math.random() * 2
+                    });
+                }
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw connections
+                this.ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)'; // Primary low opacity
+                for(let i=0; i<this.particles.length; i++) {
+                    let p = this.particles[i];
+                    p.x += p.vx; p.y += p.vy;
+
+                    // Bounce
+                    if(p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
+
+                    // Draw dot
+                    this.ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                    this.ctx.fill();
+
+                    // Connect nearby
+                    for(let j=i+1; j<this.particles.length; j++) {
+                        let p2 = this.particles[j];
+                        let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                        if(dist < 150) {
+                            this.ctx.lineWidth = 1 - (dist/150);
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p.x, p.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // --- LOGIN MANAGER ---
+        class LoginManager {
+            constructor() {
+                this.form = document.getElementById('loginForm');
+                this.btn = document.getElementById('submitBtn');
+                this.emailInput = document.getElementById('email');
+                this.passInput = document.getElementById('password');
+                this.isSubmitting = false;
+
+                this.initListeners();
+                new ParticleNetwork('particleCanvas');
+            }
+
+            initListeners() {
+                // Auth State Redirect
+                onAuthStateChanged(auth, (user) => {
+                    if(user) this.redirectUser(user);
+                });
+
+                // Caps Lock Check
+                this.passInput.addEventListener('keyup', (e) => {
+                    const warning = document.getElementById('capsWarning');
+                    if (e.getModifierState("CapsLock")) warning.classList.add('visible');
+                    else warning.classList.remove('visible');
+                });
+
+                this.form.addEventListener('submit', (e) => this.handleLogin(e));
+            }
+
+            async handleLogin(e) {
+                e.preventDefault();
+                if(this.isSubmitting) return;
+
+                const email = this.emailInput.value.trim();
+                const pass = this.passInput.value;
+
+                this.setLoading(true);
+
+                try {
+                    // Firebase Auth
+                    const cred = await signInWithEmailAndPassword(auth, email, pass);
+                    this.showToast('success', 'Muvaffaqiyatli!', 'Tizimga yo\'naltirilmoqda...');
+                    
+                    // Session Persistence (Local logic not needed as Firebase handles it, 
+                    // but we can store extra flag if needed)
+                    if(document.getElementById('rememberMe').checked) {
+                        localStorage.setItem('nigoh_remember', 'true');
+                    }
+
+                    await this.syncUser(cred.user);
+                    // Redirect handled by onAuthStateChanged
+
+                } catch (error) {
+                    console.error("Login Error:", error);
+                    let msg = "Tizim xatoligi";
+                    if(error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                        msg = "Email yoki parol noto'g'ri";
+                    } else if(error.code === 'auth/too-many-requests') {
+                        msg = "Ko'p urinishlar. Biroz kuting.";
+                    }
+                    this.showToast('error', 'Kirish Xatosi', msg);
+                    this.setLoading(false);
+                    
+                    // Shake Animation
+                    document.querySelector('.login-wrapper').animate([
+                        { transform: 'translateX(0)' },
+                        { transform: 'translateX(-10px)' },
+                        { transform: 'translateX(10px)' },
+                        { transform: 'translateX(0)' }
+                    ], { duration: 400 });
+                }
+            }
+
+            async googleLogin() {
+                try {
+                    const res = await signInWithPopup(auth, new GoogleAuthProvider());
+                    this.showToast('success', 'Google Auth', 'Muvaffaqiyatli!');
+                    await this.syncUser(res.user);
+                } catch(error) {
+                    this.showToast('error', 'Google Xato', error.message);
+                }
+            }
+
+            // Sync user data to Firestore (Critical for Admin Panel)
+            async syncUser(user) {
+                try {
+                    const userRef = doc(db, "users", user.uid);
+                    const snap = await getDoc(userRef);
+                    
+                    if(!snap.exists()) {
+                        await setDoc(userRef, {
+                            uid: user.uid,
+                            displayName: user.displayName || "User",
+                            email: user.email,
+                            photoURL: user.photoURL,
+                            role: "user",
+                            createdAt: new Date().toISOString(),
+                            lastLogin: new Date().toISOString()
+                        });
+                    } else {
+                        await setDoc(userRef, { lastLogin: new Date().toISOString() }, { merge: true });
+                    }
+                } catch(e) { console.error("DB Sync Error", e); }
+            }
+
+            redirectUser(user) {
+                setTimeout(() => {
+                    if (ADMIN_EMAILS.includes(user.email)) {
+                        window.location.href = "admin.html";
+                    } else {
+                        window.location.href = "index.html";
+                    }
+                }, 1000);
+            }
+
+            // --- UI UTILS ---
+            togglePass() {
+                const el = document.getElementById('password');
+                const icon = document.getElementById('eyeIcon');
+                if(el.type === 'password') {
+                    el.type = 'text';
+                    icon.className = 'fa-regular fa-eye-slash';
+                } else {
+                    el.type = 'password';
+                    icon.className = 'fa-regular fa-eye';
+                }
+            }
+
+            setLoading(state) {
+                this.isSubmitting = state;
+                if(state) {
+                    this.btn.classList.add('loading');
+                    this.btn.disabled = true;
+                } else {
+                    this.btn.classList.remove('loading');
+                    this.btn.disabled = false;
+                }
+            }
+
+            // --- FORGOT PASSWORD ---
+            openForgotModal() { document.getElementById('forgotModal').classList.add('active'); }
+            closeForgotModal() { document.getElementById('forgotModal').classList.remove('active'); }
+            
+            async resetPassword() {
+                const email = document.getElementById('resetEmail').value;
+                const btn = document.getElementById('resetBtn');
+                
+                if(!email) return this.showToast('warning', 'Email kiriting');
+                
+                btn.classList.add('loading');
+                try {
+                    await sendPasswordResetEmail(auth, email);
+                    this.showToast('success', 'Yuborildi', 'Emailingizni tekshiring');
+                    this.closeForgotModal();
+                } catch(e) {
+                    this.showToast('error', 'Xatolik', e.message);
+                } finally {
+                    btn.classList.remove('loading');
+                }
+            }
+
+            showToast(type, title, msg) {
+                const box = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                const color = type === 'success' ? '#10b981' : (type==='warning'?'#f59e0b':'#ef4444');
+                const icon = type === 'success' ? 'check' : 'circle-exclamation';
+                
+                toast.style.borderLeft = `4px solid ${color}`;
+                toast.innerHTML = `
+                    <i class="fa-solid fa-${icon}" style="color:${color}; font-size:1.2rem;"></i>
+                    <div><h4 style="margin:0;font-size:0.9rem;">${title}</h4><p style="margin:0;font-size:0.8rem;color:#94a3b8">${msg}</p></div>
+                `;
+                
+                box.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            }
+        }
+
+        // Initialize
+        window.Login = new LoginManager();
+    </script>
+</body>
+</html>
