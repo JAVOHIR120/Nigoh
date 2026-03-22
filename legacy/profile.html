@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <title>Nigoh | Shaxsiy Kabinet</title>
+    <meta name="description" content="Foydalanuvchi boshqaruv paneli. Murojaatlar holati va statistikasi.">
+    <meta name="theme-color" content="#0f172a">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* 1. LAYOUT VARIABLES */
+        :root {
+            --sidebar-w: 280px;
+            --header-h: 80px;
+            --panel-bg: #111827;
+            --card-bg: #1f2937;
+            --border: rgba(255,255,255,0.08);
+            --active-item: rgba(59, 130, 246, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+
+        body {
+            background-color: #0b1120;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        /* 2. SIDEBAR NAVIGATION */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            position: relative;
+        }
+
+        .sidebar-header {
+            height: var(--header-h);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .brand-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 24px 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #9ca3af;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--active-item);
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .user-mini-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+        .user-mini-profile:hover {
+            border-color: var(--border);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .mini-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3b82f6;
+        }
+
+        .mini-info h4 { margin: 0; font-size: 0.9rem; color: white; }
+        .mini-info p { margin: 0; font-size: 0.75rem; color: #6b7280; }
+
+        /* 3. MAIN CONTENT AREA */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: radial-gradient(circle at top right, #1e1b4b 0%, #0b1120 40%);
+            position: relative;
+        }
+
+        .top-bar {
+            height: var(--header-h);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            background: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            z-index: 40;
+        }
+
+        .page-title h1 { margin: 0; font-size: 1.5rem; color: white; }
+        .page-title p { margin: 0; font-size: 0.85rem; color: #9ca3af; margin-top: 4px; }
+
+        .top-actions { display: flex; gap: 16px; align-items: center; }
+
+        .btn-action {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: #9ca3af;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+        .btn-action:hover { border-color: #3b82f6; color: white; }
+        
+        .notification-dot {
+            position: absolute; top: 10px; right: 10px;
+            width: 8px; height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid var(--card-bg);
+        }
+
+        /* 4. CONTENT SCROLL & GRID */
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 5. CARDS & STATS */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-3px); border-color: #3b82f6; }
+
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-info h3 { margin: 0; font-size: 1.8rem; color: white; font-weight: 700; }
+        .stat-info p { margin: 0; font-size: 0.85rem; color: #9ca3af; }
+
+        /* 6. TABLE STYLES */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .custom-table th {
+            text-align: left;
+            padding: 16px 24px;
+            background: rgba(0,0,0,0.2);
+            color: #9ca3af;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .custom-table td {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .bg-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .bg-yellow { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .bg-red { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        /* 7. SETTINGS FORMS */
+        .form-section {
+            max-width: 600px;
+        }
+        
+        .avatar-upload {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .avatar-preview {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--panel-bg);
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+
+        .btn-upload {
+            padding: 10px 20px;
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .btn-upload:hover { background: rgba(59, 130, 246, 0.2); }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .input-box { margin-bottom: 20px; }
+        .input-box label { display: block; margin-bottom: 8px; color: #9ca3af; font-size: 0.9rem; }
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            background: #111827;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .input-field:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+
+        .btn-save {
+            padding: 12px 30px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-save:hover { background: #2563eb; transform: translateY(-2px); }
+
+        /* 8. TAB SYSTEM */
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 9. RESPONSIVE */
+        @media (max-width: 1024px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; transform: translateX(-100%); height: 100%; }
+            .sidebar.active { transform: translateX(0); }
+            .mobile-toggle { display: block !important; }
+            .page-title h1 { font-size: 1.2rem; }
+        }
+        .mobile-toggle { display: none; font-size: 1.5rem; color: white; cursor: pointer; background: none; border: none; }
+        
+        /* 10. TOAST */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .toast {
+            min-width: 300px; padding: 16px; background: #1f2937;
+            border-radius: 8px; border-left: 4px solid; color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 10px;
+            display: flex; gap: 10px; align-items: center;
+            animation: fadeIn 0.3s forwards;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <span class="brand-title">NIGOH</span>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active" onclick="Profile.switchTab('overview', this)">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Umumiy Ko'rinish
+            </a>
+            <a href="#" class="nav-item" onclick="Profile.switchTab('reports', this)">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Mening Murojaatlarim
+            </a>
+            <a href="#" class="nav-item" onclick="Profile.switchTab('settings', this)">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Sozlamalar
+            </a>
+            <div style="flex:1"></div>
+            <a href="index.html" class="nav-item">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Asosiy Sahifa
+            </a>
+            <a href="#" class="nav-item" style="color:#ef4444;" onclick="Profile.logout()">
+                <svg viewBox="0 0 24 24" style="stroke:#ef4444;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Chiqish
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-mini-profile">
+                <img src="logo.png" id="miniAvatar" class="mini-avatar">
+                <div class="mini-info">
+                    <h4 id="miniName">Foydalanuvchi</h4>
+                    <p id="miniEmail">Yuklanmoqda...</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    <h1 id="pageHeading">Dashboard</h1>
+                    <p id="currentDate">...</p>
+                </div>
+            </div>
+            
+            <div class="top-actions">
+                <div class="btn-action">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </div>
+                <div class="btn-action" onclick="Profile.refreshData()">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-scroll">
+            
+            <div id="overviewTab" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div style="display:flex; flex-direction:column; gap:24px;">
+                        
+                        <div class="stats-row">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background:rgba(59,130,246,0.1); color:#3b82f6;">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="countTotal">0</h3>
+                                    <p>Jami</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="countSolved">0</h3>
+                                    <p>Hal Etildi</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:#f59e0b;">
+                                    <i class="fa-solid fa-clock"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="countPending">0</h3>
+                                    <p>Jarayonda</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="flex:1;">
+                            <h3 style="color:white; margin-bottom:20px; font-family:'Space Grotesk'">Murojaatlar Dinamikasi</h3>
+                            <canvas id="activityChart" style="width:100%; height:300px;"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="color:white; margin-bottom:20px;">So'nggi Harakatlar</h3>
+                        <div id="activityFeed" style="display:flex; flex-direction:column; gap:15px;">
+                            <div style="text-align:center; color:#6b7280; margin-top:20px;">Hozircha harakatlar yo'q</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reportsTab" class="tab-content">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                        <h2 style="color:white; margin:0;">Mening Murojaatlarim</h2>
+                        <input type="text" id="searchInput" placeholder="Qidirish..." style="background:#111827; border:1px solid var(--border); padding:10px 15px; border-radius:10px; color:white; width:250px;">
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Sana</th>
+                                    <th>Muammo Turi</th>
+                                    <th>Manzil</th>
+                                    <th>Status</th>
+                                    <th>ID</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsTableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settingsTab" class="tab-content">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h2 style="color:white; margin-bottom:30px;">Profilni Tahrirlash</h2>
+                        <form id="profileForm">
+                            <div class="avatar-upload">
+                                <img src="logo.png" id="editAvatar" class="avatar-preview">
+                                <div>
+                                    <h4 style="color:white; margin:0 0 5px 0;">Profil Rasmi</h4>
+                                    <p style="color:#9ca3af; font-size:0.8rem; margin-bottom:10px;">JPG, PNG yoki GIF (Max. 2MB)</p>
+                                    <label class="btn-upload">
+                                        Rasm Yuklash
+                                        <input type="file" id="fileInput" hidden accept="image/*">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="input-box">
+                                    <label>To'liq Ism</label>
+                                    <input type="text" id="inputName" class="input-field">
+                                </div>
+                                <div class="input-box">
+                                    <label>Email (O'zgarmas)</label>
+                                    <input type="email" id="inputEmail" class="input-field" disabled style="opacity:0.6; cursor:not-allowed;">
+                                </div>
+                            </div>
+                            
+                            <div class="input-box">
+                                <label>Telefon Raqam</label>
+                                <input type="tel" id="inputPhone" class="input-field" placeholder="+998">
+                            </div>
+
+                            <button type="submit" class="btn-save">O'zgarishlarni Saqlash</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2 style="color:white; margin-bottom:30px;">Xavfsizlik</h2>
+                        <form id="passwordForm">
+                            <div class="input-box">
+                                <label>Yangi Parol</label>
+                                <input type="password" id="newPass" class="input-field" placeholder="******">
+                            </div>
+                            <div class="input-box">
+                                <label>Parolni Tasdiqlash</label>
+                                <input type="password" id="confirmPass" class="input-field" placeholder="******">
+                            </div>
+                            <button type="submit" class="btn-save" style="background:#ef4444;">Parolni Yangilash</button>
+                        </form>
+
+                        <div style="margin-top:40px; padding-top:20px; border-top:1px solid var(--border);">
+                            <h4 style="color:#ef4444; margin-bottom:10px;">Hisobni O'chirish</h4>
+                            <p style="font-size:0.85rem; margin-bottom:15px;">Barcha ma'lumotlaringiz tiklab bo'lmas darajada o'chiriladi.</p>
+                            <button onclick="Profile.deleteAccount()" style="color:#ef4444; font-weight:600; font-size:0.9rem; text-decoration:underline;">Hisobni o'chirish</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script type="module">
+        // DIQQAT: Faqat mavjud funksiyalarni import qilamiz (Storage yo'q)
+        import { auth, db, collection, getDocs, doc, getDoc, updateDoc, query, where, onAuthStateChanged, signOut, updateProfile, updatePassword, deleteUser } from './config.js';
+
+        class ProfileManager {
+            constructor() {
+                this.user = null;
+                this.reports = [];
+                this.chart = null;
+                this.init();
+            }
+
+            init() {
+                // Set Date
+                const dateOpts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('currentDate').innerText = new Date().toLocaleDateString('uz-UZ', dateOpts);
+
+                // Auth Listener
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        this.user = user;
+                        this.loadProfile();
+                        this.loadReports();
+                    } else {
+                        window.location.href = 'login.html';
+                    }
+                });
+
+                // Listeners
+                document.getElementById('fileInput').addEventListener('change', (e) => this.handleAvatar(e));
+                document.getElementById('profileForm').addEventListener('submit', (e) => this.updateInfo(e));
+                document.getElementById('passwordForm').addEventListener('submit', (e) => this.updatePass(e));
+                document.getElementById('searchInput').addEventListener('input', (e) => this.filterReports(e.target.value));
+            }
+
+            // --- DATA LOADING ---
+            async loadProfile() {
+                // UI Updates
+                document.getElementById('miniName').innerText = this.user.displayName || "Foydalanuvchi";
+                document.getElementById('miniEmail').innerText = this.user.email;
+                document.getElementById('inputName').value = this.user.displayName || "";
+                document.getElementById('inputEmail').value = this.user.email;
+                
+                // Avatar (Default)
+                const fallback = `https://ui-avatars.com/api/?name=${this.user.email}&background=random`;
+                document.getElementById('miniAvatar').src = this.user.photoURL || fallback;
+                document.getElementById('editAvatar').src = this.user.photoURL || fallback;
+
+                // Get Extra Data (Phone)
+                try {
+                    const userSnap = await getDoc(doc(db, "users", this.user.uid));
+                    if(userSnap.exists()) {
+                        const d = userSnap.data();
+                        document.getElementById('inputPhone').value = d.phoneNumber || "";
+                    }
+                } catch(e) { console.error(e); }
+            }
+
+            async loadReports() {
+                try {
+                    // DIQQAT: orderBy ni olib tashladik (Index xatosi bo'lmasligi uchun)
+                    const q = query(
+                        collection(db, "reports"), 
+                        where("uid", "==", this.user.uid)
+                    );
+                    const snap = await getDocs(q);
+                    
+                    this.reports = [];
+                    snap.forEach(d => this.reports.push({ id: d.id, ...d.data() }));
+
+                    // BRAUZERDA SORTING (Vaqt bo'yicha)
+                    this.reports.sort((a, b) => {
+                        const tA = a.timestamp?.seconds || 0;
+                        const tB = b.timestamp?.seconds || 0;
+                        return tB - tA; // Yangisi tepada
+                    });
+
+                    this.renderStats();
+                    this.renderTable(this.reports);
+                    this.renderChart();
+                    this.renderActivity();
+
+                } catch(e) {
+                    console.error("Data Error:", e);
+                    this.toast('error', "Ma'lumotlarni yuklashda xatolik");
+                }
+            }
+
+            // --- RENDERING ---
+            renderStats() {
+                const total = this.reports.length;
+                const solved = this.reports.filter(r => r.status === 'Hal etildi').length;
+                const pending = this.reports.filter(r => r.status === 'Yangi' || r.status === 'Jarayonda').length;
+
+                this.animateNum('countTotal', total);
+                this.animateNum('countSolved', solved);
+                this.animateNum('countPending', pending);
+            }
+
+            renderTable(data) {
+                const tbody = document.getElementById('reportsTableBody');
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#6b7280;">Hali murojaatlar mavjud emas.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.map(r => {
+                    let badge = 'bg-red';
+                    if (r.status === 'Hal etildi') badge = 'bg-green';
+                    if (r.status === 'Jarayonda') badge = 'bg-yellow';
+
+                    return `
+                    <tr>
+                        <td>${r.date.split(',')[0]}</td>
+                        <td style="font-weight:600; color:white;">${r.type}</td>
+                        <td style="color:#9ca3af; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.address}</td>
+                        <td><span class="status-badge ${badge}">${r.status}</span></td>
+                        <td style="font-family:monospace; color:#3b82f6;">#${r.id.substring(0,6)}</td>
+                    </tr>
+                    `;
+                }).join('');
+            }
+
+            renderChart() {
+                const ctx = document.getElementById('activityChart').getContext('2d');
+                
+                // Group by status
+                const stats = { 'Yangi': 0, 'Jarayonda': 0, 'Hal etildi': 0, 'Rad etildi': 0 };
+                this.reports.forEach(r => { if(stats[r.status] !== undefined) stats[r.status]++; });
+
+                if(this.chart) this.chart.destroy();
+
+                this.chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(stats),
+                        datasets: [{
+                            label: 'Murojaatlar Soni',
+                            data: Object.values(stats),
+                            backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#6b7280'],
+                            borderRadius: 6,
+                            barThickness: 40
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            renderActivity() {
+                const feed = document.getElementById('activityFeed');
+                if(this.reports.length === 0) return;
+
+                feed.innerHTML = this.reports.slice(0, 5).map(r => `
+                    <div style="display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--border);">
+                        <div style="width:36px; height:36px; background:rgba(59,130,246,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#3b82f6;">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+                        <div>
+                            <div style="color:white; font-size:0.9rem;">Yangi murojaat: <b>${r.type}</b></div>
+                            <div style="color:#6b7280; font-size:0.75rem;">${r.date}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // --- ACTIONS ---
+            async handleAvatar(e) {
+                // Storage yo'qligi uchun vizual o'zgarish qilamiz
+                const file = e.target.files[0];
+                if(!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    document.getElementById('miniAvatar').src = ev.target.result;
+                    document.getElementById('editAvatar').src = ev.target.result;
+                    this.toast('success', 'Rasm vaqtincha o\'zgartirildi (No-Storage Mode)');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            async updateInfo(e) {
+                e.preventDefault();
+                const name = document.getElementById('inputName').value;
+                const phone = document.getElementById('inputPhone').value;
+
+                try {
+                    await updateProfile(this.user, { displayName: name });
+                    await updateDoc(doc(db, "users", this.user.uid), {
+                        displayName: name,
+                        phoneNumber: phone
+                    });
+                    this.toast('success', "Profil ma'lumotlari saqlandi");
+                    this.loadProfile();
+                } catch(err) {
+                    this.toast('error', err.message);
+                }
+            }
+
+            async updatePass(e) {
+                e.preventDefault();
+                const p1 = document.getElementById('newPass').value;
+                const p2 = document.getElementById('confirmPass').value;
+
+                if(p1.length < 6) return this.toast('error', "Parol kamida 6 ta belgi bo'lishi kerak");
+                if(p1 !== p2) return this.toast('error', "Parollar mos kelmadi");
+
+                try {
+                    await updatePassword(this.user, p1);
+                    this.toast('success', "Parol yangilandi. Qayta kiring.");
+                    setTimeout(() => this.logout(), 2000);
+                } catch(err) {
+                    this.toast('error', "Xatolik: Iltimos, qaytadan tizimga kiring");
+                }
+            }
+
+            filterReports(term) {
+                term = term.toLowerCase();
+                const filtered = this.reports.filter(r => 
+                    r.address.toLowerCase().includes(term) ||
+                    r.type.toLowerCase().includes(term) ||
+                    r.status.toLowerCase().includes(term)
+                );
+                this.renderTable(filtered);
+            }
+
+            async deleteAccount() {
+                if(!confirm("Haqiqatan ham hisobingizni o'chirmoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi!")) return;
+                try {
+                    await deleteUser(this.user);
+                    alert("Hisob o'chirildi.");
+                    window.location.href = "login.html";
+                } catch(err) {
+                    this.toast('error', "Xatolik: Qayta login qiling");
+                }
+            }
+
+            // --- UTILS ---
+            switchTab(id, el) {
+                document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(d => d.classList.remove('active'));
+                document.getElementById(id+'Tab').classList.add('active');
+                el.classList.add('active');
+                document.getElementById('pageHeading').innerText = el.innerText.trim();
+            }
+
+            logout() { signOut(auth).then(() => location.href = 'login.html'); }
+            refreshData() { this.loadReports(); this.toast('success', 'Ma\'lumotlar yangilandi'); }
+
+            animateNum(id, end) {
+                const el = document.getElementById(id);
+                let start = 0;
+                if(end === 0) { el.innerText = 0; return; }
+                const dur = 1000;
+                const step = ts => {
+                    if(!this.startTs) this.startTs = ts;
+                    const prog = Math.min((ts - this.startTs) / dur, 1);
+                    el.innerText = Math.floor(prog * end);
+                    if(prog < 1) requestAnimationFrame(step);
+                    else this.startTs = null;
+                };
+                requestAnimationFrame(step);
+            }
+
+            toast(type, msg) {
+                const box = document.getElementById('toastContainer');
+                const t = document.createElement('div');
+                t.className = 'toast';
+                const color = type === 'success' ? '#10b981' : '#ef4444';
+                t.style.borderLeft = `4px solid ${color}`;
+                t.innerHTML = `
+                    <i class="fa-solid fa-${type==='success'?'check':'circle-exclamation'}" style="color:${color};font-size:1.2rem;"></i>
+                    <div><b>${type.toUpperCase()}</b><br><small style="color:#9ca3af">${msg}</small></div>
+                `;
+                box.appendChild(t);
+                setTimeout(() => t.remove(), 3000);
+            }
+        }
+
+        window.Profile = new ProfileManager();
+    </script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</body>
+</html>
